@@ -1,12 +1,16 @@
+# Handling follows the Technical Guide §5: patch and minor updates grouped,
+# majors separate, and a 7-day wait except for security fixes.
 version: 2
 updates:
   - package-ecosystem: npm
     directory: /
     schedule:
       interval: weekly
+    cooldown:
+      default-days: 7
     groups:
-      dev-tools:
-        dependency-type: development
+      minor-and-patch:
+        update-types: [minor, patch]
     ignore:
       # Types must match the oldest supported Node.js line.
       - dependency-name: "@types/node"
@@ -18,3 +22,8 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    cooldown:
+      default-days: 7
+    groups:
+      minor-and-patch:
+        update-types: [minor, patch]
