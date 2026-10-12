@@ -8,6 +8,12 @@ Not yet released. The reading API is under development.
 
 Node.js 22 or later. Works with npm, pnpm and Yarn.
 
+## Versioning
+
+Follows [Semantic Versioning 2.0.0](https://semver.org/spec/v2.0.0.html):
+major for breaking changes, minor for new features, patch for fixes. Before
+1.0.0, a breaking change bumps the minor version.
+
 ## Development
 
 Needs Node.js 24 and pnpm (`corepack enable`).
