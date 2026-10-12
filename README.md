@@ -13,6 +13,7 @@ Node.js 22 or later. Works with npm, pnpm and Yarn.
 Follows [Semantic Versioning 2.0.0](https://semver.org/spec/v2.0.0.html):
 major for breaking changes, minor for new features, patch for fixes. Before
 1.0.0, a breaking change bumps the minor version.
+Changes are listed in [CHANGELOG.md](CHANGELOG.md).
 
 ## Development
 
