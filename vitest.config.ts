@@ -10,6 +10,7 @@ export default defineConfig({
     coverage: {
       provider: "v8",
       include: ["src/**/*.ts"],
+      thresholds: { lines: 90, branches: 90, functions: 90, statements: 90 },
     },
     projects: [
       { test: { name: "node", include } },
