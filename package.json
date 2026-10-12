@@ -1,5 +1,5 @@
 {
-  "name": "openphenology-api",
+  "name": "@openphenology/api",
   "version": "0.0.0",
   "private": true,
   "description": "Read OpenPhenology data",

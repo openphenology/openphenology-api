@@ -32,7 +32,7 @@ export function parseFile<File extends PublishedFile<string, unknown>>(
   if (Number(format[1]) !== SUPPORTED_MAJOR) {
     fail(
       path,
-      `format ${String(value.format)} is not supported by this version of openphenology-api`,
+      `format ${String(value.format)} is not supported by this version of @openphenology/api`,
     );
   }
   return value as File;

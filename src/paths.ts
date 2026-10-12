@@ -2,6 +2,7 @@ const RELEASE = /^\d{4}-\d{2}-\d{2}$/;
 const STATE = /^[a-z]{2}-[a-z0-9]{1,3}$/;
 const COUNTY = /^\d{5}$/;
 const SPECIES = /^[A-Za-z0-9._-]+$/;
+const ZIP = /^\d{5}$/;
 
 function check(kind: string, value: string, pattern: RegExp): string {
   if (!pattern.test(value))
@@ -17,3 +18,4 @@ export const countyCode = (value: string): string =>
   check("county", value, COUNTY);
 export const speciesKey = (value: string): string =>
   check("species key", value, SPECIES);
+export const zipCode = (value: string): string => check("ZIP code", value, ZIP);

@@ -1,4 +1,4 @@
-# openphenology-api
+# @openphenology/api
 
 Read OpenPhenology data.
 
@@ -8,22 +8,31 @@ before 1.0.0.
 ## Usage
 
 ```ts
-import { createClient } from "openphenology-api";
+import { createClient } from "@openphenology/api";
 
 const client = createClient();
 const release = await client.release(); // the current release, read once
 
 const result = await release.countyResult("us-oh", "39049", speciesKey);
 if (result) {
+  // season is [early, middle, late] weeks, or [] with season_withheld saying why
   console.log(result.data.season, result.data.weekly.records);
 }
 ```
 
 - `client.release()` reads `current.json` once, so every later read comes from
   the same release. Pass `{ release: "2026-10-19" }` to pin one.
-- `release.species()`, `release.region(state)`, `release.stateResult(state,
-species)` and `release.countyResult(state, county, species)` read the
-  published files. A result that is not published is `null`.
+- A release reads its files by name. A file that is not published is `null`.
+  - Species: `catalogue()`, `species(key)`, `speciesBySlug(slug)`, `groups()`
+    and `searchNames()`.
+  - Places: `region(state)`, `boundaries(state)` (county outlines for maps)
+    and `zipCounties(zip)`.
+  - Results: `stateResult(state, species)`, `countyResult(state, county,
+species)`, `attribution(state, species, county?)` and `backyard(state,
+county)`.
+  - About the release: `manifest()`, `notes()`, `methods()` and `sources()`.
+- `client.releases()` lists every release; `client.terms()` gives the licence
+  and how to cite and credit the data.
 - Release files never change, so each is fetched at most once per client.
 - `{ verify: true }` checks every file against its SHA-256 in the release
   manifest.
