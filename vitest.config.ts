@@ -6,6 +6,7 @@ const chromiumPath = process.env.CHROMIUM_PATH;
 
 export default defineConfig({
   test: {
+    // V8 coverage works only in Node.js and Chromium, so it is measured in Node.js.
     coverage: {
       provider: "v8",
       include: ["src/**/*.ts"],
