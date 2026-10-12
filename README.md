@@ -6,7 +6,11 @@ Not yet released. The reading API is under development.
 
 ## Requirements
 
-Node.js 22 or later. Works with npm, pnpm and Yarn.
+Works on servers and in browsers:
+
+- Node.js 22 or later, with npm, pnpm or Yarn
+- the last two versions of Chrome, Edge, Firefox and Safari, including Safari
+  on iOS
 
 ## Versioning
 
@@ -21,7 +25,8 @@ Needs Node.js 24 and pnpm (`corepack enable`).
 
 ```sh
 pnpm install
-pnpm check    # formatting, lint, typecheck, tests with coverage, build
+pnpm exec playwright install chromium firefox webkit   # test browsers
+pnpm check    # formatting, lint, typecheck, tests in Node.js and browsers, build
 pnpm format   # fix formatting
 ```
 
