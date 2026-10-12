@@ -1,0 +1,315 @@
+import { describe, expect, test } from "vitest";
+import { ApiError, createClient, FormatError } from "../src/index.ts";
+import { fakeServer, RELEASE } from "./fixture.ts";
+
+const BASE = "https://example.test/";
+
+describe("release", () => {
+  test("reads current.json once and keeps that release", async () => {
+    const server = await fakeServer();
+    const client = createClient({ baseUrl: BASE, fetch: server.fetch });
+    const [a, b] = await Promise.all([client.release(), client.release()]);
+    expect(a.id).toBe(RELEASE);
+    expect(b).toBe(a);
+    expect(server.requests.filter((p) => p === "current.json")).toHaveLength(1);
+  });
+
+  test("a pinned release skips current.json", async () => {
+    const server = await fakeServer();
+    const release = await createClient({
+      baseUrl: BASE,
+      fetch: server.fetch,
+      release: RELEASE,
+    }).release();
+    expect(release.id).toBe(RELEASE);
+    expect(server.requests).not.toContain("current.json");
+  });
+
+  test("rejects a malformed pinned release", async () => {
+    await expect(createClient({ release: "../x" }).release()).rejects.toThrow(
+      RangeError,
+    );
+  });
+});
+
+describe("files", () => {
+  test("reads results, regions and every species shard", async () => {
+    const server = await fakeServer();
+    const release = await createClient({
+      baseUrl: BASE,
+      fetch: server.fetch,
+    }).release();
+    const county = await release.countyResult("us-zz", "99001", "EX1");
+    expect(county?.kind).toBe("county-weekly");
+    expect(county?.data.season).toEqual({ early: 14, middle: 22, late: 35 });
+    expect((await release.stateResult("us-zz", "EX1"))?.data.area).toBe(
+      "us-zz",
+    );
+    expect((await release.region("us-zz"))?.data.areas[0]?.area).toBe("99001");
+    expect((await release.species()).map((s) => s.species_key)).toEqual([
+      "EX1",
+      "EX2",
+    ]);
+  });
+
+  test("a result that is not published is null", async () => {
+    const server = await fakeServer();
+    const release = await createClient({
+      baseUrl: BASE,
+      fetch: server.fetch,
+    }).release();
+    expect(await release.countyResult("us-zz", "99001", "NOPE")).toBeNull();
+  });
+
+  test("fetches each release file once", async () => {
+    const server = await fakeServer();
+    const release = await createClient({
+      baseUrl: BASE,
+      fetch: server.fetch,
+    }).release();
+    await Promise.all([
+      release.stateResult("us-zz", "EX1"),
+      release.stateResult("us-zz", "EX1"),
+    ]);
+    await release.stateResult("us-zz", "EX1");
+    expect(
+      server.requests.filter((p) => p.endsWith("us-zz/EX1.json")),
+    ).toHaveLength(1);
+  });
+
+  test("rejects codes that could change the path", async () => {
+    const release = await createClient({
+      baseUrl: BASE,
+      release: RELEASE,
+    }).release();
+    expect(() => release.countyResult("us-zz", "../x", "EX1")).toThrow(
+      RangeError,
+    );
+    expect(() => release.stateResult("US-ZZ", "EX1")).toThrow(RangeError);
+    expect(() => release.stateResult("us-zz", "a/b")).toThrow(RangeError);
+  });
+});
+
+describe("verification", () => {
+  test("checks files against the manifest's SHA-256", async () => {
+    const server = await fakeServer();
+    const release = await createClient({
+      baseUrl: BASE,
+      fetch: server.fetch,
+      verify: true,
+    }).release();
+    expect(await release.stateResult("us-zz", "EX1")).not.toBeNull();
+  });
+
+  test("rejects a file that does not match", async () => {
+    const server = await fakeServer();
+    server.tamper(`releases/${RELEASE}/results/us-zz/EX1.json`, "{}");
+    const release = await createClient({
+      baseUrl: BASE,
+      fetch: server.fetch,
+      verify: true,
+    }).release();
+    await expect(release.stateResult("us-zz", "EX1")).rejects.toThrow(
+      /SHA-256/,
+    );
+  });
+
+  test("a file the manifest does not list is not requested", async () => {
+    const server = await fakeServer();
+    const release = await createClient({
+      baseUrl: BASE,
+      fetch: server.fetch,
+      verify: true,
+    }).release();
+    expect(await release.stateResult("us-zz", "NOPE")).toBeNull();
+    expect(server.requests.some((p) => p.endsWith("NOPE.json"))).toBe(false);
+  });
+});
+
+describe("errors", () => {
+  test("retries a 503, then succeeds", async () => {
+    const server = await fakeServer();
+    server.failNext("current.json", 503);
+    const release = await createClient({
+      baseUrl: BASE,
+      fetch: server.fetch,
+    }).release();
+    expect(release.id).toBe(RELEASE);
+  });
+
+  test("gives up after the retries", async () => {
+    const server = await fakeServer();
+    server.failNext("current.json", 500, 500);
+    const client = createClient({
+      baseUrl: BASE,
+      fetch: server.fetch,
+      retries: 1,
+    });
+    await expect(client.release()).rejects.toMatchObject({
+      name: "ApiError",
+      status: 500,
+    });
+    // A failed release can be read again.
+    expect((await client.release()).id).toBe(RELEASE);
+  });
+
+  test("does not retry a 403", async () => {
+    const server = await fakeServer();
+    server.failNext("current.json", 403);
+    await expect(
+      createClient({ baseUrl: BASE, fetch: server.fetch }).release(),
+    ).rejects.toBeInstanceOf(ApiError);
+    expect(server.requests).toHaveLength(1);
+  });
+
+  test("retries after a network error", async () => {
+    const server = await fakeServer();
+    let failed = false;
+    const flaky = ((input: RequestInfo | URL) => {
+      if (!failed) {
+        failed = true;
+        return Promise.reject(new TypeError("offline"));
+      }
+      return server.fetch(input);
+    }) as typeof fetch;
+    expect(
+      (await createClient({ baseUrl: BASE, fetch: flaky }).release()).id,
+    ).toBe(RELEASE);
+  });
+
+  test("a network error becomes an ApiError", async () => {
+    const failing = (() =>
+      Promise.reject(new TypeError("offline"))) as typeof fetch;
+    const client = createClient({ baseUrl: BASE, fetch: failing, retries: 0 });
+    await expect(client.release()).rejects.toBeInstanceOf(ApiError);
+  });
+
+  test("rejects an unsupported format version", async () => {
+    const server = await fakeServer();
+    server.tamper(
+      "current.json",
+      JSON.stringify({
+        id: "current",
+        kind: "current",
+        format: "current/2.0",
+        provenance: {},
+        data: { release: RELEASE },
+      }),
+    );
+    await expect(
+      createClient({ baseUrl: BASE, fetch: server.fetch }).release(),
+    ).rejects.toBeInstanceOf(FormatError);
+  });
+
+  test("rejects a result with the wrong number of weeks", async () => {
+    const server = await fakeServer();
+    const bad = JSON.stringify({
+      id: "x",
+      kind: "state-weekly",
+      format: "state-weekly/1.0",
+      provenance: {},
+      data: { weekly: { records: [1], years: [1] }, effort: [1] },
+    });
+    server.tamper(`releases/${RELEASE}/results/us-zz/EX1.json`, bad);
+    const release = await createClient({
+      baseUrl: BASE,
+      fetch: server.fetch,
+    }).release();
+    await expect(release.stateResult("us-zz", "EX1")).rejects.toThrow(
+      /53 numbers/,
+    );
+  });
+});
+
+describe("malformed files", () => {
+  const cases: [string, unknown][] = [
+    ["not an object", [1]],
+    [
+      "wrong kind",
+      {
+        id: "x",
+        kind: "region",
+        format: "current/1.0",
+        provenance: {},
+        data: {},
+      },
+    ],
+    [
+      "no id",
+      { kind: "current", format: "current/1.0", provenance: {}, data: {} },
+    ],
+    [
+      "no provenance",
+      { id: "x", kind: "current", format: "current/1.0", data: {} },
+    ],
+    [
+      "no data",
+      { id: "x", kind: "current", format: "current/1.0", provenance: {} },
+    ],
+    ["no format", { id: "x", kind: "current", provenance: {}, data: {} }],
+  ];
+  test.each(cases)("rejects current.json with %s", async (_, value) => {
+    const server = await fakeServer();
+    server.tamper("current.json", JSON.stringify(value));
+    await expect(
+      createClient({ baseUrl: BASE, fetch: server.fetch }).release(),
+    ).rejects.toBeInstanceOf(FormatError);
+  });
+
+  test("rejects a file that is not JSON", async () => {
+    const server = await fakeServer();
+    server.tamper("current.json", "not json");
+    await expect(
+      createClient({ baseUrl: BASE, fetch: server.fetch }).release(),
+    ).rejects.toThrow(/not valid JSON/);
+  });
+
+  test("a release without a manifest is an error", async () => {
+    const server = await fakeServer();
+    server.tamper(`releases/${RELEASE}/manifest.json`, "");
+    server.failNext(`releases/${RELEASE}/manifest.json`, 404);
+    const release = await createClient({
+      baseUrl: BASE,
+      fetch: server.fetch,
+    }).release();
+    await expect(release.manifest()).rejects.toThrow(/no manifest/);
+  });
+
+  test("a missing current.json is an ApiError", async () => {
+    const server = await fakeServer();
+    server.failNext("current.json", 404);
+    await expect(
+      createClient({ baseUrl: BASE, fetch: server.fetch }).release(),
+    ).rejects.toMatchObject({
+      status: 404,
+    });
+  });
+});
+
+describe("cancelling", () => {
+  test("an aborted signal stops without retrying", async () => {
+    const controller = new AbortController();
+    controller.abort();
+    let calls = 0;
+    const failing = ((_: RequestInfo | URL, init?: RequestInit) => {
+      calls++;
+      return Promise.reject(init?.signal?.reason as Error);
+    }) as typeof fetch;
+    const client = createClient({
+      baseUrl: BASE,
+      fetch: failing,
+      signal: controller.signal,
+    });
+    await expect(client.release()).rejects.toBeInstanceOf(ApiError);
+    expect(calls).toBe(1);
+  });
+
+  test("a base URL without a trailing slash still works", async () => {
+    const server = await fakeServer();
+    const release = await createClient({
+      baseUrl: "https://example.test",
+      fetch: server.fetch,
+    }).release();
+    expect(release.id).toBe(RELEASE);
+  });
+});
