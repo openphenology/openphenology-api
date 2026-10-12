@@ -1,17 +1,37 @@
 import { sha256 } from "./digest.ts";
 import { ApiError, FormatError } from "./errors.ts";
 import { checkWeeks, parseFile } from "./parse.ts";
-import { countyCode, releaseId, speciesKey, stateCode } from "./paths.ts";
+import {
+  countyCode,
+  releaseId,
+  speciesKey,
+  stateCode,
+  zipCode,
+} from "./paths.ts";
 import type {
+  AttributionFile,
+  BackyardFile,
+  BoundariesFile,
+  CatalogueEntry,
+  CatalogueFile,
   CountyResultFile,
   CurrentFile,
+  GroupsFile,
   ManifestEntry,
   ManifestFile,
+  MethodsFile,
+  NotesFile,
+  PostalFile,
   PublishedFile,
   RegionFile,
-  Species,
+  ReleasesFile,
+  SearchFile,
+  SearchName,
+  SlugsFile,
+  SourcesFile,
   SpeciesFile,
   StateResultFile,
+  TermsFile,
 } from "./types.ts";
 
 export const PRODUCTION_URL = "https://api.openphenology.com/";
@@ -34,7 +54,8 @@ export interface ClientOptions {
   readonly fetch?: typeof fetch;
 }
 
-const SHARD = /^species(\/\d+)?\.json$/;
+const CATALOGUE = /^catalogue(\/\d+)?\.json$/;
+const SEARCH = /^search\/index(\/\d+)?\.json$/;
 
 const wait = (ms: number): Promise<void> =>
   new Promise((resolve) => setTimeout(resolve, ms));
@@ -72,6 +93,24 @@ export class Client {
       "current",
     );
     return new Release(this, releaseId(current.data.release));
+  }
+
+  /** Every release and its status, from `releases.json`. */
+  async releases(): Promise<ReleasesFile> {
+    return parseFile<ReleasesFile>(
+      "releases.json",
+      await this.getJson("releases.json"),
+      "releases",
+    );
+  }
+
+  /** The licence, how to cite and credit, and the contact, from `terms.json`. */
+  async terms(): Promise<TermsFile> {
+    return parseFile<TermsFile>(
+      "terms.json",
+      await this.getJson("terms.json"),
+      "terms",
+    );
   }
 
   get verify(): boolean {
@@ -161,19 +200,45 @@ export class Release {
     });
   }
 
-  /** Every species with published results, from all catalogue shards. */
-  async species(): Promise<Species[]> {
-    const manifest = await this.manifest();
-    const shards = manifest.data.files
-      .map((entry) => entry.path)
-      .filter((path) => SHARD.test(path));
-    const files = await Promise.all(
-      shards.map((path) => this.#file<SpeciesFile>(path, "species")),
-    );
-    return files.flatMap((file) => (file ? [...file.data.species] : []));
+  /** What changed since the previous release. */
+  notes(): Promise<NotesFile | null> {
+    return this.#file<NotesFile>("notes.json", "notes");
   }
 
-  /** A state's summary: species with results by area, and effort. */
+  /** Every species with a result or a mapped range, from all catalogue shards. */
+  async catalogue(): Promise<CatalogueEntry[]> {
+    const files = await this.#shards<CatalogueFile>(CATALOGUE, "catalogue");
+    return files.flatMap((file) => [...file.data.species]);
+  }
+
+  /** One species: names, classification, and every area with a result or mapped range. */
+  species(key: string): Promise<SpeciesFile | null> {
+    return this.#file<SpeciesFile>(
+      `species/${speciesKey(key)}.json`,
+      "species",
+    );
+  }
+
+  /** The species key for a page slug, following a redirect; `null` when unknown. */
+  async speciesBySlug(slug: string): Promise<string | null> {
+    const file = await this.#file<SlugsFile>("slugs.json", "slugs");
+    if (!file) return null;
+    const { species, redirects } = file.data;
+    return species[slug] ?? species[redirects[slug] ?? ""] ?? null;
+  }
+
+  /** The browse groups, in display order. */
+  groups(): Promise<GroupsFile | null> {
+    return this.#file<GroupsFile>("groups.json", "groups");
+  }
+
+  /** Every searchable name, from all search index shards. */
+  async searchNames(): Promise<SearchName[]> {
+    const files = await this.#shards<SearchFile>(SEARCH, "search");
+    return files.flatMap((file) => [...file.data.names]);
+  }
+
+  /** A state, its counties, their species and effort. */
   region(state: string): Promise<RegionFile | null> {
     return this.#file<RegionFile>(`regions/${stateCode(state)}.json`, "region");
   }
@@ -192,6 +257,80 @@ export class Release {
   ): Promise<CountyResultFile | null> {
     const path = `results/${stateCode(state)}/${countyCode(county)}/${speciesKey(species)}.json`;
     return this.#result<CountyResultFile>(path, "county-weekly");
+  }
+
+  /** The sources behind a result: datasets, GBIF download DOIs and record links. */
+  attribution(
+    state: string,
+    species: string,
+    county?: string,
+  ): Promise<AttributionFile | null> {
+    const area =
+      county === undefined
+        ? stateCode(state)
+        : `${stateCode(state)}/${countyCode(county)}`;
+    return this.#file<AttributionFile>(
+      `attribution/${area}/${speciesKey(species)}.json`,
+      "attribution",
+    );
+  }
+
+  /** A county's Backyard labels for every week. */
+  backyard(state: string, county: string): Promise<BackyardFile | null> {
+    return this.#file<BackyardFile>(
+      `backyard/${stateCode(state)}/${countyCode(county)}.json`,
+      "backyard",
+    );
+  }
+
+  /** How results are made: the method and its numbers. */
+  methods(): Promise<MethodsFile | null> {
+    return this.#file<MethodsFile>("methods.json", "methods");
+  }
+
+  /** Each source, its licence and how to credit it. */
+  sources(): Promise<SourcesFile | null> {
+    return this.#file<SourcesFile>("sources.json", "sources");
+  }
+
+  /** County outlines for a state's map. For display only. */
+  boundaries(state: string): Promise<BoundariesFile | null> {
+    return this.#file<BoundariesFile>(
+      `places/${stateCode(state)}/boundaries.json`,
+      "boundaries",
+    );
+  }
+
+  /**
+   * The counties a US ZIP code falls in, largest share of its land first.
+   * Empty when the ZIP code has no Census area. Only the file for its first
+   * three digits is requested.
+   */
+  async zipCounties(zip: string): Promise<{ area: string; share: number }[]> {
+    const code = zipCode(zip);
+    const file = await this.#file<PostalFile>(
+      `postal/us/${code.slice(0, 3)}.json`,
+      "postal",
+    );
+    return (file?.data.zips[code] ?? []).map(([area, share]) => ({
+      area,
+      share,
+    }));
+  }
+
+  /** Files listed in the manifest whose path matches, read together. */
+  async #shards<File extends PublishedFile<string, unknown>>(
+    pattern: RegExp,
+    kind: File["kind"],
+  ): Promise<File[]> {
+    const manifest = await this.manifest();
+    const files: (File | null)[] = await Promise.all(
+      manifest.data.files
+        .map((entry) => entry.path)
+        .filter((path) => pattern.test(path))
+        .map((path) => this.#file<File>(path, kind)),
+    );
+    return files.flatMap((file) => (file === null ? [] : [file]));
   }
 
   async #result<File extends CountyResultFile | StateResultFile>(

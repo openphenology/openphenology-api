@@ -33,7 +33,7 @@ describe("release", () => {
 });
 
 describe("files", () => {
-  test("reads results, regions and every species shard", async () => {
+  test("reads results, regions and every catalogue shard", async () => {
     const server = await fakeServer();
     const release = await createClient({
       baseUrl: BASE,
@@ -41,15 +41,84 @@ describe("files", () => {
     }).release();
     const county = await release.countyResult("us-zz", "99001", "EX1");
     expect(county?.kind).toBe("county-weekly");
-    expect(county?.data.season).toEqual({ early: 14, middle: 22, late: 35 });
+    expect(county?.data.season).toEqual([14, 22, 35]);
+    expect(county?.data.thresholds).toEqual({ records: 20, years: 5 });
     expect((await release.stateResult("us-zz", "EX1"))?.data.area).toBe(
       "us-zz",
     );
     expect((await release.region("us-zz"))?.data.areas[0]?.area).toBe("99001");
-    expect((await release.species()).map((s) => s.species_key)).toEqual([
+    expect((await release.catalogue()).map((s) => s.species_key)).toEqual([
       "EX1",
       "EX2",
     ]);
+  });
+
+  test("reads a species, by key or by slug", async () => {
+    const server = await fakeServer();
+    const release = await createClient({
+      baseUrl: BASE,
+      fetch: server.fetch,
+    }).release();
+    expect((await release.species("EX1"))?.data.areas[0]?.season).toEqual([
+      14, 22, 35,
+    ]);
+    expect(await release.species("NOPE")).toBeNull();
+    expect(await release.speciesBySlug("exemplum-primum")).toBe("EX1");
+    expect(await release.speciesBySlug("old-name")).toBe("EX1");
+    expect(await release.speciesBySlug("unknown")).toBeNull();
+  });
+
+  test("reads names, groups and the files about the release", async () => {
+    const server = await fakeServer();
+    const client = createClient({ baseUrl: BASE, fetch: server.fetch });
+    const release = await client.release();
+    expect((await release.searchNames()).map(([name]) => name)).toEqual([
+      "Exemplum primum",
+      "Example bird",
+    ]);
+    expect((await release.groups())?.data.groups[0]?.group).toBe("birds");
+    expect((await release.notes())?.data.results.added).toBe(2);
+    expect((await release.methods())?.data.method).toBe("test-1");
+    expect((await release.sources())?.data.sources[0]?.source).toBe("example");
+    expect((await client.releases()).data.releases[0]?.status).toBe("current");
+    expect((await client.terms()).data.licence).toBe("CC-BY-4.0");
+  });
+
+  test("reads attribution and Backyard labels", async () => {
+    const server = await fakeServer();
+    const release = await createClient({
+      baseUrl: BASE,
+      fetch: server.fetch,
+    }).release();
+    const attribution = await release.attribution("us-zz", "EX1");
+    expect(attribution?.data.datasets[0]?.records).toBe(120);
+    expect(attribution?.data.record_links).toBeNull();
+    expect(await release.attribution("us-zz", "EX1", "99001")).toBeNull();
+    expect(
+      server.requests.some((p) =>
+        p.endsWith("attribution/us-zz/99001/EX1.json"),
+      ),
+    ).toBe(true);
+    const backyard = await release.backyard("us-zz", "99001");
+    expect(backyard?.data.species[0]?.labels).toHaveLength(53);
+  });
+
+  test("reads map outlines and ZIP code counties", async () => {
+    const server = await fakeServer();
+    const release = await createClient({
+      baseUrl: BASE,
+      fetch: server.fetch,
+    }).release();
+    expect(
+      (await release.boundaries("us-zz"))?.data.features[0]?.properties.area,
+    ).toBe("99001");
+    expect(await release.zipCounties("99901")).toEqual([
+      { area: "99001", share: 0.75 },
+      { area: "99002", share: 0.25 },
+    ]);
+    expect(await release.zipCounties("99999")).toEqual([]);
+    expect(await release.zipCounties("12345")).toEqual([]);
+    await expect(release.zipCounties("9990")).rejects.toThrow(RangeError);
   });
 
   test("a result that is not published is null", async () => {
@@ -193,7 +262,7 @@ describe("errors", () => {
         kind: "current",
         format: "current/2.0",
         provenance: {},
-        data: { release: RELEASE },
+        data: { release: RELEASE, published_at: "2026-01-05T06:00:00Z" },
       }),
     );
     await expect(

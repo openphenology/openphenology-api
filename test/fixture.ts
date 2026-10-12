@@ -1,12 +1,16 @@
 // A made-up release served by a fake fetch. Species, places and counts are invented.
 const provenance = {
-  sources: [{ name: "Example source", licence: "CC-BY-4.0" }],
+  release: "2026-01-05",
+  sources: ["example"],
+  licences: ["CC-BY-4.0"],
   gbif_download_dois: ["10.0000/example"],
-  method_version: "test-1",
-  taxonomy_version: "test-taxonomy",
-  boundary_version: "test-boundaries",
-  code_version: "0.0.0",
-  run_id: "run-1",
+  method: "test-1",
+  taxonomy: "test-taxonomy",
+  boundaries: "test-boundaries",
+  ranges: null,
+  protection: null,
+  code: "0.0.0",
+  run: "run-1",
 };
 
 const weeks = (value: number): number[] =>
@@ -14,75 +18,274 @@ const weeks = (value: number): number[] =>
 
 export const RELEASE = "2026-01-05";
 
-const result = (kind: string, format: string, area: string) => ({
-  id: `${RELEASE}/${area}/EX1`,
+const wrap = (path: string, kind: string, data: unknown) => ({
+  id: `releases/${RELEASE}/${path}`,
   kind,
-  format,
+  format: `${kind}/1.0`,
   provenance,
-  data: {
-    area,
-    species_key: "EX1",
-    included_records: 120,
-    contributing_years: 4,
-    thresholds: { min_records: 30, min_years: 3 },
-    weekly: { records: weeks(2), years: weeks(1) },
-    season: { early: 14, middle: 22, late: 35 },
-    effort: weeks(40),
-    limits:
-      "These results show when people recorded a species, not when or where it occurs.",
-  },
+  data,
 });
 
-export const releaseFiles: Record<string, unknown> = {
-  "species/0.json": {
-    id: `${RELEASE}/species/0`,
-    kind: "species",
-    format: "species/1.0",
-    provenance,
-    data: {
+const classification = {
+  kingdom: "Animalia",
+  phylum: null,
+  class: null,
+  order: null,
+  family: null,
+  genus: "Exemplum",
+};
+
+const entry = (key: string, name: string) => ({
+  species_key: key,
+  scientific_name: name,
+  common_name: null,
+  rank: "species",
+  ...classification,
+  group: "birds",
+  slug: name.toLowerCase().replace(" ", "-"),
+  states: ["us-zz"],
+});
+
+const result = (area: string) => ({
+  area,
+  species_key: "EX1",
+  included_records: 120,
+  contributing_years: 4,
+  thresholds: { records: 20, years: 5 },
+  weekly: { records: weeks(2), years: weeks(1) },
+  season: [14, 22, 35],
+  season_withheld: null,
+  effort: weeks(40),
+  limits:
+    "These results show when people recorded a species, not when or where it occurs.",
+});
+
+const files: [string, string, unknown][] = [
+  [
+    "notes.json",
+    "notes",
+    {
+      release: RELEASE,
+      previous: null,
+      results: { added: 2, changed: 0, removed: 0 },
+      key_changes: [],
+      corrections: [],
+      formats: [],
+    },
+  ],
+  [
+    "catalogue/0.json",
+    "catalogue",
+    {
+      species: [entry("EX1", "Exemplum primum")],
+    },
+  ],
+  [
+    "catalogue/1.json",
+    "catalogue",
+    {
+      species: [entry("EX2", "Exemplum alterum")],
+    },
+  ],
+  [
+    "species/EX1.json",
+    "species",
+    {
+      species_key: "EX1",
+      scientific_name: "Exemplum primum",
+      authorship: null,
+      common_name: null,
+      synonyms: [],
+      rank: "species",
+      classification,
+      group: "birds",
+      slug: "exemplum-primum",
+      areas: [
+        {
+          area: "us-zz",
+          level: "state",
+          records: 120,
+          season: [14, 22, 35],
+          season_withheld: null,
+        },
+      ],
+      ranges: [],
+    },
+  ],
+  [
+    "slugs.json",
+    "slugs",
+    {
+      species: { "exemplum-primum": "EX1" },
+      redirects: { "old-name": "exemplum-primum" },
+    },
+  ],
+  [
+    "groups.json",
+    "groups",
+    {
+      groups: [{ group: "birds", name: "Birds", taxa: ["V2"], species: 2 }],
+    },
+  ],
+  [
+    "search/index.json",
+    "search",
+    {
+      names: [
+        ["Exemplum primum", "scientific", "EX1"],
+        ["Example bird", "common", "EX1"],
+      ],
+    },
+  ],
+  [
+    "regions/us-zz.json",
+    "region",
+    {
+      state: "us-zz",
+      name: "Zed",
+      slug: "zed",
+      areas: [
+        {
+          area: "99001",
+          level: "county",
+          name: "Example",
+          slug: "example",
+          species_keys: ["EX1"],
+          range_species_keys: [],
+          effort: weeks(40),
+        },
+      ],
+    },
+  ],
+  [
+    "attribution/us-zz/EX1.json",
+    "attribution",
+    {
+      area: "us-zz",
+      species_key: "EX1",
+      datasets: [
+        {
+          dataset_key: "d1",
+          title: "Example dataset",
+          publisher: null,
+          citation: null,
+          url: null,
+          records: 120,
+        },
+      ],
+      gbif_download_dois: ["10.0000/example"],
+      record_links: null,
+    },
+  ],
+  [
+    "backyard/us-zz/99001.json",
+    "backyard",
+    {
+      area: "99001",
+      method: "test-1",
+      evidence_through: "2025-12-31",
+      effort: weeks(40),
       species: [
         {
           species_key: "EX1",
-          scientific_name: "Exemplum primum",
-          rank: "species",
-          states: ["us-zz"],
+          group: "birds",
+          labels: "n".repeat(53),
+          range: null,
         },
       ],
     },
-  },
-  "species/1.json": {
-    id: `${RELEASE}/species/1`,
-    kind: "species",
-    format: "species/1.0",
-    provenance,
-    data: {
-      species: [
+  ],
+  [
+    "methods.json",
+    "methods",
+    {
+      method: "test-1",
+      data_rules: "1.0",
+      thresholds: { records: 20, years: 5 },
+      weeks: "Week 1 is 1–7 January.",
+      pooled_from: "2015-01-01",
+      taxonomy: "test-taxonomy",
+      boundaries: "test-boundaries",
+      protection: {},
+      ranges: [],
+      limits: "Made up.",
+    },
+  ],
+  [
+    "sources.json",
+    "sources",
+    {
+      sources: [
         {
-          species_key: "EX2",
-          scientific_name: "Exemplum alterum",
-          rank: "species",
-          states: ["us-zz"],
+          source: "example",
+          name: "Example source",
+          kind: "records",
+          licence: "CC-BY-4.0",
+          licence_url: null,
+          use: "Made up.",
+          reviewed: "2026-01-01",
+          credit: "Example",
+          url: "https://example.test/",
         },
       ],
     },
-  },
-  "regions/us-zz.json": {
-    id: `${RELEASE}/regions/us-zz`,
-    kind: "region",
-    format: "region/1.0",
-    provenance,
-    data: {
-      state: "us-zz",
-      areas: [{ area: "99001", species_keys: ["EX1"], effort: weeks(40) }],
+  ],
+  [
+    "places/us-zz/boundaries.json",
+    "boundaries",
+    {
+      type: "FeatureCollection",
+      features: [
+        {
+          type: "Feature",
+          properties: { area: "99001", name: "Example", slug: "example" },
+          geometry: {
+            type: "MultiPolygon",
+            coordinates: [
+              [
+                [
+                  [0, 0],
+                  [1, 0],
+                  [0, 1],
+                  [0, 0],
+                ],
+              ],
+            ],
+          },
+        },
+      ],
     },
-  },
-  "results/us-zz/EX1.json": result("state-weekly", "state-weekly/1.0", "us-zz"),
-  "results/us-zz/99001/EX1.json": result(
-    "county-weekly",
-    "county-weekly/1.0",
-    "99001",
-  ),
-};
+  ],
+  [
+    "postal/us/999.json",
+    "postal",
+    {
+      zips: {
+        "99901": [
+          ["99001", 0.75],
+          ["99002", 0.25],
+        ],
+      },
+    },
+  ],
+];
+
+export const releaseFiles: Record<string, unknown> =
+  Object.fromEntries<unknown>([
+    ...files.map(([path, kind, data]): [string, unknown] => [
+      path,
+      wrap(path, kind, data),
+    ]),
+    ...(
+      [
+        ["results/us-zz/EX1.json", "state-weekly", "us-zz"],
+        ["results/us-zz/99001/EX1.json", "county-weekly", "99001"],
+      ] as const
+    ).map(([path, kind, area]): [string, unknown] => [
+      path,
+      wrap(path, kind, result(area)),
+    ]),
+  ]);
 
 const encoder = new TextEncoder();
 
@@ -123,7 +326,17 @@ export async function fakeServer(): Promise<FakeServer> {
       kind: "manifest",
       format: "manifest/1.0",
       provenance,
-      data: { release: RELEASE, files: entries, counts: { results: 2 } },
+      data: {
+        release: RELEASE,
+        published_at: `${RELEASE}T06:00:00Z`,
+        files: entries,
+        counts: {
+          species: 2,
+          state_results: 1,
+          county_results: 1,
+          records: 120,
+        },
+      },
     }),
   );
   bodies.set(
@@ -133,7 +346,45 @@ export async function fakeServer(): Promise<FakeServer> {
       kind: "current",
       format: "current/1.0",
       provenance,
-      data: { release: RELEASE },
+      data: { release: RELEASE, published_at: `${RELEASE}T06:00:00Z` },
+    }),
+  );
+  bodies.set(
+    "releases.json",
+    JSON.stringify({
+      id: "releases.json",
+      kind: "releases",
+      format: "releases/1.0",
+      provenance,
+      data: {
+        releases: [
+          {
+            release: RELEASE,
+            status: "current",
+            published_at: `${RELEASE}T06:00:00Z`,
+            doi: null,
+            builds_on: null,
+            reason: null,
+          },
+        ],
+      },
+    }),
+  );
+  bodies.set(
+    "terms.json",
+    JSON.stringify({
+      id: "terms.json",
+      kind: "terms",
+      format: "terms/1.0",
+      provenance,
+      data: {
+        licence: "CC-BY-4.0",
+        licence_url: "https://creativecommons.org/licenses/by/4.0/",
+        cite: "Made up.",
+        credit: "Made up.",
+        warranty: "Made up.",
+        contact: "nobody@example.test",
+      },
     }),
   );
 
