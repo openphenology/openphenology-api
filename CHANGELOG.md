@@ -6,6 +6,8 @@ All notable changes to this package are recorded here. The format follows
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-10-13
+
 ### Added
 
 - Client that reads the current or a pinned release: the species catalogue,
@@ -25,3 +27,6 @@ All notable changes to this package are recorded here. The format follows
 - Installs from a Git commit: a `prepare` script builds the package.
 - A JSON Schema for each file format, at
   `@openphenology/api/schemas/<kind>-1.json`.
+
+[Unreleased]: https://github.com/openphenology/openphenology-api/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/openphenology/openphenology-api/releases/tag/v0.1.0
