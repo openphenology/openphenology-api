@@ -217,6 +217,11 @@ describe("files", () => {
     expect(await release.zipCounties("99999")).toEqual([]);
     expect(await release.zipCounties("12345")).toEqual([]);
     await expect(release.zipCounties("9990")).rejects.toThrow(RangeError);
+    expect(
+      Object.keys((await release.postal("999"))?.data.zips ?? {}),
+    ).toContain("99901");
+    expect(await release.postal("123")).toBeNull();
+    expect(() => release.postal("99")).toThrow(RangeError);
   });
 
   test("a result that is not published is null", async () => {

@@ -35,7 +35,7 @@ A malformed code is a `RangeError` before any request is made.
 ## Release (each returns the parsed file, or `null` when not published; lists are empty instead)
 
 - Species: `catalogue()` → `CatalogueEntry[]`; `species(key)`; `speciesBySlug(slug)` → key or `null`; `groups()`; `searchNames()` → `SearchName[]`.
-- Places: `region(state)`; `boundaries(state)` (GeoJSON county outlines, display only); `zipCounties(zip)` → `ZipCounty[]`.
+- Places: `region(state)`; `boundaries(state)` (GeoJSON county outlines, display only); `zipCounties(zip)` → `ZipCounty[]`; `postal(prefix)` (every ZIP code with a 3-digit prefix, for suggestions).
 - Results: `stateResult(state, species)`; `countyResult(state, county, species)`; `backyard(state, county)`; `attribution(state, species, county?)`.
 - The release: `manifest()`; `notes()`; `methods()`; `sources()`.
 
@@ -44,10 +44,10 @@ Every file is `{ id, kind, format, provenance, data }`; read `file.data`.
 ## Reading results
 
 - Results show when people recorded a species, not when or where it occurs. Low or zero counts do not mean absence.
-- Weeks 1–53: week 1 is 1–7 January, week 53 the last one or two days. Every weekly list has 53 values.
+- Weeks 1–53: week 1 is 1–7 January, week 53 the last one or two days. Every weekly list has 53 values. `weekOf(date)` gives a date's week (UTC); `WEEKS` is 53.
 - `data.weekly.records`: the species' records per week. `data.weekly.years`: years contributing per week. `data.effort`: records of all species in the same place and week.
 - `data.season`: `[early, middle, late]` weeks (5th, 50th, 95th percentiles), or `[]` with `data.season_withheld` set to `year-round`, `two-seasons`, `one-year` or `precision`.
-- Backyard `labels`: a 53-letter string, one per week: `c` commonly reported, `s` seasonally reported, `r` reported in your area, `m` within its mapped range, `n` not enough evidence.
+- Backyard `labels`: a 53-letter string, one per week: `c` commonly reported, `s` seasonally reported, `r` reported in your area, `m` within its mapped range, `n` not enough evidence. `backyardLabel(labels, week)` reads one week's letter; `BACKYARD_LABELS[letter]` names it.
 - A withheld result (sensitive species, or too little evidence) is not published, so it reads as `null`, the same as no result.
 
 ## Errors

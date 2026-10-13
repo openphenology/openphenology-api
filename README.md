@@ -83,16 +83,15 @@ These continue from the quick start, with `release` already open.
 ### This week's Backyard labels for a ZIP code
 
 ```ts
-const week = (date: Date) => {
-  const start = Date.UTC(date.getUTCFullYear(), 0, 1);
-  return Math.floor((date.getTime() - start) / 86_400_000 / 7) + 1;
-};
+import { BACKYARD_LABELS, backyardLabel, weekOf } from "@openphenology/api";
 
+const week = weekOf(new Date()); // weeks as the data rules count them
 const [county] = await release.zipCounties("43215"); // largest share first
 if (county?.state) {
   const backyard = await release.backyard(county.state, county.area);
   for (const species of backyard?.data.species ?? []) {
-    console.log(species.species_key, species.labels[week(new Date()) - 1]);
+    const label = backyardLabel(species.labels, week);
+    console.log(species.species_key, BACKYARD_LABELS[label]);
   }
 }
 ```

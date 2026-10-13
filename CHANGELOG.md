@@ -8,6 +8,11 @@ All notable changes to this package are recorded here. The format follows
 
 ### Added
 
+- `weekOf`, `WEEKS`, `BACKYARD_LABELS` and `backyardLabel`: weeks and Backyard
+  labels as the data rules define them, so every reader counts weeks the way
+  the data was made.
+- `release.postal(prefix)`: every ZIP code with a 3-digit prefix, for ZIP code
+  lists and suggestions.
 - `catalogue/1.1`: each catalogue species has `seasons`, its season weeks in
   each state with a result (data rules 1.20). `catalogue/1.0` files, which lack
   it, still read.

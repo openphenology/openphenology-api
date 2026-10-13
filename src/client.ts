@@ -627,6 +627,21 @@ export class Release {
   }
 
   /**
+   * Every ZIP code that starts with a 3-digit prefix, with its counties and
+   * their shares of its land; for lists such as ZIP code suggestions. To look
+   * up one ZIP code, use {@link Release.zipCounties}.
+   *
+   * @param prefix The first three digits, such as `432`.
+   * @returns The ZIP codes, or `null` when none is published for the prefix.
+   * @throws {RangeError} When the prefix is not three digits.
+   */
+  postal(prefix: string): Promise<PostalFile | null> {
+    if (!/^\d{3}$/.test(prefix))
+      throw new RangeError(`Invalid ZIP prefix: ${JSON.stringify(prefix)}`);
+    return this.#file<PostalFile>(`postal/us/${prefix}.json`, "postal");
+  }
+
+  /**
    * The counties a US ZIP code falls in, largest share of its land first.
    * Only the file for its first three digits is requested.
    *
@@ -640,10 +655,7 @@ export class Release {
    */
   async zipCounties(zip: string): Promise<ZipCounty[]> {
     const code = zipCode(zip);
-    const file = await this.#file<PostalFile>(
-      `postal/us/${code.slice(0, 3)}.json`,
-      "postal",
-    );
+    const file = await this.postal(code.slice(0, 3));
     return (file?.data.zips[code] ?? []).map(([area, share]) => ({
       area,
       state: countyState(area),
