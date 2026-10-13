@@ -12,17 +12,21 @@
   ],
   "properties": {
     "id": {
+      "description": "The file's path from the API root.",
       "type": "string",
       "pattern": "^releases/\\d{4}-\\d{2}-\\d{2}/postal/us/\\d{3}(/\\d+)?\\.json$"
     },
     "kind": {
+      "description": "The format's name, such as `county-weekly`.",
       "const": "postal"
     },
     "format": {
+      "description": "Format name and version, for example `county-weekly/1.0`.",
       "type": "string",
       "pattern": "^postal/1\\.\\d+$"
     },
     "provenance": {
+      "description": "Where the content came from.",
       "type": "object",
       "required": [
         "release",
@@ -39,28 +43,33 @@
       ],
       "properties": {
         "release": {
+          "description": "The release the file belongs to, such as `2026-10-19`.",
           "type": "string",
           "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
         },
         "sources": {
+          "description": "Source IDs, as listed in `sources.json`.",
           "type": "array",
           "items": {
             "type": "string"
           }
         },
         "licences": {
+          "description": "The licences of those sources.",
           "type": "array",
           "items": {
             "type": "string"
           }
         },
         "gbif_download_dois": {
+          "description": "The GBIF downloads the records came from, as DOIs.",
           "type": "array",
           "items": {
             "type": "string"
           }
         },
         "method": {
+          "description": "The method version, such as `seasonal-3`.",
           "anyOf": [
             {
               "type": "string"
@@ -71,6 +80,7 @@
           ]
         },
         "taxonomy": {
+          "description": "The taxonomy version species keys come from.",
           "anyOf": [
             {
               "type": "string"
@@ -81,6 +91,7 @@
           ]
         },
         "boundaries": {
+          "description": "The boundary version areas come from.",
           "anyOf": [
             {
               "type": "string"
@@ -91,6 +102,7 @@
           ]
         },
         "ranges": {
+          "description": "Each mapped range edition used.",
           "anyOf": [
             {
               "type": "array",
@@ -104,6 +116,7 @@
           ]
         },
         "protection": {
+          "description": "The version of each sensitive-species list applied, by list.",
           "anyOf": [
             {
               "type": "object",
@@ -117,6 +130,7 @@
           ]
         },
         "code": {
+          "description": "The commit of the code that produced the file.",
           "anyOf": [
             {
               "type": "string"
@@ -127,6 +141,7 @@
           ]
         },
         "run": {
+          "description": "The run that produced the file.",
           "anyOf": [
             {
               "type": "string"
@@ -139,12 +154,14 @@
       }
     },
     "data": {
+      "description": "The content, as the format sets out.",
       "type": "object",
       "required": [
         "zips"
       ],
       "properties": {
         "zips": {
+          "description": "ZIP code to its counties, each with the share of its land.",
           "type": "object",
           "propertyNames": {
             "type": "string",

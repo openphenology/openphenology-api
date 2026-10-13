@@ -163,11 +163,13 @@ The data is licensed CC BY 4.0. `client.terms()` says how to cite it, and
 
 ## JSON Schemas
 
-A JSON Schema for each file format is included, for checking files with any
-validator:
+A JSON Schema for each file format is included, with every field described,
+and a made-up example file for each one. Use them to check files with any
+validator, or to see what a file looks like:
 
 ```ts
 import schema from "@openphenology/api/schemas/county-weekly-1.json" with { type: "json" };
+import example from "@openphenology/api/schemas/examples/county-weekly-1.json" with { type: "json" };
 ```
 
 ## More

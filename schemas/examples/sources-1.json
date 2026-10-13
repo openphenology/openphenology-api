@@ -1,0 +1,33 @@
+{
+  "id": "releases/2026-01-05/sources.json",
+  "kind": "sources",
+  "format": "sources/1.0",
+  "provenance": {
+    "release": "2026-01-05",
+    "sources": ["example"],
+    "licences": ["CC-BY-4.0"],
+    "gbif_download_dois": ["10.0000/example"],
+    "method": "test-1",
+    "taxonomy": "test-taxonomy",
+    "boundaries": "test-boundaries",
+    "ranges": null,
+    "protection": null,
+    "code": "0.0.0",
+    "run": "run-1"
+  },
+  "data": {
+    "sources": [
+      {
+        "source": "example",
+        "name": "Example source",
+        "kind": "records",
+        "licence": "CC-BY-4.0",
+        "licence_url": null,
+        "use": "Made up.",
+        "reviewed": "2026-01-01",
+        "credit": "Example",
+        "url": "https://example.test/"
+      }
+    ]
+  }
+}

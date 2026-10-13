@@ -25,7 +25,8 @@ First release.
 - Checks on every file's format version and 53-week lists, and optional
   SHA-256 checks against the manifest.
 - Timeouts, retries, and `ApiError` and `FormatError` errors.
-- TypeScript types with documentation, and a JSON Schema for each file format.
+- TypeScript types with documentation, and a JSON Schema for each file format
+  with every field described and a made-up example file.
 - Works in Node.js and browsers, and installs from npm or a Git commit.
 
 [Unreleased]: https://github.com/openphenology/openphenology-api/compare/v0.1.0...HEAD
