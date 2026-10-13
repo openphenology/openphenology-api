@@ -37,6 +37,14 @@ pnpm schemas  # write schemas/*.json from schemas/index.ts
   [CHANGELOG.md](CHANGELOG.md).
 - Keep each pull request to one change.
 
+## Releases
+
+A maintainer releases a version by updating `version` in `package.json`,
+moving its CHANGELOG entries under a heading for that version, and pushing a
+tag such as `v0.1.0` on `main`. The Release workflow checks the tag, runs
+`pnpm check`, and publishes to npm with provenance, using trusted publishing
+rather than a stored token.
+
 ## Reporting a security problem
 
 Please don't open an issue. See [SECURITY.md](SECURITY.md).

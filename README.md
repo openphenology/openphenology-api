@@ -3,12 +3,17 @@
 Read OpenPhenology data: when people record each species, week by week, in
 every US county and state with enough evidence.
 
-Not yet released, and the data is not yet published. The interface may change
-before 1.0.0.
+The data is not yet published. The interface may change before 1.0.0.
 
 The package has no dependencies and runs in Node.js and in browsers. Every
 export is documented in its TypeScript types, so your editor shows what each
 method takes, returns and throws.
+
+## Install
+
+```sh
+npm install @openphenology/api
+```
 
 ## Quick start
 

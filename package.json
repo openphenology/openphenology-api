@@ -1,8 +1,16 @@
 {
   "name": "@openphenology/api",
-  "version": "0.0.0",
-  "private": true,
+  "version": "0.1.0",
   "description": "Read OpenPhenology data",
+  "keywords": [
+    "openphenology",
+    "phenology",
+    "biodiversity",
+    "species",
+    "gbif"
+  ],
+  "homepage": "https://github.com/openphenology/openphenology-api#readme",
+  "bugs": "https://github.com/openphenology/openphenology-api/issues",
   "license": "MIT",
   "repository": {
     "type": "git",
