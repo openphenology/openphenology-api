@@ -20,7 +20,7 @@ if (key) {
 ## Codes every read takes
 
 - State: `us-` + postal abbreviation, e.g. `us-oh`.
-- County: 5-digit Census code (GEOID), e.g. `39049`. List a state's counties with `release.region("us-oh")`; from a ZIP code use `release.zipCounties("43215")`, which returns `{ area, state, share }[]`, largest share first.
+- County: 5-digit Census code (GEOID), e.g. `39049`. List a state's counties with `release.region("us-oh")`; from a ZIP code use `release.zipCounties("43215")`, which returns `{ area, state, share }[]`, largest share first. `countyState("39049")` gives a county's state code (`us-oh`).
 - Species key: from `release.speciesBySlug(slug)`, `release.searchNames()` (`[name, kind, key]` triples) or `release.catalogue()`.
 - Release ID: its date, e.g. `2026-10-19`.
 

@@ -23,4 +23,5 @@ export {
   type FormatErrorCode,
 } from "./errors.ts";
 export * from "./types.ts";
+export { countyState } from "./states.ts";
 export { BACKYARD_LABELS, WEEKS, backyardLabel, weekOf } from "./weeks.ts";
