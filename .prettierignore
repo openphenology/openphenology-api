@@ -5,3 +5,4 @@ dist
 schemas/*.json
 schemas/examples/*.json
 docs
+.readme

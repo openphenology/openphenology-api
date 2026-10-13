@@ -3,7 +3,7 @@ import jsdoc from "eslint-plugin-jsdoc";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
-  { ignores: ["coverage", "dist", "docs", "scripts/*.mjs"] },
+  { ignores: ["coverage", "dist", "docs", ".readme", "scripts/*.mjs"] },
   js.configs.recommended,
   ...tseslint.configs.strictTypeChecked,
   {

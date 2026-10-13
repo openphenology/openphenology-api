@@ -21,6 +21,15 @@ You need Node.js 24 (the version in `.node-version`) and Git.
    pnpm exec playwright install chromium firefox webkit
    ```
 
+   If you can't install them, as in many sandboxes, run `pnpm check:node`
+   instead: every check except the browser tests. With a Chromium already
+   installed, set `CHROMIUM_PATH` to its executable to run the browser tests
+   in Chromium alone:
+
+   ```sh
+   CHROMIUM_PATH=/path/to/chrome pnpm exec vitest run --project 'browser (chromium)'
+   ```
+
 3. Run every check, as CI does:
 
    ```sh
@@ -31,22 +40,34 @@ If that passes, you're ready to make changes.
 
 ## Useful commands
 
-| Command           | What it does                                                                           |
-| ----------------- | -------------------------------------------------------------------------------------- |
-| `pnpm check`      | Everything CI runs. A pull request needs it to pass                                    |
-| `pnpm test`       | Tests in Node.js, then in Chromium, Firefox and WebKit                                 |
-| `pnpm format`     | Fixes formatting                                                                       |
-| `pnpm schemas`    | Rewrites the schemas and their examples                                                |
-| `pnpm docs:build` | Builds the API reference into `docs/`: open `docs/index.html`, or read `docs/api.json` |
+| Command           | What it does                                                                  |
+| ----------------- | ----------------------------------------------------------------------------- |
+| `pnpm check`      | Everything CI runs. A pull request needs it to pass                           |
+| `pnpm check:node` | Everything except the browser tests, for machines without the browsers        |
+| `pnpm test`       | Tests in Node.js, then in Chromium, Firefox and WebKit                        |
+| `pnpm test:node`  | Tests in Node.js only, with coverage                                          |
+| `pnpm format`     | Fixes formatting                                                              |
+| `pnpm schemas`    | Rewrites the schemas and their examples                                       |
+| `pnpm docs:build` | Builds the API reference into `docs/`: `docs/index.html`, and `docs/api.json` |
 
 ## Where things are
 
-| Path       | Holds                                                        |
-| ---------- | ------------------------------------------------------------ |
-| `src/`     | The package: `client.ts` reads files, `types.ts` shapes them |
-| `schemas/` | The JSON Schemas, written in `index.ts`                      |
-| `test/`    | Tests, with a made-up release in `fixture.ts`                |
-| `scripts/` | The schema writer and the size check                         |
+| Path                                   | Holds                                                                              |
+| -------------------------------------- | ---------------------------------------------------------------------------------- |
+| `src/client.ts`                        | The client: requests, releases and every read method                               |
+| `src/types.ts`                         | The shape of every published file. Its comments document each field                |
+| `src/errors.ts`                        | `ApiError`, `FormatError` and their codes                                          |
+| `src/parse.ts`                         | The light checks run on every file                                                 |
+| `schemas/index.ts`                     | The source of the JSON Schemas                                                     |
+| `test/fixture.ts`                      | The made-up release every test reads, served by a fake `fetch`                     |
+| `scripts/schemas.ts`                   | Writes the schemas and examples; `scripts/describe.ts` adds the field descriptions |
+| `scripts/llms.ts`, `scripts/readme.ts` | Check that `llms.txt` and the README examples match the API                        |
+| `scripts/size.mjs`                     | The size budget                                                                    |
+| `README.md`, `llms.txt`                | Docs for people and for AI agents; keep both in step with the API                  |
+
+**Generated; don't edit by hand:** `schemas/*.json` and
+`schemas/examples/*.json` (run `pnpm schemas`), `dist/` (`pnpm build`) and
+`docs/` (`pnpm docs:build`).
 
 ## Guidelines
 
@@ -56,7 +77,8 @@ If that passes, you're ready to make changes.
 - **Every export needs a doc comment.** Describe what it does, and use
   `@param`, `@returns` (including when the result is `null`) and `@throws`.
   Lint checks that the tags match the code, and `pnpm check` fails when
-  TypeDoc finds an undocumented export or a broken link.
+  TypeDoc finds an undocumented export or a broken link, or when a README
+  example no longer type-checks.
 - **Schemas** are written in `schemas/index.ts`. Their field descriptions
   come from the doc comments in `src/types.ts`, and their examples from the
   made-up release in `test/fixture.ts`. After changing any of these, run
