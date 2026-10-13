@@ -14,6 +14,7 @@ All notable changes to this package are recorded here. The format follows
   labels; the manifest, notes, methods and sources; and the release list and
   terms.
 - Files split into shards are read as one file.
+- A pinned release that is not available is an `ApiError` when it opens.
 - Optional SHA-256 checks against the release manifest.
 - Timeouts, retries, and `ApiError` and `FormatError` errors.
 - TypeScript types for the published files.

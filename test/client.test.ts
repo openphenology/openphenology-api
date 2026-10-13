@@ -25,6 +25,56 @@ describe("release", () => {
     expect(server.requests).not.toContain("current.json");
   });
 
+  test("a pinned release that is not published is an ApiError", async () => {
+    const server = await fakeServer();
+    server.failNext(`releases/${RELEASE}/methods.json`, 404);
+    const client = createClient({
+      baseUrl: BASE,
+      fetch: server.fetch,
+      release: RELEASE,
+    });
+    await expect(client.release()).rejects.toMatchObject({
+      name: "ApiError",
+      status: 404,
+      url: `${BASE}releases/${RELEASE}/methods.json`,
+      message: `Release ${RELEASE} is not available`,
+    });
+    // The failure is not kept: the next call tries again.
+    const release = await client.release();
+    expect(release.id).toBe(RELEASE);
+    expect(
+      server.requests.filter((p) => p.endsWith("methods.json")),
+    ).toHaveLength(2);
+  });
+
+  test("a pinned release's check is reused by methods()", async () => {
+    const server = await fakeServer();
+    const release = await createClient({
+      baseUrl: BASE,
+      fetch: server.fetch,
+      release: RELEASE,
+    }).release();
+    expect((await release.methods())?.data.method).toBe("test-1");
+    expect(server.requests).toEqual([`releases/${RELEASE}/methods.json`]);
+  });
+
+  test("with verify, a pinned release is checked through its manifest", async () => {
+    const server = await fakeServer();
+    server.failNext(`releases/${RELEASE}/manifest.json`, 404);
+    const client = createClient({
+      baseUrl: BASE,
+      fetch: server.fetch,
+      release: RELEASE,
+      verify: true,
+    });
+    await expect(client.release()).rejects.toMatchObject({
+      name: "ApiError",
+      status: 404,
+      message: `Release ${RELEASE} is not available`,
+    });
+    expect(server.requests).toEqual([`releases/${RELEASE}/manifest.json`]);
+  });
+
   test("rejects a malformed pinned release", async () => {
     await expect(createClient({ release: "../x" }).release()).rejects.toThrow(
       RangeError,
@@ -147,8 +197,10 @@ describe("files", () => {
   });
 
   test("rejects codes that could change the path", async () => {
+    const server = await fakeServer();
     const release = await createClient({
       baseUrl: BASE,
+      fetch: server.fetch,
       release: RELEASE,
     }).release();
     expect(() => release.countyResult("us-zz", "../x", "EX1")).toThrow(
@@ -491,15 +543,18 @@ describe("malformed files", () => {
     ).rejects.toThrow(/not valid JSON/);
   });
 
-  test("a release without a manifest is an error", async () => {
+  test("a release without a manifest is not available", async () => {
     const server = await fakeServer();
-    server.tamper(`releases/${RELEASE}/manifest.json`, "");
     server.failNext(`releases/${RELEASE}/manifest.json`, 404);
     const release = await createClient({
       baseUrl: BASE,
       fetch: server.fetch,
     }).release();
-    await expect(release.manifest()).rejects.toThrow(/no manifest/);
+    await expect(release.manifest()).rejects.toMatchObject({
+      name: "ApiError",
+      status: 404,
+      message: `Release ${RELEASE} is not available`,
+    });
   });
 
   test("a missing current.json is an ApiError", async () => {
