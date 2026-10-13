@@ -41,12 +41,14 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "typecheck": "tsc --noEmit && tsc --noEmit -p src",
-    "test": "vitest run --project node --coverage && vitest run --project 'browser*'",
+    "test": "pnpm test:node && vitest run --project 'browser*'",
+    "test:node": "vitest run --project node --coverage",
     "docs:build": "typedoc",
-    "docs:check": "typedoc --emit none && node scripts/llms.ts",
+    "docs:check": "typedoc --emit none && node scripts/llms.ts && node scripts/readme.ts",
     "schemas": "node scripts/schemas.ts",
     "schemas:check": "node scripts/schemas.ts --check",
-    "check": "pnpm format:check && pnpm schemas:check && pnpm lint && pnpm typecheck && pnpm docs:check && pnpm test && pnpm build && pnpm size",
+    "check": "pnpm check:node && vitest run --project 'browser*'",
+    "check:node": "pnpm format:check && pnpm schemas:check && pnpm lint && pnpm typecheck && pnpm docs:check && pnpm test:node && pnpm build && pnpm size",
     "size": "node scripts/size.mjs"
   },
   "devDependencies": {
