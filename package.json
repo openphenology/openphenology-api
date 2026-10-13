@@ -40,7 +40,7 @@
     "format:check": "prettier --check .",
     "typecheck": "tsc --noEmit && tsc --noEmit -p src",
     "test": "vitest run --project node --coverage && vitest run --project 'browser*'",
-    "docs": "typedoc",
+    "docs:build": "typedoc",
     "docs:check": "typedoc --emit none",
     "schemas": "node scripts/schemas.ts",
     "schemas:check": "node scripts/schemas.ts --check",
