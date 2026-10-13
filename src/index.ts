@@ -16,5 +16,10 @@ export {
   type ReleaseOptions,
   type ZipCounty,
 } from "./client.ts";
-export { ApiError, FormatError } from "./errors.ts";
+export {
+  ApiError,
+  FormatError,
+  type ApiErrorCode,
+  type FormatErrorCode,
+} from "./errors.ts";
 export * from "./types.ts";

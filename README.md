@@ -156,6 +156,26 @@ createClient({
 | `ApiError`    | A request failed, or a required file or release doesn't exist. Has `url` and `status`. |
 | `FormatError` | A file isn't in a format this version reads. Has `path`.                               |
 
+Branch on `error.code`, which stays the same across versions; messages may
+change.
+
+| Error         | `code`                                                                        |
+| ------------- | ----------------------------------------------------------------------------- |
+| `ApiError`    | `network`, `timeout`, `aborted`, `status`, `not-found`, `release-unavailable` |
+| `FormatError` | `not-json`, `wrong-kind`, `unsupported-version`, `malformed`, `checksum`      |
+
+```ts
+import { ApiError, createClient } from "@openphenology/api";
+
+try {
+  await createClient({ release: "2026-10-19" }).release();
+} catch (error) {
+  if (error instanceof ApiError && error.code === "release-unavailable") {
+    // the release was withdrawn: fall back to the current one
+  }
+}
+```
+
 ## Citing the data
 
 The data is licensed CC BY 4.0. `client.terms()` says how to cite it, and
