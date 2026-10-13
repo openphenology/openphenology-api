@@ -1,3 +1,5 @@
+// The client: fetching with timeouts and retries, choosing a release, and
+// reading each published file by name.
 import { sha256 } from "./digest.ts";
 import { countyState } from "./states.ts";
 import { ApiError, FormatError } from "./errors.ts";
@@ -60,7 +62,7 @@ export interface ClientOptions {
 
 /** One county a ZIP code falls in, from {@link Release.zipCounties}. */
 export interface ZipCounty {
-  /** The county's GEOID, such as `39049`. */
+  /** The county's 5-digit Census code, such as `39049`. */
   readonly area: string;
   /** The county's state code, such as `us-oh`; `null` when its Census code is unknown. */
   readonly state: string | null;
@@ -355,11 +357,15 @@ function decode(path: string, bytes: ArrayBuffer): unknown {
  * One release, from {@link Client.release}. Its files never change, so each
  * is fetched at most once.
  *
- * Reads that take a state, county, species or ZIP code check it first and
- * throw a `RangeError` straight away when it is malformed, so a code can
- * never change the path requested. A file that is not published is `null`.
- * A failed request rejects with an `ApiError`, and a malformed file with a
- * `FormatError`.
+ * Places are named by code: `us-oh` for a state, a 5-digit Census code such
+ * as `39049` for a county. Species are named by their key, from
+ * {@link Release.catalogue}, {@link Release.speciesBySlug} or
+ * {@link Release.searchNames}.
+ *
+ * - A malformed code is a `RangeError`, before any request is made, so a
+ *   code can never change the path requested.
+ * - A file that is not published is `null`, or an empty list.
+ * - A failed request is an `ApiError`, and a malformed file a `FormatError`.
  */
 export class Release {
   /** The release ID, its date: for example `2026-10-19`. */
@@ -510,7 +516,7 @@ export class Release {
    * A species' weekly result for one county.
    *
    * @param state The state code, such as `us-oh`.
-   * @param county The county's GEOID, such as `39049`.
+   * @param county The county's 5-digit Census code, such as `39049`.
    * @param species The species key.
    * @returns The result, or `null` when none is published. A result withheld
    *   for protection or for too little evidence is not published.
@@ -534,7 +540,7 @@ export class Release {
    *
    * @param state The state code, such as `us-oh`.
    * @param species The species key.
-   * @param county The county's GEOID, for a county result.
+   * @param county The county's 5-digit Census code, for a county result.
    * @returns The attribution, or `null` when not published.
    * @throws {RangeError} When a code is malformed.
    */
@@ -558,7 +564,7 @@ export class Release {
    * how it is reported there at that time of year.
    *
    * @param state The state code, such as `us-oh`.
-   * @param county The county's GEOID, such as `39049`.
+   * @param county The county's 5-digit Census code, such as `39049`.
    * @returns The labels, or `null` when not published.
    * @throws {RangeError} When a code is malformed.
    */
@@ -613,7 +619,7 @@ export class Release {
    * Only the file for its first three digits is requested.
    *
    * @param zip A 5-digit ZIP code.
-   * @returns Each county's GEOID, its state code and its share of the ZIP
+   * @returns Each county's code, its state code and its share of the ZIP
    *   code's land; empty when the ZIP code has no Census area.
    * @throws {RangeError} When the ZIP code is malformed.
    * @example

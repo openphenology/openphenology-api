@@ -123,7 +123,7 @@ createClient({
 
 | Error         | When                                                                                   |
 | ------------- | -------------------------------------------------------------------------------------- |
-| `RangeError`  | A code is malformed, such as `"OH"` for a state. Thrown straight away.                 |
+| `RangeError`  | A code is malformed, such as `"OH"` for a state. Raised before any request is made.    |
 | `ApiError`    | A request failed, or a required file or release doesn't exist. Has `url` and `status`. |
 | `FormatError` | A file isn't in a format this version reads. Has `path`.                               |
 

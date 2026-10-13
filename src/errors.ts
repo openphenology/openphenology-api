@@ -1,3 +1,5 @@
+// The two errors the client throws, besides RangeError for a malformed code.
+
 /**
  * A request that failed: a network error, a timeout, an unexpected HTTP
  * status, or a file or release that does not exist where one is required.

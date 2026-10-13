@@ -1,3 +1,6 @@
+// The shapes of every published file, version 1 of each format. Field names
+// match the JSON exactly.
+
 /** Number of weeks in a year of results: week 1 is 1–7 January, week 53 the last one or two days. */
 export const WEEKS = 53;
 
@@ -41,7 +44,11 @@ export interface PublishedFile<Kind extends string, Data> {
   readonly data: Data;
 }
 
-/** An area code: lowercase ISO 3166-2 for a state (`us-oh`), the Census GEOID for a county (`39049`). */
+/**
+ * A place's code: `us-` and the postal abbreviation for a state (`us-oh`,
+ * its ISO 3166-2 code), or the 5-digit Census code for a county (`39049`,
+ * its GEOID).
+ */
 export type Area = string;
 /** Whether an area is a state or a county. */
 export type Level = "state" | "county";
@@ -439,7 +446,7 @@ export type BackyardLabel = "c" | "s" | "r" | "m" | "n";
 export type BackyardFile = PublishedFile<
   "backyard",
   {
-    /** The county's GEOID. */
+    /** The county's 5-digit Census code. */
     readonly area: Area;
     /** The method version. */
     readonly method: string;
@@ -533,7 +540,7 @@ export type BoundariesFile = PublishedFile<
       readonly type: "Feature";
       /** The county. */
       readonly properties: {
-        /** The county's GEOID. */
+        /** The county's 5-digit Census code. */
         readonly area: Area;
         /** Its name. */
         readonly name: string;
