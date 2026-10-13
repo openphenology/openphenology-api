@@ -31,13 +31,13 @@ If that passes, you're ready to make changes.
 
 ## Useful commands
 
-| Command           | What it does                                                  |
-| ----------------- | ------------------------------------------------------------- |
-| `pnpm check`      | Everything CI runs. A pull request needs it to pass           |
-| `pnpm test`       | Tests in Node.js, then in Chromium, Firefox and WebKit        |
-| `pnpm format`     | Fixes formatting                                              |
-| `pnpm schemas`    | Rewrites the schemas and their examples                       |
-| `pnpm docs:build` | Builds the API reference into `docs/`; open `docs/index.html` |
+| Command           | What it does                                                                           |
+| ----------------- | -------------------------------------------------------------------------------------- |
+| `pnpm check`      | Everything CI runs. A pull request needs it to pass                                    |
+| `pnpm test`       | Tests in Node.js, then in Chromium, Firefox and WebKit                                 |
+| `pnpm format`     | Fixes formatting                                                                       |
+| `pnpm schemas`    | Rewrites the schemas and their examples                                                |
+| `pnpm docs:build` | Builds the API reference into `docs/`: open `docs/index.html`, or read `docs/api.json` |
 
 ## Where things are
 
@@ -63,6 +63,8 @@ If that passes, you're ready to make changes.
   `pnpm schemas` and commit the JSON files it writes.
 - **Tests** use made-up data served by a fake `fetch`, and never touch the
   network. Keep line coverage at 90% or more.
+- **`llms.txt`** summarises the package for AI agents. Update it with any
+  API change; `pnpm check` fails when it misses a public method.
 - **Changes** that users would notice get a line under Unreleased in
   [CHANGELOG.md](CHANGELOG.md).
 - Keep each pull request to one change.

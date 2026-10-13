@@ -197,6 +197,8 @@ import example from "@openphenology/api/schemas/examples/county-weekly-1.json" w
 - [CHANGELOG.md](CHANGELOG.md): what changed in each version. Versions follow
   [Semantic Versioning](https://semver.org/); before 1.0.0, a breaking change
   bumps the minor version.
+- [llms.txt](llms.txt): the whole package on one page, for AI coding agents.
+  It ships in the package too.
 - [CONTRIBUTING.md](CONTRIBUTING.md): working on the package.
 - [SECURITY.md](SECURITY.md): reporting a security problem.
 - Licence: [MIT](LICENSE).
