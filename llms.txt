@@ -44,7 +44,7 @@ Every file is `{ id, kind, format, provenance, data }`; read `file.data`.
 ## Reading results
 
 - Results show when people recorded a species, not when or where it occurs. Low or zero counts do not mean absence.
-- Weeks 1–53: week 1 is 1–7 January, week 53 the last one or two days. Every weekly list has 53 values. `weekOf(date)` gives a date's week (UTC); `WEEKS` is 53.
+- Weeks 1–53: week 1 is 1–7 January, week 53 the last one or two days. Every weekly list has 53 values. `weekOf(date)` gives a date's week (UTC); `WEEKS` is 53. These helpers, `countyState`, `PRODUCTION_URL` and `STAGING_URL` also come from `@openphenology/api/format`, which does not load the reader.
 - `data.weekly.records`: the species' records per week. `data.weekly.years`: years contributing per week. `data.effort`: records of all species in the same place and week.
 - `data.season`: `[early, middle, late]` weeks (5th, 50th, 95th percentiles), or `[]` with `data.season_withheld` set to `year-round`, `two-seasons`, `one-year` or `precision`.
 - Backyard `labels`: a 53-letter string, one per week: `c` commonly reported, `s` seasonally reported, `r` reported in your area, `m` within its mapped range, `n` not enough evidence. `backyardLabel(labels, week)` reads one week's letter; `BACKYARD_LABELS[letter]` names it.

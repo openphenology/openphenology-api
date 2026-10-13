@@ -2,6 +2,7 @@
 // reading each published file by name.
 import { sha256 } from "./digest.ts";
 import { countyState } from "./states.ts";
+import { PRODUCTION_URL } from "./urls.ts";
 import { ApiError, FormatError } from "./errors.ts";
 import { checkLabels, checkWeeks, parseFile } from "./parse.ts";
 import {
@@ -36,11 +37,6 @@ import type {
   StateResultFile,
   TermsFile,
 } from "./types.ts";
-
-/** Where the published data is served. The default `baseUrl`. */
-export const PRODUCTION_URL = "https://api.openphenology.com/";
-/** Where staging data is served, behind access control. Not public. */
-export const STAGING_URL = "https://api-staging.openphenology.com/";
 
 /** How a client reads the published data. Every option has a default. */
 export interface ClientOptions {

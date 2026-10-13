@@ -1,10 +1,7 @@
 // Weeks and Backyard labels as the data rules define them (data rules
 // published.md and formats.md), so every reader counts weeks and names labels
 // the same way the data was made.
-import type { BackyardLabel } from "./types.ts";
-
-/** Weeks in a year's lists: 53, the last holding the year's last day or two. */
-export const WEEKS = 53;
+import { WEEKS, type BackyardLabel } from "./types.ts";
 
 /**
  * The week a date falls in, counted in UTC: week 1 is 1 to 7 January, week 2

@@ -8,9 +8,11 @@ All notable changes to this package are recorded here. The format follows
 
 ### Added
 
-- `weekOf`, `WEEKS`, `BACKYARD_LABELS` and `backyardLabel`: weeks and Backyard
+- `weekOf`, `BACKYARD_LABELS` and `backyardLabel`: weeks and Backyard
   labels as the data rules define them, so every reader counts weeks the way
   the data was made.
+- `@openphenology/api/format`: weeks, Backyard labels, `countyState` and the
+  data's addresses without the reader, for pages that need only those.
 - `client.current()`: `current.json` itself, with when the release was
   published.
 - `countyState(county)`: the state a county's Census code is in.
