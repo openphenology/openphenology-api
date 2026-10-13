@@ -22,5 +22,6 @@ All notable changes to this package are recorded here. The format follows
   files, and that Backyard labels are valid letters.
 - TypeScript types for the published files, with JSDoc on every export and
   field.
+- Installs from a Git commit: a `prepare` script builds the package.
 - A JSON Schema for each file format, at
   `@openphenology/api/schemas/<kind>-1.json`.
