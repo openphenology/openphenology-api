@@ -66,3 +66,5 @@ Branch on `error.code`; messages may change.
 - `schemas/examples/<kind>-1.json`: one made-up example file per format.
 - Kinds: current, releases, terms, manifest, notes, catalogue, species, slugs, groups, search, region, state-weekly, county-weekly, attribution, backyard, methods, sources, boundaries, postal.
 - `README.md`: the same, with more examples.
+
+Outside the package, the repository's `postman/openphenology.postman_collection.json` is a Postman collection with one request per file kind, with descriptions, examples and schema tests; `postman/README.md` explains it.

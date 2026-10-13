@@ -1,0 +1,2743 @@
+{
+  "info": {
+    "name": "OpenPhenology",
+    "description": "Every file OpenPhenology publishes: when each species is recorded, week by week, in US counties and states. Generated from [openphenology-api](https://github.com/openphenology/openphenology-api); see `postman/README.md` there.\n\n- **No keys or accounts.** Every request is a plain `GET`.\n- **Releases never change.** Files under `releases/<date>/` stay the same for good. `current.json` names the current release.\n- **A 404 means the file isn't published**: the species, county or state has no such file in this release.\n- **Large files are split into shards.** When a file is too large, it is published as `<name>/0.json`, `<name>/1.json` and so on, and the unsplit file is not published. The Catalogue's saved example is shard 0. Each request's test checks shard 0 when the unsplit file isn't there.\n- **Licence:** CC BY 4.0. `terms.json` says how to cite the data and credit its sources.\n\n**Variables.** `baseUrl` is the API. `release`, `state`, `county`, `species` and `zip` start with made-up but valid values. Run the collection from the top and it fills in `release` and `species` itself.\n\n**Tests.** Each request checks that its file loads, is the expected kind and major format version, and matches its JSON Schema from the release's `schemas/` folder.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Start here",
+      "description": "Outside any release: which release is current, every release, and the terms. Send `current.json` first; it saves the current release into `{{release}}`.",
+      "item": [
+        {
+          "name": "Current release",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const KIND = \"current\";",
+                  "const SPLIT = false;",
+                  "function saved(file) {",
+                  "  pm.collectionVariables.set(\"release\", file.data.release);",
+                  "}",
+                  "",
+                  "// The test every request in the Postman collection runs, in Postman's script",
+                  "// sandbox. scripts/postman.ts puts it after each request's `KIND`, `SPLIT`",
+                  "// and `saved(file)`, which saves values for later requests. It checks that",
+                  "// the file loads, is the expected kind and major format version, and matches",
+                  "// its JSON Schema, which it reads from the release's schemas/ folder. A file",
+                  "// split into shards is checked through its first shard.",
+                  "",
+                  "const MAJOR = 1;",
+                  "",
+                  "/**",
+                  " * Postman's validator reads JSON Schema draft-07, and these schemas are",
+                  " * 2020-12. The only 2020-12 keyword they use is `prefixItems`, which becomes",
+                  " * draft-07's tuple form: `items` as a list, and `additionalItems` for what",
+                  " * `items` said about the rest.",
+                  " */",
+                  "function draft07(node) {",
+                  "  if (Array.isArray(node)) return node.map(draft07);",
+                  "  if (node === null || typeof node !== \"object\") return node;",
+                  "  const out = {};",
+                  "  for (const [key, value] of Object.entries(node))",
+                  "    if (key !== \"$schema\" && key !== \"prefixItems\") out[key] = draft07(value);",
+                  "  if (\"prefixItems\" in node) {",
+                  "    out.items = draft07(node.prefixItems);",
+                  "    out.additionalItems = \"items\" in node ? draft07(node.items) : true;",
+                  "  }",
+                  "  return out;",
+                  "}",
+                  "",
+                  "function check(file, url) {",
+                  "  saved(file);",
+                  "  pm.test(`${KIND}/${String(MAJOR)}: ${url}`, () => {",
+                  "    pm.expect(file.kind, \"kind\").to.equal(KIND);",
+                  "    pm.expect(file.format, \"format\").to.match(",
+                  "      new RegExp(`^${KIND}/${String(MAJOR)}\\\\.\\\\d+$`),",
+                  "    );",
+                  "  });",
+                  "  const schema = `${pm.variables.get(\"baseUrl\")}/releases/${pm.variables.get(\"release\")}/schemas/${KIND}-${String(MAJOR)}.json`;",
+                  "  pm.sendRequest(schema, (error, response) => {",
+                  "    pm.test(`Matches schemas/${KIND}-${String(MAJOR)}.json`, () => {",
+                  "      pm.expect(error, \"schema request\").to.equal(null);",
+                  "      pm.expect(response.code, \"schema status\").to.equal(200);",
+                  "      const Ajv = require(\"ajv\");",
+                  "      const validate = new Ajv({ allErrors: true }).compile(",
+                  "        draft07(response.json()),",
+                  "      );",
+                  "      pm.expect(",
+                  "        validate(file),",
+                  "        JSON.stringify(validate.errors, null, 2),",
+                  "      ).to.equal(true);",
+                  "    });",
+                  "  });",
+                  "}",
+                  "",
+                  "const url = pm.request.url.toString();",
+                  "if (pm.response.code === 200) {",
+                  "  check(pm.response.json(), url);",
+                  "} else if (pm.response.code === 404 && SPLIT) {",
+                  "  // Not published whole: it may be split into <name>/0.json, <name>/1.json…",
+                  "  const shard = url.replace(/\\.json$/, \"/0.json\");",
+                  "  pm.sendRequest(shard, (error, response) => {",
+                  "    pm.test(\"Published whole or as shards\", () => {",
+                  "      pm.expect(error, \"shard request\").to.equal(null);",
+                  "      pm.expect(response.code, \"not published in this release\").to.equal(200);",
+                  "    });",
+                  "    if (error === null && response.code === 200) check(response.json(), shard);",
+                  "  });",
+                  "} else {",
+                  "  pm.test(\"Loads\", () => {",
+                  "    pm.expect(pm.response.code, \"not published in this release\").to.equal(200);",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/current.json",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "current.json"
+              ]
+            },
+            "description": "The current release.\n\nPath: `current.json`. Format: `current/1`, schema `schemas/current-1.json`.\n\nSaves the current release into `{{release}}`."
+          },
+          "response": [
+            {
+              "name": "Example (made up)",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/current.json",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "current.json"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": \"current.json\",\n  \"kind\": \"current\",\n  \"format\": \"current/1.0\",\n  \"provenance\": {\n    \"release\": \"2026-01-05\",\n    \"sources\": [\"example\"],\n    \"licences\": [\"CC-BY-4.0\"],\n    \"gbif_download_dois\": [\"10.0000/example\"],\n    \"method\": \"test-1\",\n    \"taxonomy\": \"test-taxonomy\",\n    \"boundaries\": \"test-boundaries\",\n    \"ranges\": null,\n    \"protection\": null,\n    \"code\": \"0.0.0\",\n    \"run\": \"run-1\"\n  },\n  \"data\": {\n    \"release\": \"2026-01-05\",\n    \"published_at\": \"2026-01-05T06:00:00Z\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Every release",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const KIND = \"releases\";",
+                  "const SPLIT = true;",
+                  "function saved(file) {",
+                  "  // Nothing to save.",
+                  "}",
+                  "",
+                  "// The test every request in the Postman collection runs, in Postman's script",
+                  "// sandbox. scripts/postman.ts puts it after each request's `KIND`, `SPLIT`",
+                  "// and `saved(file)`, which saves values for later requests. It checks that",
+                  "// the file loads, is the expected kind and major format version, and matches",
+                  "// its JSON Schema, which it reads from the release's schemas/ folder. A file",
+                  "// split into shards is checked through its first shard.",
+                  "",
+                  "const MAJOR = 1;",
+                  "",
+                  "/**",
+                  " * Postman's validator reads JSON Schema draft-07, and these schemas are",
+                  " * 2020-12. The only 2020-12 keyword they use is `prefixItems`, which becomes",
+                  " * draft-07's tuple form: `items` as a list, and `additionalItems` for what",
+                  " * `items` said about the rest.",
+                  " */",
+                  "function draft07(node) {",
+                  "  if (Array.isArray(node)) return node.map(draft07);",
+                  "  if (node === null || typeof node !== \"object\") return node;",
+                  "  const out = {};",
+                  "  for (const [key, value] of Object.entries(node))",
+                  "    if (key !== \"$schema\" && key !== \"prefixItems\") out[key] = draft07(value);",
+                  "  if (\"prefixItems\" in node) {",
+                  "    out.items = draft07(node.prefixItems);",
+                  "    out.additionalItems = \"items\" in node ? draft07(node.items) : true;",
+                  "  }",
+                  "  return out;",
+                  "}",
+                  "",
+                  "function check(file, url) {",
+                  "  saved(file);",
+                  "  pm.test(`${KIND}/${String(MAJOR)}: ${url}`, () => {",
+                  "    pm.expect(file.kind, \"kind\").to.equal(KIND);",
+                  "    pm.expect(file.format, \"format\").to.match(",
+                  "      new RegExp(`^${KIND}/${String(MAJOR)}\\\\.\\\\d+$`),",
+                  "    );",
+                  "  });",
+                  "  const schema = `${pm.variables.get(\"baseUrl\")}/releases/${pm.variables.get(\"release\")}/schemas/${KIND}-${String(MAJOR)}.json`;",
+                  "  pm.sendRequest(schema, (error, response) => {",
+                  "    pm.test(`Matches schemas/${KIND}-${String(MAJOR)}.json`, () => {",
+                  "      pm.expect(error, \"schema request\").to.equal(null);",
+                  "      pm.expect(response.code, \"schema status\").to.equal(200);",
+                  "      const Ajv = require(\"ajv\");",
+                  "      const validate = new Ajv({ allErrors: true }).compile(",
+                  "        draft07(response.json()),",
+                  "      );",
+                  "      pm.expect(",
+                  "        validate(file),",
+                  "        JSON.stringify(validate.errors, null, 2),",
+                  "      ).to.equal(true);",
+                  "    });",
+                  "  });",
+                  "}",
+                  "",
+                  "const url = pm.request.url.toString();",
+                  "if (pm.response.code === 200) {",
+                  "  check(pm.response.json(), url);",
+                  "} else if (pm.response.code === 404 && SPLIT) {",
+                  "  // Not published whole: it may be split into <name>/0.json, <name>/1.json…",
+                  "  const shard = url.replace(/\\.json$/, \"/0.json\");",
+                  "  pm.sendRequest(shard, (error, response) => {",
+                  "    pm.test(\"Published whole or as shards\", () => {",
+                  "      pm.expect(error, \"shard request\").to.equal(null);",
+                  "      pm.expect(response.code, \"not published in this release\").to.equal(200);",
+                  "    });",
+                  "    if (error === null && response.code === 200) check(response.json(), shard);",
+                  "  });",
+                  "} else {",
+                  "  pm.test(\"Loads\", () => {",
+                  "    pm.expect(pm.response.code, \"not published in this release\").to.equal(200);",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/releases.json",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "releases.json"
+              ]
+            },
+            "description": "Every release and its status.\n\nPath: `releases.json`. Format: `releases/1`, schema `schemas/releases-1.json`."
+          },
+          "response": [
+            {
+              "name": "Example (made up)",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/releases.json",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "releases.json"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": \"releases.json\",\n  \"kind\": \"releases\",\n  \"format\": \"releases/1.0\",\n  \"provenance\": {\n    \"release\": \"2026-01-05\",\n    \"sources\": [\"example\"],\n    \"licences\": [\"CC-BY-4.0\"],\n    \"gbif_download_dois\": [\"10.0000/example\"],\n    \"method\": \"test-1\",\n    \"taxonomy\": \"test-taxonomy\",\n    \"boundaries\": \"test-boundaries\",\n    \"ranges\": null,\n    \"protection\": null,\n    \"code\": \"0.0.0\",\n    \"run\": \"run-1\"\n  },\n  \"data\": {\n    \"releases\": [\n      {\n        \"release\": \"2026-01-05\",\n        \"status\": \"current\",\n        \"published_at\": \"2026-01-05T06:00:00Z\",\n        \"doi\": null,\n        \"builds_on\": null,\n        \"reason\": null\n      }\n    ]\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Terms",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const KIND = \"terms\";",
+                  "const SPLIT = false;",
+                  "function saved(file) {",
+                  "  // Nothing to save.",
+                  "}",
+                  "",
+                  "// The test every request in the Postman collection runs, in Postman's script",
+                  "// sandbox. scripts/postman.ts puts it after each request's `KIND`, `SPLIT`",
+                  "// and `saved(file)`, which saves values for later requests. It checks that",
+                  "// the file loads, is the expected kind and major format version, and matches",
+                  "// its JSON Schema, which it reads from the release's schemas/ folder. A file",
+                  "// split into shards is checked through its first shard.",
+                  "",
+                  "const MAJOR = 1;",
+                  "",
+                  "/**",
+                  " * Postman's validator reads JSON Schema draft-07, and these schemas are",
+                  " * 2020-12. The only 2020-12 keyword they use is `prefixItems`, which becomes",
+                  " * draft-07's tuple form: `items` as a list, and `additionalItems` for what",
+                  " * `items` said about the rest.",
+                  " */",
+                  "function draft07(node) {",
+                  "  if (Array.isArray(node)) return node.map(draft07);",
+                  "  if (node === null || typeof node !== \"object\") return node;",
+                  "  const out = {};",
+                  "  for (const [key, value] of Object.entries(node))",
+                  "    if (key !== \"$schema\" && key !== \"prefixItems\") out[key] = draft07(value);",
+                  "  if (\"prefixItems\" in node) {",
+                  "    out.items = draft07(node.prefixItems);",
+                  "    out.additionalItems = \"items\" in node ? draft07(node.items) : true;",
+                  "  }",
+                  "  return out;",
+                  "}",
+                  "",
+                  "function check(file, url) {",
+                  "  saved(file);",
+                  "  pm.test(`${KIND}/${String(MAJOR)}: ${url}`, () => {",
+                  "    pm.expect(file.kind, \"kind\").to.equal(KIND);",
+                  "    pm.expect(file.format, \"format\").to.match(",
+                  "      new RegExp(`^${KIND}/${String(MAJOR)}\\\\.\\\\d+$`),",
+                  "    );",
+                  "  });",
+                  "  const schema = `${pm.variables.get(\"baseUrl\")}/releases/${pm.variables.get(\"release\")}/schemas/${KIND}-${String(MAJOR)}.json`;",
+                  "  pm.sendRequest(schema, (error, response) => {",
+                  "    pm.test(`Matches schemas/${KIND}-${String(MAJOR)}.json`, () => {",
+                  "      pm.expect(error, \"schema request\").to.equal(null);",
+                  "      pm.expect(response.code, \"schema status\").to.equal(200);",
+                  "      const Ajv = require(\"ajv\");",
+                  "      const validate = new Ajv({ allErrors: true }).compile(",
+                  "        draft07(response.json()),",
+                  "      );",
+                  "      pm.expect(",
+                  "        validate(file),",
+                  "        JSON.stringify(validate.errors, null, 2),",
+                  "      ).to.equal(true);",
+                  "    });",
+                  "  });",
+                  "}",
+                  "",
+                  "const url = pm.request.url.toString();",
+                  "if (pm.response.code === 200) {",
+                  "  check(pm.response.json(), url);",
+                  "} else if (pm.response.code === 404 && SPLIT) {",
+                  "  // Not published whole: it may be split into <name>/0.json, <name>/1.json…",
+                  "  const shard = url.replace(/\\.json$/, \"/0.json\");",
+                  "  pm.sendRequest(shard, (error, response) => {",
+                  "    pm.test(\"Published whole or as shards\", () => {",
+                  "      pm.expect(error, \"shard request\").to.equal(null);",
+                  "      pm.expect(response.code, \"not published in this release\").to.equal(200);",
+                  "    });",
+                  "    if (error === null && response.code === 200) check(response.json(), shard);",
+                  "  });",
+                  "} else {",
+                  "  pm.test(\"Loads\", () => {",
+                  "    pm.expect(pm.response.code, \"not published in this release\").to.equal(200);",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/terms.json",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "terms.json"
+              ]
+            },
+            "description": "The licence, how to cite and credit, and the contact.\n\nPath: `terms.json`. Format: `terms/1`, schema `schemas/terms-1.json`."
+          },
+          "response": [
+            {
+              "name": "Example (made up)",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/terms.json",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "terms.json"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": \"terms.json\",\n  \"kind\": \"terms\",\n  \"format\": \"terms/1.0\",\n  \"provenance\": {\n    \"release\": \"2026-01-05\",\n    \"sources\": [\"example\"],\n    \"licences\": [\"CC-BY-4.0\"],\n    \"gbif_download_dois\": [\"10.0000/example\"],\n    \"method\": \"test-1\",\n    \"taxonomy\": \"test-taxonomy\",\n    \"boundaries\": \"test-boundaries\",\n    \"ranges\": null,\n    \"protection\": null,\n    \"code\": \"0.0.0\",\n    \"run\": \"run-1\"\n  },\n  \"data\": {\n    \"licence\": \"CC-BY-4.0\",\n    \"licence_url\": \"https://creativecommons.org/licenses/by/4.0/\",\n    \"cite\": \"Made up.\",\n    \"credit\": \"Made up.\",\n    \"warranty\": \"Made up.\",\n    \"contact\": \"nobody@example.test\"\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "2. The release",
+      "description": "About the release in `{{release}}`: its files, what changed, the method and the sources.",
+      "item": [
+        {
+          "name": "Manifest",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const KIND = \"manifest\";",
+                  "const SPLIT = false;",
+                  "function saved(file) {",
+                  "  // Nothing to save.",
+                  "}",
+                  "",
+                  "// The test every request in the Postman collection runs, in Postman's script",
+                  "// sandbox. scripts/postman.ts puts it after each request's `KIND`, `SPLIT`",
+                  "// and `saved(file)`, which saves values for later requests. It checks that",
+                  "// the file loads, is the expected kind and major format version, and matches",
+                  "// its JSON Schema, which it reads from the release's schemas/ folder. A file",
+                  "// split into shards is checked through its first shard.",
+                  "",
+                  "const MAJOR = 1;",
+                  "",
+                  "/**",
+                  " * Postman's validator reads JSON Schema draft-07, and these schemas are",
+                  " * 2020-12. The only 2020-12 keyword they use is `prefixItems`, which becomes",
+                  " * draft-07's tuple form: `items` as a list, and `additionalItems` for what",
+                  " * `items` said about the rest.",
+                  " */",
+                  "function draft07(node) {",
+                  "  if (Array.isArray(node)) return node.map(draft07);",
+                  "  if (node === null || typeof node !== \"object\") return node;",
+                  "  const out = {};",
+                  "  for (const [key, value] of Object.entries(node))",
+                  "    if (key !== \"$schema\" && key !== \"prefixItems\") out[key] = draft07(value);",
+                  "  if (\"prefixItems\" in node) {",
+                  "    out.items = draft07(node.prefixItems);",
+                  "    out.additionalItems = \"items\" in node ? draft07(node.items) : true;",
+                  "  }",
+                  "  return out;",
+                  "}",
+                  "",
+                  "function check(file, url) {",
+                  "  saved(file);",
+                  "  pm.test(`${KIND}/${String(MAJOR)}: ${url}`, () => {",
+                  "    pm.expect(file.kind, \"kind\").to.equal(KIND);",
+                  "    pm.expect(file.format, \"format\").to.match(",
+                  "      new RegExp(`^${KIND}/${String(MAJOR)}\\\\.\\\\d+$`),",
+                  "    );",
+                  "  });",
+                  "  const schema = `${pm.variables.get(\"baseUrl\")}/releases/${pm.variables.get(\"release\")}/schemas/${KIND}-${String(MAJOR)}.json`;",
+                  "  pm.sendRequest(schema, (error, response) => {",
+                  "    pm.test(`Matches schemas/${KIND}-${String(MAJOR)}.json`, () => {",
+                  "      pm.expect(error, \"schema request\").to.equal(null);",
+                  "      pm.expect(response.code, \"schema status\").to.equal(200);",
+                  "      const Ajv = require(\"ajv\");",
+                  "      const validate = new Ajv({ allErrors: true }).compile(",
+                  "        draft07(response.json()),",
+                  "      );",
+                  "      pm.expect(",
+                  "        validate(file),",
+                  "        JSON.stringify(validate.errors, null, 2),",
+                  "      ).to.equal(true);",
+                  "    });",
+                  "  });",
+                  "}",
+                  "",
+                  "const url = pm.request.url.toString();",
+                  "if (pm.response.code === 200) {",
+                  "  check(pm.response.json(), url);",
+                  "} else if (pm.response.code === 404 && SPLIT) {",
+                  "  // Not published whole: it may be split into <name>/0.json, <name>/1.json…",
+                  "  const shard = url.replace(/\\.json$/, \"/0.json\");",
+                  "  pm.sendRequest(shard, (error, response) => {",
+                  "    pm.test(\"Published whole or as shards\", () => {",
+                  "      pm.expect(error, \"shard request\").to.equal(null);",
+                  "      pm.expect(response.code, \"not published in this release\").to.equal(200);",
+                  "    });",
+                  "    if (error === null && response.code === 200) check(response.json(), shard);",
+                  "  });",
+                  "} else {",
+                  "  pm.test(\"Loads\", () => {",
+                  "    pm.expect(pm.response.code, \"not published in this release\").to.equal(200);",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/releases/{{release}}/manifest.json",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "releases",
+                "{{release}}",
+                "manifest.json"
+              ]
+            },
+            "description": "Every file in a release, with its SHA-256, size and format.\n\nPath: `releases/{{release}}/manifest.json`. Format: `manifest/1`, schema `schemas/manifest-1.json`."
+          },
+          "response": [
+            {
+              "name": "Example (made up)",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/releases/{{release}}/manifest.json",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "releases",
+                    "{{release}}",
+                    "manifest.json"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": \"releases/2026-01-05/manifest.json\",\n  \"kind\": \"manifest\",\n  \"format\": \"manifest/1.0\",\n  \"provenance\": {\n    \"release\": \"2026-01-05\",\n    \"sources\": [\"example\"],\n    \"licences\": [\"CC-BY-4.0\"],\n    \"gbif_download_dois\": [\"10.0000/example\"],\n    \"method\": \"test-1\",\n    \"taxonomy\": \"test-taxonomy\",\n    \"boundaries\": \"test-boundaries\",\n    \"ranges\": null,\n    \"protection\": null,\n    \"code\": \"0.0.0\",\n    \"run\": \"run-1\"\n  },\n  \"data\": {\n    \"release\": \"2026-01-05\",\n    \"published_at\": \"2026-01-05T06:00:00Z\",\n    \"files\": [\n      {\n        \"path\": \"notes.json\",\n        \"sha256\": \"d72198a45d5d50d85ad358a96ec1bced2fe4b962d457637b53b06ccd7c02c645\",\n        \"format\": \"notes/1.0\",\n        \"bytes\": 479\n      },\n      {\n        \"path\": \"catalogue/0.json\",\n        \"sha256\": \"29f9b218f02b6388580da7e10392ce54b42416609910cd9271a863d5cacb3f0a\",\n        \"format\": \"catalogue/1.1\",\n        \"bytes\": 652\n      },\n      {\n        \"path\": \"catalogue/1.json\",\n        \"sha256\": \"2da2a833b9bdb9e7c0fb3f765e93a8737273d4d742caafae93dbfe9ea0ceaf82\",\n        \"format\": \"catalogue/1.1\",\n        \"bytes\": 646\n      },\n      {\n        \"path\": \"species/EX1.json\",\n        \"sha256\": \"2214057596b3f6b0db91d9deb2bc8de2b7ed6113a36fa47ad9fa1b2d9ed8705a\",\n        \"format\": \"species/1.0\",\n        \"bytes\": 747\n      },\n      {\n        \"path\": \"slugs.json\",\n        \"sha256\": \"95ec15fbafe5fc4154e4058e0e04a1e9a267aa82d24acd3212292bb35532338e\",\n        \"format\": \"slugs/1.0\",\n        \"bytes\": 426\n      },\n      {\n        \"path\": \"groups.json\",\n        \"sha256\": \"c44aad6138d2f9e7b1ac7a8165c03ec476ad767f5a34b306479175adb8cee7f2\",\n        \"format\": \"groups/1.0\",\n        \"bytes\": 420\n      },\n      {\n        \"path\": \"search/index.json\",\n        \"sha256\": \"ddbe194ae1497fb9e07926eae984192e9c1c6e7fc932c450cc3530fd7b0b050a\",\n        \"format\": \"search/1.0\",\n        \"bytes\": 437\n      },\n      {\n        \"path\": \"regions/us-zz.json\",\n        \"sha256\": \"8f89f044321a6c03812eac6793fcfe7a3d67cb402235c2b73a9c7e17a6b8ec47\",\n        \"format\": \"region/1.0\",\n        \"bytes\": 694\n      },\n      {\n        \"path\": \"attribution/us-zz/EX1.json\",\n        \"sha256\": \"807fc40d386fcf0fdefb2ff4db5e3e1fe6e8c3a74b2ec45cf79d26e316115fce\",\n        \"format\": \"attribution/1.0\",\n        \"bytes\": 589\n      },\n      {\n        \"path\": \"backyard/us-zz/99001.json\",\n        \"sha256\": \"e1cb8c48fd358e4a70790c820b354a78ca0a07e9ee8b59a3a4fc5c68c81a89f8\",\n        \"format\": \"backyard/1.0\",\n        \"bytes\": 731\n      },\n      {\n        \"path\": \"methods.json\",\n        \"sha256\": \"c124c4547068eaf3d4d7263bbb53318e76a8f378e4cfaa33849179e0d4f4a88d\",\n        \"format\": \"methods/1.0\",\n        \"bytes\": 594\n      },\n      {\n        \"path\": \"sources.json\",\n        \"sha256\": \"f1dfbe65e9a45842fed146232f65d39088e992ee38ddca4ca5025761835c9017\",\n        \"format\": \"sources/1.0\",\n        \"bytes\": 558\n      },\n      {\n        \"path\": \"places/us-zz/boundaries.json\",\n        \"sha256\": \"d1393bd33951a3a35c594c03f3c1633521d0e9605d6d21695a3a9521ff5cea85\",\n        \"format\": \"boundaries/1.0\",\n        \"bytes\": 577\n      },\n      {\n        \"path\": \"postal/us/999.json\",\n        \"sha256\": \"2e991fb572d688ad665760fd1d9ad61f181e94c73d45cc40aa81d2541ea6f73a\",\n        \"format\": \"postal/1.0\",\n        \"bytes\": 406\n      },\n      {\n        \"path\": \"results/us-zz/EX1.json\",\n        \"sha256\": \"5320f5ff4050bea70111e2f731116797ad7fb2fde9f5ab955140ef7bd3427e1d\",\n        \"format\": \"state-weekly/1.0\",\n        \"bytes\": 1047\n      },\n      {\n        \"path\": \"results/us-zz/99001/EX1.json\",\n        \"sha256\": \"6502115386a34b5e9b7046a0d5f4633aa6ed1bba729a8df90e8b62de634d5293\",\n        \"format\": \"county-weekly/1.0\",\n        \"bytes\": 1055\n      }\n    ],\n    \"counts\": {\n      \"species\": 2,\n      \"state_results\": 1,\n      \"county_results\": 1,\n      \"records\": 120\n    }\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Notes",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const KIND = \"notes\";",
+                  "const SPLIT = true;",
+                  "function saved(file) {",
+                  "  // Nothing to save.",
+                  "}",
+                  "",
+                  "// The test every request in the Postman collection runs, in Postman's script",
+                  "// sandbox. scripts/postman.ts puts it after each request's `KIND`, `SPLIT`",
+                  "// and `saved(file)`, which saves values for later requests. It checks that",
+                  "// the file loads, is the expected kind and major format version, and matches",
+                  "// its JSON Schema, which it reads from the release's schemas/ folder. A file",
+                  "// split into shards is checked through its first shard.",
+                  "",
+                  "const MAJOR = 1;",
+                  "",
+                  "/**",
+                  " * Postman's validator reads JSON Schema draft-07, and these schemas are",
+                  " * 2020-12. The only 2020-12 keyword they use is `prefixItems`, which becomes",
+                  " * draft-07's tuple form: `items` as a list, and `additionalItems` for what",
+                  " * `items` said about the rest.",
+                  " */",
+                  "function draft07(node) {",
+                  "  if (Array.isArray(node)) return node.map(draft07);",
+                  "  if (node === null || typeof node !== \"object\") return node;",
+                  "  const out = {};",
+                  "  for (const [key, value] of Object.entries(node))",
+                  "    if (key !== \"$schema\" && key !== \"prefixItems\") out[key] = draft07(value);",
+                  "  if (\"prefixItems\" in node) {",
+                  "    out.items = draft07(node.prefixItems);",
+                  "    out.additionalItems = \"items\" in node ? draft07(node.items) : true;",
+                  "  }",
+                  "  return out;",
+                  "}",
+                  "",
+                  "function check(file, url) {",
+                  "  saved(file);",
+                  "  pm.test(`${KIND}/${String(MAJOR)}: ${url}`, () => {",
+                  "    pm.expect(file.kind, \"kind\").to.equal(KIND);",
+                  "    pm.expect(file.format, \"format\").to.match(",
+                  "      new RegExp(`^${KIND}/${String(MAJOR)}\\\\.\\\\d+$`),",
+                  "    );",
+                  "  });",
+                  "  const schema = `${pm.variables.get(\"baseUrl\")}/releases/${pm.variables.get(\"release\")}/schemas/${KIND}-${String(MAJOR)}.json`;",
+                  "  pm.sendRequest(schema, (error, response) => {",
+                  "    pm.test(`Matches schemas/${KIND}-${String(MAJOR)}.json`, () => {",
+                  "      pm.expect(error, \"schema request\").to.equal(null);",
+                  "      pm.expect(response.code, \"schema status\").to.equal(200);",
+                  "      const Ajv = require(\"ajv\");",
+                  "      const validate = new Ajv({ allErrors: true }).compile(",
+                  "        draft07(response.json()),",
+                  "      );",
+                  "      pm.expect(",
+                  "        validate(file),",
+                  "        JSON.stringify(validate.errors, null, 2),",
+                  "      ).to.equal(true);",
+                  "    });",
+                  "  });",
+                  "}",
+                  "",
+                  "const url = pm.request.url.toString();",
+                  "if (pm.response.code === 200) {",
+                  "  check(pm.response.json(), url);",
+                  "} else if (pm.response.code === 404 && SPLIT) {",
+                  "  // Not published whole: it may be split into <name>/0.json, <name>/1.json…",
+                  "  const shard = url.replace(/\\.json$/, \"/0.json\");",
+                  "  pm.sendRequest(shard, (error, response) => {",
+                  "    pm.test(\"Published whole or as shards\", () => {",
+                  "      pm.expect(error, \"shard request\").to.equal(null);",
+                  "      pm.expect(response.code, \"not published in this release\").to.equal(200);",
+                  "    });",
+                  "    if (error === null && response.code === 200) check(response.json(), shard);",
+                  "  });",
+                  "} else {",
+                  "  pm.test(\"Loads\", () => {",
+                  "    pm.expect(pm.response.code, \"not published in this release\").to.equal(200);",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/releases/{{release}}/notes.json",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "releases",
+                "{{release}}",
+                "notes.json"
+              ]
+            },
+            "description": "What changed since the previous release.\n\nPath: `releases/{{release}}/notes.json`. Format: `notes/1`, schema `schemas/notes-1.json`."
+          },
+          "response": [
+            {
+              "name": "Example (made up)",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/releases/{{release}}/notes.json",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "releases",
+                    "{{release}}",
+                    "notes.json"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": \"releases/2026-01-05/notes.json\",\n  \"kind\": \"notes\",\n  \"format\": \"notes/1.0\",\n  \"provenance\": {\n    \"release\": \"2026-01-05\",\n    \"sources\": [\"example\"],\n    \"licences\": [\"CC-BY-4.0\"],\n    \"gbif_download_dois\": [\"10.0000/example\"],\n    \"method\": \"test-1\",\n    \"taxonomy\": \"test-taxonomy\",\n    \"boundaries\": \"test-boundaries\",\n    \"ranges\": null,\n    \"protection\": null,\n    \"code\": \"0.0.0\",\n    \"run\": \"run-1\"\n  },\n  \"data\": {\n    \"release\": \"2026-01-05\",\n    \"previous\": null,\n    \"results\": {\n      \"added\": 2,\n      \"changed\": 0,\n      \"removed\": 0\n    },\n    \"key_changes\": [],\n    \"corrections\": [],\n    \"formats\": []\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Methods",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const KIND = \"methods\";",
+                  "const SPLIT = false;",
+                  "function saved(file) {",
+                  "  // Nothing to save.",
+                  "}",
+                  "",
+                  "// The test every request in the Postman collection runs, in Postman's script",
+                  "// sandbox. scripts/postman.ts puts it after each request's `KIND`, `SPLIT`",
+                  "// and `saved(file)`, which saves values for later requests. It checks that",
+                  "// the file loads, is the expected kind and major format version, and matches",
+                  "// its JSON Schema, which it reads from the release's schemas/ folder. A file",
+                  "// split into shards is checked through its first shard.",
+                  "",
+                  "const MAJOR = 1;",
+                  "",
+                  "/**",
+                  " * Postman's validator reads JSON Schema draft-07, and these schemas are",
+                  " * 2020-12. The only 2020-12 keyword they use is `prefixItems`, which becomes",
+                  " * draft-07's tuple form: `items` as a list, and `additionalItems` for what",
+                  " * `items` said about the rest.",
+                  " */",
+                  "function draft07(node) {",
+                  "  if (Array.isArray(node)) return node.map(draft07);",
+                  "  if (node === null || typeof node !== \"object\") return node;",
+                  "  const out = {};",
+                  "  for (const [key, value] of Object.entries(node))",
+                  "    if (key !== \"$schema\" && key !== \"prefixItems\") out[key] = draft07(value);",
+                  "  if (\"prefixItems\" in node) {",
+                  "    out.items = draft07(node.prefixItems);",
+                  "    out.additionalItems = \"items\" in node ? draft07(node.items) : true;",
+                  "  }",
+                  "  return out;",
+                  "}",
+                  "",
+                  "function check(file, url) {",
+                  "  saved(file);",
+                  "  pm.test(`${KIND}/${String(MAJOR)}: ${url}`, () => {",
+                  "    pm.expect(file.kind, \"kind\").to.equal(KIND);",
+                  "    pm.expect(file.format, \"format\").to.match(",
+                  "      new RegExp(`^${KIND}/${String(MAJOR)}\\\\.\\\\d+$`),",
+                  "    );",
+                  "  });",
+                  "  const schema = `${pm.variables.get(\"baseUrl\")}/releases/${pm.variables.get(\"release\")}/schemas/${KIND}-${String(MAJOR)}.json`;",
+                  "  pm.sendRequest(schema, (error, response) => {",
+                  "    pm.test(`Matches schemas/${KIND}-${String(MAJOR)}.json`, () => {",
+                  "      pm.expect(error, \"schema request\").to.equal(null);",
+                  "      pm.expect(response.code, \"schema status\").to.equal(200);",
+                  "      const Ajv = require(\"ajv\");",
+                  "      const validate = new Ajv({ allErrors: true }).compile(",
+                  "        draft07(response.json()),",
+                  "      );",
+                  "      pm.expect(",
+                  "        validate(file),",
+                  "        JSON.stringify(validate.errors, null, 2),",
+                  "      ).to.equal(true);",
+                  "    });",
+                  "  });",
+                  "}",
+                  "",
+                  "const url = pm.request.url.toString();",
+                  "if (pm.response.code === 200) {",
+                  "  check(pm.response.json(), url);",
+                  "} else if (pm.response.code === 404 && SPLIT) {",
+                  "  // Not published whole: it may be split into <name>/0.json, <name>/1.json…",
+                  "  const shard = url.replace(/\\.json$/, \"/0.json\");",
+                  "  pm.sendRequest(shard, (error, response) => {",
+                  "    pm.test(\"Published whole or as shards\", () => {",
+                  "      pm.expect(error, \"shard request\").to.equal(null);",
+                  "      pm.expect(response.code, \"not published in this release\").to.equal(200);",
+                  "    });",
+                  "    if (error === null && response.code === 200) check(response.json(), shard);",
+                  "  });",
+                  "} else {",
+                  "  pm.test(\"Loads\", () => {",
+                  "    pm.expect(pm.response.code, \"not published in this release\").to.equal(200);",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/releases/{{release}}/methods.json",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "releases",
+                "{{release}}",
+                "methods.json"
+              ]
+            },
+            "description": "How results are made: the method and its numbers.\n\nPath: `releases/{{release}}/methods.json`. Format: `methods/1`, schema `schemas/methods-1.json`."
+          },
+          "response": [
+            {
+              "name": "Example (made up)",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/releases/{{release}}/methods.json",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "releases",
+                    "{{release}}",
+                    "methods.json"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": \"releases/2026-01-05/methods.json\",\n  \"kind\": \"methods\",\n  \"format\": \"methods/1.0\",\n  \"provenance\": {\n    \"release\": \"2026-01-05\",\n    \"sources\": [\"example\"],\n    \"licences\": [\"CC-BY-4.0\"],\n    \"gbif_download_dois\": [\"10.0000/example\"],\n    \"method\": \"test-1\",\n    \"taxonomy\": \"test-taxonomy\",\n    \"boundaries\": \"test-boundaries\",\n    \"ranges\": null,\n    \"protection\": null,\n    \"code\": \"0.0.0\",\n    \"run\": \"run-1\"\n  },\n  \"data\": {\n    \"method\": \"test-1\",\n    \"data_rules\": \"1.0\",\n    \"thresholds\": {\n      \"records\": 20,\n      \"years\": 5\n    },\n    \"weeks\": \"Week 1 is 1–7 January.\",\n    \"pooled_from\": \"2015-01-01\",\n    \"taxonomy\": \"test-taxonomy\",\n    \"boundaries\": \"test-boundaries\",\n    \"protection\": {},\n    \"ranges\": [],\n    \"limits\": \"Made up.\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Sources",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const KIND = \"sources\";",
+                  "const SPLIT = true;",
+                  "function saved(file) {",
+                  "  // Nothing to save.",
+                  "}",
+                  "",
+                  "// The test every request in the Postman collection runs, in Postman's script",
+                  "// sandbox. scripts/postman.ts puts it after each request's `KIND`, `SPLIT`",
+                  "// and `saved(file)`, which saves values for later requests. It checks that",
+                  "// the file loads, is the expected kind and major format version, and matches",
+                  "// its JSON Schema, which it reads from the release's schemas/ folder. A file",
+                  "// split into shards is checked through its first shard.",
+                  "",
+                  "const MAJOR = 1;",
+                  "",
+                  "/**",
+                  " * Postman's validator reads JSON Schema draft-07, and these schemas are",
+                  " * 2020-12. The only 2020-12 keyword they use is `prefixItems`, which becomes",
+                  " * draft-07's tuple form: `items` as a list, and `additionalItems` for what",
+                  " * `items` said about the rest.",
+                  " */",
+                  "function draft07(node) {",
+                  "  if (Array.isArray(node)) return node.map(draft07);",
+                  "  if (node === null || typeof node !== \"object\") return node;",
+                  "  const out = {};",
+                  "  for (const [key, value] of Object.entries(node))",
+                  "    if (key !== \"$schema\" && key !== \"prefixItems\") out[key] = draft07(value);",
+                  "  if (\"prefixItems\" in node) {",
+                  "    out.items = draft07(node.prefixItems);",
+                  "    out.additionalItems = \"items\" in node ? draft07(node.items) : true;",
+                  "  }",
+                  "  return out;",
+                  "}",
+                  "",
+                  "function check(file, url) {",
+                  "  saved(file);",
+                  "  pm.test(`${KIND}/${String(MAJOR)}: ${url}`, () => {",
+                  "    pm.expect(file.kind, \"kind\").to.equal(KIND);",
+                  "    pm.expect(file.format, \"format\").to.match(",
+                  "      new RegExp(`^${KIND}/${String(MAJOR)}\\\\.\\\\d+$`),",
+                  "    );",
+                  "  });",
+                  "  const schema = `${pm.variables.get(\"baseUrl\")}/releases/${pm.variables.get(\"release\")}/schemas/${KIND}-${String(MAJOR)}.json`;",
+                  "  pm.sendRequest(schema, (error, response) => {",
+                  "    pm.test(`Matches schemas/${KIND}-${String(MAJOR)}.json`, () => {",
+                  "      pm.expect(error, \"schema request\").to.equal(null);",
+                  "      pm.expect(response.code, \"schema status\").to.equal(200);",
+                  "      const Ajv = require(\"ajv\");",
+                  "      const validate = new Ajv({ allErrors: true }).compile(",
+                  "        draft07(response.json()),",
+                  "      );",
+                  "      pm.expect(",
+                  "        validate(file),",
+                  "        JSON.stringify(validate.errors, null, 2),",
+                  "      ).to.equal(true);",
+                  "    });",
+                  "  });",
+                  "}",
+                  "",
+                  "const url = pm.request.url.toString();",
+                  "if (pm.response.code === 200) {",
+                  "  check(pm.response.json(), url);",
+                  "} else if (pm.response.code === 404 && SPLIT) {",
+                  "  // Not published whole: it may be split into <name>/0.json, <name>/1.json…",
+                  "  const shard = url.replace(/\\.json$/, \"/0.json\");",
+                  "  pm.sendRequest(shard, (error, response) => {",
+                  "    pm.test(\"Published whole or as shards\", () => {",
+                  "      pm.expect(error, \"shard request\").to.equal(null);",
+                  "      pm.expect(response.code, \"not published in this release\").to.equal(200);",
+                  "    });",
+                  "    if (error === null && response.code === 200) check(response.json(), shard);",
+                  "  });",
+                  "} else {",
+                  "  pm.test(\"Loads\", () => {",
+                  "    pm.expect(pm.response.code, \"not published in this release\").to.equal(200);",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/releases/{{release}}/sources.json",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "releases",
+                "{{release}}",
+                "sources.json"
+              ]
+            },
+            "description": "Each source, its licence and how to credit it.\n\nPath: `releases/{{release}}/sources.json`. Format: `sources/1`, schema `schemas/sources-1.json`."
+          },
+          "response": [
+            {
+              "name": "Example (made up)",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/releases/{{release}}/sources.json",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "releases",
+                    "{{release}}",
+                    "sources.json"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": \"releases/2026-01-05/sources.json\",\n  \"kind\": \"sources\",\n  \"format\": \"sources/1.0\",\n  \"provenance\": {\n    \"release\": \"2026-01-05\",\n    \"sources\": [\"example\"],\n    \"licences\": [\"CC-BY-4.0\"],\n    \"gbif_download_dois\": [\"10.0000/example\"],\n    \"method\": \"test-1\",\n    \"taxonomy\": \"test-taxonomy\",\n    \"boundaries\": \"test-boundaries\",\n    \"ranges\": null,\n    \"protection\": null,\n    \"code\": \"0.0.0\",\n    \"run\": \"run-1\"\n  },\n  \"data\": {\n    \"sources\": [\n      {\n        \"source\": \"example\",\n        \"name\": \"Example source\",\n        \"kind\": \"records\",\n        \"licence\": \"CC-BY-4.0\",\n        \"licence_url\": null,\n        \"use\": \"Made up.\",\n        \"reviewed\": \"2026-01-01\",\n        \"credit\": \"Example\",\n        \"url\": \"https://example.test/\"\n      }\n    ]\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "3. Species",
+      "description": "Every species, and ways to find one.",
+      "item": [
+        {
+          "name": "Catalogue",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const KIND = \"catalogue\";",
+                  "const SPLIT = true;",
+                  "function saved(file) {",
+                  "  const state = pm.variables.get(\"state\");",
+                  "  const first = file.data.species.find((s) => s.states.includes(state));",
+                  "  if (first) pm.collectionVariables.set(\"species\", first.species_key);",
+                  "}",
+                  "",
+                  "// The test every request in the Postman collection runs, in Postman's script",
+                  "// sandbox. scripts/postman.ts puts it after each request's `KIND`, `SPLIT`",
+                  "// and `saved(file)`, which saves values for later requests. It checks that",
+                  "// the file loads, is the expected kind and major format version, and matches",
+                  "// its JSON Schema, which it reads from the release's schemas/ folder. A file",
+                  "// split into shards is checked through its first shard.",
+                  "",
+                  "const MAJOR = 1;",
+                  "",
+                  "/**",
+                  " * Postman's validator reads JSON Schema draft-07, and these schemas are",
+                  " * 2020-12. The only 2020-12 keyword they use is `prefixItems`, which becomes",
+                  " * draft-07's tuple form: `items` as a list, and `additionalItems` for what",
+                  " * `items` said about the rest.",
+                  " */",
+                  "function draft07(node) {",
+                  "  if (Array.isArray(node)) return node.map(draft07);",
+                  "  if (node === null || typeof node !== \"object\") return node;",
+                  "  const out = {};",
+                  "  for (const [key, value] of Object.entries(node))",
+                  "    if (key !== \"$schema\" && key !== \"prefixItems\") out[key] = draft07(value);",
+                  "  if (\"prefixItems\" in node) {",
+                  "    out.items = draft07(node.prefixItems);",
+                  "    out.additionalItems = \"items\" in node ? draft07(node.items) : true;",
+                  "  }",
+                  "  return out;",
+                  "}",
+                  "",
+                  "function check(file, url) {",
+                  "  saved(file);",
+                  "  pm.test(`${KIND}/${String(MAJOR)}: ${url}`, () => {",
+                  "    pm.expect(file.kind, \"kind\").to.equal(KIND);",
+                  "    pm.expect(file.format, \"format\").to.match(",
+                  "      new RegExp(`^${KIND}/${String(MAJOR)}\\\\.\\\\d+$`),",
+                  "    );",
+                  "  });",
+                  "  const schema = `${pm.variables.get(\"baseUrl\")}/releases/${pm.variables.get(\"release\")}/schemas/${KIND}-${String(MAJOR)}.json`;",
+                  "  pm.sendRequest(schema, (error, response) => {",
+                  "    pm.test(`Matches schemas/${KIND}-${String(MAJOR)}.json`, () => {",
+                  "      pm.expect(error, \"schema request\").to.equal(null);",
+                  "      pm.expect(response.code, \"schema status\").to.equal(200);",
+                  "      const Ajv = require(\"ajv\");",
+                  "      const validate = new Ajv({ allErrors: true }).compile(",
+                  "        draft07(response.json()),",
+                  "      );",
+                  "      pm.expect(",
+                  "        validate(file),",
+                  "        JSON.stringify(validate.errors, null, 2),",
+                  "      ).to.equal(true);",
+                  "    });",
+                  "  });",
+                  "}",
+                  "",
+                  "const url = pm.request.url.toString();",
+                  "if (pm.response.code === 200) {",
+                  "  check(pm.response.json(), url);",
+                  "} else if (pm.response.code === 404 && SPLIT) {",
+                  "  // Not published whole: it may be split into <name>/0.json, <name>/1.json…",
+                  "  const shard = url.replace(/\\.json$/, \"/0.json\");",
+                  "  pm.sendRequest(shard, (error, response) => {",
+                  "    pm.test(\"Published whole or as shards\", () => {",
+                  "      pm.expect(error, \"shard request\").to.equal(null);",
+                  "      pm.expect(response.code, \"not published in this release\").to.equal(200);",
+                  "    });",
+                  "    if (error === null && response.code === 200) check(response.json(), shard);",
+                  "  });",
+                  "} else {",
+                  "  pm.test(\"Loads\", () => {",
+                  "    pm.expect(pm.response.code, \"not published in this release\").to.equal(200);",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/releases/{{release}}/catalogue.json",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "releases",
+                "{{release}}",
+                "catalogue.json"
+              ]
+            },
+            "description": "Species with a result or a mapped range, by scientific name. May be split into shards.\n\nPath: `releases/{{release}}/catalogue.json`. Format: `catalogue/1`, schema `schemas/catalogue-1.json`.\n\nSaves the first species with a result in `{{state}}` into `{{species}}`."
+          },
+          "response": [
+            {
+              "name": "Example (made up)",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/releases/{{release}}/catalogue.json",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "releases",
+                    "{{release}}",
+                    "catalogue.json"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": \"releases/2026-01-05/catalogue/0.json\",\n  \"kind\": \"catalogue\",\n  \"format\": \"catalogue/1.1\",\n  \"provenance\": {\n    \"release\": \"2026-01-05\",\n    \"sources\": [\"example\"],\n    \"licences\": [\"CC-BY-4.0\"],\n    \"gbif_download_dois\": [\"10.0000/example\"],\n    \"method\": \"test-1\",\n    \"taxonomy\": \"test-taxonomy\",\n    \"boundaries\": \"test-boundaries\",\n    \"ranges\": null,\n    \"protection\": null,\n    \"code\": \"0.0.0\",\n    \"run\": \"run-1\"\n  },\n  \"data\": {\n    \"species\": [\n      {\n        \"species_key\": \"EX1\",\n        \"scientific_name\": \"Exemplum primum\",\n        \"common_name\": null,\n        \"rank\": \"species\",\n        \"kingdom\": \"Animalia\",\n        \"phylum\": null,\n        \"class\": null,\n        \"order\": null,\n        \"family\": null,\n        \"genus\": \"Exemplum\",\n        \"group\": \"birds\",\n        \"slug\": \"exemplum-primum\",\n        \"states\": [\"us-zz\"],\n        \"seasons\": {\n          \"us-zz\": [14, 22, 35]\n        }\n      }\n    ]\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Species",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const KIND = \"species\";",
+                  "const SPLIT = true;",
+                  "function saved(file) {",
+                  "  // Nothing to save.",
+                  "}",
+                  "",
+                  "// The test every request in the Postman collection runs, in Postman's script",
+                  "// sandbox. scripts/postman.ts puts it after each request's `KIND`, `SPLIT`",
+                  "// and `saved(file)`, which saves values for later requests. It checks that",
+                  "// the file loads, is the expected kind and major format version, and matches",
+                  "// its JSON Schema, which it reads from the release's schemas/ folder. A file",
+                  "// split into shards is checked through its first shard.",
+                  "",
+                  "const MAJOR = 1;",
+                  "",
+                  "/**",
+                  " * Postman's validator reads JSON Schema draft-07, and these schemas are",
+                  " * 2020-12. The only 2020-12 keyword they use is `prefixItems`, which becomes",
+                  " * draft-07's tuple form: `items` as a list, and `additionalItems` for what",
+                  " * `items` said about the rest.",
+                  " */",
+                  "function draft07(node) {",
+                  "  if (Array.isArray(node)) return node.map(draft07);",
+                  "  if (node === null || typeof node !== \"object\") return node;",
+                  "  const out = {};",
+                  "  for (const [key, value] of Object.entries(node))",
+                  "    if (key !== \"$schema\" && key !== \"prefixItems\") out[key] = draft07(value);",
+                  "  if (\"prefixItems\" in node) {",
+                  "    out.items = draft07(node.prefixItems);",
+                  "    out.additionalItems = \"items\" in node ? draft07(node.items) : true;",
+                  "  }",
+                  "  return out;",
+                  "}",
+                  "",
+                  "function check(file, url) {",
+                  "  saved(file);",
+                  "  pm.test(`${KIND}/${String(MAJOR)}: ${url}`, () => {",
+                  "    pm.expect(file.kind, \"kind\").to.equal(KIND);",
+                  "    pm.expect(file.format, \"format\").to.match(",
+                  "      new RegExp(`^${KIND}/${String(MAJOR)}\\\\.\\\\d+$`),",
+                  "    );",
+                  "  });",
+                  "  const schema = `${pm.variables.get(\"baseUrl\")}/releases/${pm.variables.get(\"release\")}/schemas/${KIND}-${String(MAJOR)}.json`;",
+                  "  pm.sendRequest(schema, (error, response) => {",
+                  "    pm.test(`Matches schemas/${KIND}-${String(MAJOR)}.json`, () => {",
+                  "      pm.expect(error, \"schema request\").to.equal(null);",
+                  "      pm.expect(response.code, \"schema status\").to.equal(200);",
+                  "      const Ajv = require(\"ajv\");",
+                  "      const validate = new Ajv({ allErrors: true }).compile(",
+                  "        draft07(response.json()),",
+                  "      );",
+                  "      pm.expect(",
+                  "        validate(file),",
+                  "        JSON.stringify(validate.errors, null, 2),",
+                  "      ).to.equal(true);",
+                  "    });",
+                  "  });",
+                  "}",
+                  "",
+                  "const url = pm.request.url.toString();",
+                  "if (pm.response.code === 200) {",
+                  "  check(pm.response.json(), url);",
+                  "} else if (pm.response.code === 404 && SPLIT) {",
+                  "  // Not published whole: it may be split into <name>/0.json, <name>/1.json…",
+                  "  const shard = url.replace(/\\.json$/, \"/0.json\");",
+                  "  pm.sendRequest(shard, (error, response) => {",
+                  "    pm.test(\"Published whole or as shards\", () => {",
+                  "      pm.expect(error, \"shard request\").to.equal(null);",
+                  "      pm.expect(response.code, \"not published in this release\").to.equal(200);",
+                  "    });",
+                  "    if (error === null && response.code === 200) check(response.json(), shard);",
+                  "  });",
+                  "} else {",
+                  "  pm.test(\"Loads\", () => {",
+                  "    pm.expect(pm.response.code, \"not published in this release\").to.equal(200);",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/releases/{{release}}/species/{{species}}.json",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "releases",
+                "{{release}}",
+                "species",
+                "{{species}}.json"
+              ]
+            },
+            "description": "One species and every area with a result or within its mapped range.\n\nPath: `releases/{{release}}/species/{{species}}.json`. Format: `species/1`, schema `schemas/species-1.json`.\n- `{{species}}`: a species key, from the catalogue"
+          },
+          "response": [
+            {
+              "name": "Example (made up)",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/releases/{{release}}/species/{{species}}.json",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "releases",
+                    "{{release}}",
+                    "species",
+                    "{{species}}.json"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": \"releases/2026-01-05/species/EX1.json\",\n  \"kind\": \"species\",\n  \"format\": \"species/1.0\",\n  \"provenance\": {\n    \"release\": \"2026-01-05\",\n    \"sources\": [\"example\"],\n    \"licences\": [\"CC-BY-4.0\"],\n    \"gbif_download_dois\": [\"10.0000/example\"],\n    \"method\": \"test-1\",\n    \"taxonomy\": \"test-taxonomy\",\n    \"boundaries\": \"test-boundaries\",\n    \"ranges\": null,\n    \"protection\": null,\n    \"code\": \"0.0.0\",\n    \"run\": \"run-1\"\n  },\n  \"data\": {\n    \"species_key\": \"EX1\",\n    \"scientific_name\": \"Exemplum primum\",\n    \"authorship\": null,\n    \"common_name\": null,\n    \"synonyms\": [],\n    \"rank\": \"species\",\n    \"classification\": {\n      \"kingdom\": \"Animalia\",\n      \"phylum\": null,\n      \"class\": null,\n      \"order\": null,\n      \"family\": null,\n      \"genus\": \"Exemplum\"\n    },\n    \"group\": \"birds\",\n    \"slug\": \"exemplum-primum\",\n    \"areas\": [\n      {\n        \"area\": \"us-zz\",\n        \"level\": \"state\",\n        \"records\": 120,\n        \"season\": [14, 22, 35],\n        \"season_withheld\": null\n      }\n    ],\n    \"ranges\": []\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Slugs",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const KIND = \"slugs\";",
+                  "const SPLIT = true;",
+                  "function saved(file) {",
+                  "  // Nothing to save.",
+                  "}",
+                  "",
+                  "// The test every request in the Postman collection runs, in Postman's script",
+                  "// sandbox. scripts/postman.ts puts it after each request's `KIND`, `SPLIT`",
+                  "// and `saved(file)`, which saves values for later requests. It checks that",
+                  "// the file loads, is the expected kind and major format version, and matches",
+                  "// its JSON Schema, which it reads from the release's schemas/ folder. A file",
+                  "// split into shards is checked through its first shard.",
+                  "",
+                  "const MAJOR = 1;",
+                  "",
+                  "/**",
+                  " * Postman's validator reads JSON Schema draft-07, and these schemas are",
+                  " * 2020-12. The only 2020-12 keyword they use is `prefixItems`, which becomes",
+                  " * draft-07's tuple form: `items` as a list, and `additionalItems` for what",
+                  " * `items` said about the rest.",
+                  " */",
+                  "function draft07(node) {",
+                  "  if (Array.isArray(node)) return node.map(draft07);",
+                  "  if (node === null || typeof node !== \"object\") return node;",
+                  "  const out = {};",
+                  "  for (const [key, value] of Object.entries(node))",
+                  "    if (key !== \"$schema\" && key !== \"prefixItems\") out[key] = draft07(value);",
+                  "  if (\"prefixItems\" in node) {",
+                  "    out.items = draft07(node.prefixItems);",
+                  "    out.additionalItems = \"items\" in node ? draft07(node.items) : true;",
+                  "  }",
+                  "  return out;",
+                  "}",
+                  "",
+                  "function check(file, url) {",
+                  "  saved(file);",
+                  "  pm.test(`${KIND}/${String(MAJOR)}: ${url}`, () => {",
+                  "    pm.expect(file.kind, \"kind\").to.equal(KIND);",
+                  "    pm.expect(file.format, \"format\").to.match(",
+                  "      new RegExp(`^${KIND}/${String(MAJOR)}\\\\.\\\\d+$`),",
+                  "    );",
+                  "  });",
+                  "  const schema = `${pm.variables.get(\"baseUrl\")}/releases/${pm.variables.get(\"release\")}/schemas/${KIND}-${String(MAJOR)}.json`;",
+                  "  pm.sendRequest(schema, (error, response) => {",
+                  "    pm.test(`Matches schemas/${KIND}-${String(MAJOR)}.json`, () => {",
+                  "      pm.expect(error, \"schema request\").to.equal(null);",
+                  "      pm.expect(response.code, \"schema status\").to.equal(200);",
+                  "      const Ajv = require(\"ajv\");",
+                  "      const validate = new Ajv({ allErrors: true }).compile(",
+                  "        draft07(response.json()),",
+                  "      );",
+                  "      pm.expect(",
+                  "        validate(file),",
+                  "        JSON.stringify(validate.errors, null, 2),",
+                  "      ).to.equal(true);",
+                  "    });",
+                  "  });",
+                  "}",
+                  "",
+                  "const url = pm.request.url.toString();",
+                  "if (pm.response.code === 200) {",
+                  "  check(pm.response.json(), url);",
+                  "} else if (pm.response.code === 404 && SPLIT) {",
+                  "  // Not published whole: it may be split into <name>/0.json, <name>/1.json…",
+                  "  const shard = url.replace(/\\.json$/, \"/0.json\");",
+                  "  pm.sendRequest(shard, (error, response) => {",
+                  "    pm.test(\"Published whole or as shards\", () => {",
+                  "      pm.expect(error, \"shard request\").to.equal(null);",
+                  "      pm.expect(response.code, \"not published in this release\").to.equal(200);",
+                  "    });",
+                  "    if (error === null && response.code === 200) check(response.json(), shard);",
+                  "  });",
+                  "} else {",
+                  "  pm.test(\"Loads\", () => {",
+                  "    pm.expect(pm.response.code, \"not published in this release\").to.equal(200);",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/releases/{{release}}/slugs.json",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "releases",
+                "{{release}}",
+                "slugs.json"
+              ]
+            },
+            "description": "Species page slugs, and redirects from old slugs.\n\nPath: `releases/{{release}}/slugs.json`. Format: `slugs/1`, schema `schemas/slugs-1.json`."
+          },
+          "response": [
+            {
+              "name": "Example (made up)",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/releases/{{release}}/slugs.json",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "releases",
+                    "{{release}}",
+                    "slugs.json"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": \"releases/2026-01-05/slugs.json\",\n  \"kind\": \"slugs\",\n  \"format\": \"slugs/1.0\",\n  \"provenance\": {\n    \"release\": \"2026-01-05\",\n    \"sources\": [\"example\"],\n    \"licences\": [\"CC-BY-4.0\"],\n    \"gbif_download_dois\": [\"10.0000/example\"],\n    \"method\": \"test-1\",\n    \"taxonomy\": \"test-taxonomy\",\n    \"boundaries\": \"test-boundaries\",\n    \"ranges\": null,\n    \"protection\": null,\n    \"code\": \"0.0.0\",\n    \"run\": \"run-1\"\n  },\n  \"data\": {\n    \"species\": {\n      \"exemplum-primum\": \"EX1\"\n    },\n    \"redirects\": {\n      \"old-name\": \"exemplum-primum\"\n    }\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Groups",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const KIND = \"groups\";",
+                  "const SPLIT = true;",
+                  "function saved(file) {",
+                  "  // Nothing to save.",
+                  "}",
+                  "",
+                  "// The test every request in the Postman collection runs, in Postman's script",
+                  "// sandbox. scripts/postman.ts puts it after each request's `KIND`, `SPLIT`",
+                  "// and `saved(file)`, which saves values for later requests. It checks that",
+                  "// the file loads, is the expected kind and major format version, and matches",
+                  "// its JSON Schema, which it reads from the release's schemas/ folder. A file",
+                  "// split into shards is checked through its first shard.",
+                  "",
+                  "const MAJOR = 1;",
+                  "",
+                  "/**",
+                  " * Postman's validator reads JSON Schema draft-07, and these schemas are",
+                  " * 2020-12. The only 2020-12 keyword they use is `prefixItems`, which becomes",
+                  " * draft-07's tuple form: `items` as a list, and `additionalItems` for what",
+                  " * `items` said about the rest.",
+                  " */",
+                  "function draft07(node) {",
+                  "  if (Array.isArray(node)) return node.map(draft07);",
+                  "  if (node === null || typeof node !== \"object\") return node;",
+                  "  const out = {};",
+                  "  for (const [key, value] of Object.entries(node))",
+                  "    if (key !== \"$schema\" && key !== \"prefixItems\") out[key] = draft07(value);",
+                  "  if (\"prefixItems\" in node) {",
+                  "    out.items = draft07(node.prefixItems);",
+                  "    out.additionalItems = \"items\" in node ? draft07(node.items) : true;",
+                  "  }",
+                  "  return out;",
+                  "}",
+                  "",
+                  "function check(file, url) {",
+                  "  saved(file);",
+                  "  pm.test(`${KIND}/${String(MAJOR)}: ${url}`, () => {",
+                  "    pm.expect(file.kind, \"kind\").to.equal(KIND);",
+                  "    pm.expect(file.format, \"format\").to.match(",
+                  "      new RegExp(`^${KIND}/${String(MAJOR)}\\\\.\\\\d+$`),",
+                  "    );",
+                  "  });",
+                  "  const schema = `${pm.variables.get(\"baseUrl\")}/releases/${pm.variables.get(\"release\")}/schemas/${KIND}-${String(MAJOR)}.json`;",
+                  "  pm.sendRequest(schema, (error, response) => {",
+                  "    pm.test(`Matches schemas/${KIND}-${String(MAJOR)}.json`, () => {",
+                  "      pm.expect(error, \"schema request\").to.equal(null);",
+                  "      pm.expect(response.code, \"schema status\").to.equal(200);",
+                  "      const Ajv = require(\"ajv\");",
+                  "      const validate = new Ajv({ allErrors: true }).compile(",
+                  "        draft07(response.json()),",
+                  "      );",
+                  "      pm.expect(",
+                  "        validate(file),",
+                  "        JSON.stringify(validate.errors, null, 2),",
+                  "      ).to.equal(true);",
+                  "    });",
+                  "  });",
+                  "}",
+                  "",
+                  "const url = pm.request.url.toString();",
+                  "if (pm.response.code === 200) {",
+                  "  check(pm.response.json(), url);",
+                  "} else if (pm.response.code === 404 && SPLIT) {",
+                  "  // Not published whole: it may be split into <name>/0.json, <name>/1.json…",
+                  "  const shard = url.replace(/\\.json$/, \"/0.json\");",
+                  "  pm.sendRequest(shard, (error, response) => {",
+                  "    pm.test(\"Published whole or as shards\", () => {",
+                  "      pm.expect(error, \"shard request\").to.equal(null);",
+                  "      pm.expect(response.code, \"not published in this release\").to.equal(200);",
+                  "    });",
+                  "    if (error === null && response.code === 200) check(response.json(), shard);",
+                  "  });",
+                  "} else {",
+                  "  pm.test(\"Loads\", () => {",
+                  "    pm.expect(pm.response.code, \"not published in this release\").to.equal(200);",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/releases/{{release}}/groups.json",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "releases",
+                "{{release}}",
+                "groups.json"
+              ]
+            },
+            "description": "The browse groups, in display order.\n\nPath: `releases/{{release}}/groups.json`. Format: `groups/1`, schema `schemas/groups-1.json`."
+          },
+          "response": [
+            {
+              "name": "Example (made up)",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/releases/{{release}}/groups.json",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "releases",
+                    "{{release}}",
+                    "groups.json"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": \"releases/2026-01-05/groups.json\",\n  \"kind\": \"groups\",\n  \"format\": \"groups/1.0\",\n  \"provenance\": {\n    \"release\": \"2026-01-05\",\n    \"sources\": [\"example\"],\n    \"licences\": [\"CC-BY-4.0\"],\n    \"gbif_download_dois\": [\"10.0000/example\"],\n    \"method\": \"test-1\",\n    \"taxonomy\": \"test-taxonomy\",\n    \"boundaries\": \"test-boundaries\",\n    \"ranges\": null,\n    \"protection\": null,\n    \"code\": \"0.0.0\",\n    \"run\": \"run-1\"\n  },\n  \"data\": {\n    \"groups\": [\n      {\n        \"group\": \"birds\",\n        \"name\": \"Birds\",\n        \"taxa\": [\"V2\"],\n        \"species\": 2\n      }\n    ]\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Search names",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const KIND = \"search\";",
+                  "const SPLIT = true;",
+                  "function saved(file) {",
+                  "  // Nothing to save.",
+                  "}",
+                  "",
+                  "// The test every request in the Postman collection runs, in Postman's script",
+                  "// sandbox. scripts/postman.ts puts it after each request's `KIND`, `SPLIT`",
+                  "// and `saved(file)`, which saves values for later requests. It checks that",
+                  "// the file loads, is the expected kind and major format version, and matches",
+                  "// its JSON Schema, which it reads from the release's schemas/ folder. A file",
+                  "// split into shards is checked through its first shard.",
+                  "",
+                  "const MAJOR = 1;",
+                  "",
+                  "/**",
+                  " * Postman's validator reads JSON Schema draft-07, and these schemas are",
+                  " * 2020-12. The only 2020-12 keyword they use is `prefixItems`, which becomes",
+                  " * draft-07's tuple form: `items` as a list, and `additionalItems` for what",
+                  " * `items` said about the rest.",
+                  " */",
+                  "function draft07(node) {",
+                  "  if (Array.isArray(node)) return node.map(draft07);",
+                  "  if (node === null || typeof node !== \"object\") return node;",
+                  "  const out = {};",
+                  "  for (const [key, value] of Object.entries(node))",
+                  "    if (key !== \"$schema\" && key !== \"prefixItems\") out[key] = draft07(value);",
+                  "  if (\"prefixItems\" in node) {",
+                  "    out.items = draft07(node.prefixItems);",
+                  "    out.additionalItems = \"items\" in node ? draft07(node.items) : true;",
+                  "  }",
+                  "  return out;",
+                  "}",
+                  "",
+                  "function check(file, url) {",
+                  "  saved(file);",
+                  "  pm.test(`${KIND}/${String(MAJOR)}: ${url}`, () => {",
+                  "    pm.expect(file.kind, \"kind\").to.equal(KIND);",
+                  "    pm.expect(file.format, \"format\").to.match(",
+                  "      new RegExp(`^${KIND}/${String(MAJOR)}\\\\.\\\\d+$`),",
+                  "    );",
+                  "  });",
+                  "  const schema = `${pm.variables.get(\"baseUrl\")}/releases/${pm.variables.get(\"release\")}/schemas/${KIND}-${String(MAJOR)}.json`;",
+                  "  pm.sendRequest(schema, (error, response) => {",
+                  "    pm.test(`Matches schemas/${KIND}-${String(MAJOR)}.json`, () => {",
+                  "      pm.expect(error, \"schema request\").to.equal(null);",
+                  "      pm.expect(response.code, \"schema status\").to.equal(200);",
+                  "      const Ajv = require(\"ajv\");",
+                  "      const validate = new Ajv({ allErrors: true }).compile(",
+                  "        draft07(response.json()),",
+                  "      );",
+                  "      pm.expect(",
+                  "        validate(file),",
+                  "        JSON.stringify(validate.errors, null, 2),",
+                  "      ).to.equal(true);",
+                  "    });",
+                  "  });",
+                  "}",
+                  "",
+                  "const url = pm.request.url.toString();",
+                  "if (pm.response.code === 200) {",
+                  "  check(pm.response.json(), url);",
+                  "} else if (pm.response.code === 404 && SPLIT) {",
+                  "  // Not published whole: it may be split into <name>/0.json, <name>/1.json…",
+                  "  const shard = url.replace(/\\.json$/, \"/0.json\");",
+                  "  pm.sendRequest(shard, (error, response) => {",
+                  "    pm.test(\"Published whole or as shards\", () => {",
+                  "      pm.expect(error, \"shard request\").to.equal(null);",
+                  "      pm.expect(response.code, \"not published in this release\").to.equal(200);",
+                  "    });",
+                  "    if (error === null && response.code === 200) check(response.json(), shard);",
+                  "  });",
+                  "} else {",
+                  "  pm.test(\"Loads\", () => {",
+                  "    pm.expect(pm.response.code, \"not published in this release\").to.equal(200);",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/releases/{{release}}/search/index.json",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "releases",
+                "{{release}}",
+                "search",
+                "index.json"
+              ]
+            },
+            "description": "Every searchable name, as [name, kind, species key]. May be split into shards.\n\nPath: `releases/{{release}}/search/index.json`. Format: `search/1`, schema `schemas/search-1.json`."
+          },
+          "response": [
+            {
+              "name": "Example (made up)",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/releases/{{release}}/search/index.json",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "releases",
+                    "{{release}}",
+                    "search",
+                    "index.json"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": \"releases/2026-01-05/search/index.json\",\n  \"kind\": \"search\",\n  \"format\": \"search/1.0\",\n  \"provenance\": {\n    \"release\": \"2026-01-05\",\n    \"sources\": [\"example\"],\n    \"licences\": [\"CC-BY-4.0\"],\n    \"gbif_download_dois\": [\"10.0000/example\"],\n    \"method\": \"test-1\",\n    \"taxonomy\": \"test-taxonomy\",\n    \"boundaries\": \"test-boundaries\",\n    \"ranges\": null,\n    \"protection\": null,\n    \"code\": \"0.0.0\",\n    \"run\": \"run-1\"\n  },\n  \"data\": {\n    \"names\": [\n      [\"Exemplum primum\", \"scientific\", \"EX1\"],\n      [\"Example bird\", \"common\", \"EX1\"]\n    ]\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "4. Places",
+      "description": "States, counties and ZIP codes.",
+      "item": [
+        {
+          "name": "Region",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const KIND = \"region\";",
+                  "const SPLIT = true;",
+                  "function saved(file) {",
+                  "  const county = pm.variables.get(\"county\");",
+                  "  const area = file.data.areas.find((a) => a.area === county);",
+                  "  if (area && area.species_keys.length > 0) pm.collectionVariables.set(\"species\", area.species_keys[0]);",
+                  "}",
+                  "",
+                  "// The test every request in the Postman collection runs, in Postman's script",
+                  "// sandbox. scripts/postman.ts puts it after each request's `KIND`, `SPLIT`",
+                  "// and `saved(file)`, which saves values for later requests. It checks that",
+                  "// the file loads, is the expected kind and major format version, and matches",
+                  "// its JSON Schema, which it reads from the release's schemas/ folder. A file",
+                  "// split into shards is checked through its first shard.",
+                  "",
+                  "const MAJOR = 1;",
+                  "",
+                  "/**",
+                  " * Postman's validator reads JSON Schema draft-07, and these schemas are",
+                  " * 2020-12. The only 2020-12 keyword they use is `prefixItems`, which becomes",
+                  " * draft-07's tuple form: `items` as a list, and `additionalItems` for what",
+                  " * `items` said about the rest.",
+                  " */",
+                  "function draft07(node) {",
+                  "  if (Array.isArray(node)) return node.map(draft07);",
+                  "  if (node === null || typeof node !== \"object\") return node;",
+                  "  const out = {};",
+                  "  for (const [key, value] of Object.entries(node))",
+                  "    if (key !== \"$schema\" && key !== \"prefixItems\") out[key] = draft07(value);",
+                  "  if (\"prefixItems\" in node) {",
+                  "    out.items = draft07(node.prefixItems);",
+                  "    out.additionalItems = \"items\" in node ? draft07(node.items) : true;",
+                  "  }",
+                  "  return out;",
+                  "}",
+                  "",
+                  "function check(file, url) {",
+                  "  saved(file);",
+                  "  pm.test(`${KIND}/${String(MAJOR)}: ${url}`, () => {",
+                  "    pm.expect(file.kind, \"kind\").to.equal(KIND);",
+                  "    pm.expect(file.format, \"format\").to.match(",
+                  "      new RegExp(`^${KIND}/${String(MAJOR)}\\\\.\\\\d+$`),",
+                  "    );",
+                  "  });",
+                  "  const schema = `${pm.variables.get(\"baseUrl\")}/releases/${pm.variables.get(\"release\")}/schemas/${KIND}-${String(MAJOR)}.json`;",
+                  "  pm.sendRequest(schema, (error, response) => {",
+                  "    pm.test(`Matches schemas/${KIND}-${String(MAJOR)}.json`, () => {",
+                  "      pm.expect(error, \"schema request\").to.equal(null);",
+                  "      pm.expect(response.code, \"schema status\").to.equal(200);",
+                  "      const Ajv = require(\"ajv\");",
+                  "      const validate = new Ajv({ allErrors: true }).compile(",
+                  "        draft07(response.json()),",
+                  "      );",
+                  "      pm.expect(",
+                  "        validate(file),",
+                  "        JSON.stringify(validate.errors, null, 2),",
+                  "      ).to.equal(true);",
+                  "    });",
+                  "  });",
+                  "}",
+                  "",
+                  "const url = pm.request.url.toString();",
+                  "if (pm.response.code === 200) {",
+                  "  check(pm.response.json(), url);",
+                  "} else if (pm.response.code === 404 && SPLIT) {",
+                  "  // Not published whole: it may be split into <name>/0.json, <name>/1.json…",
+                  "  const shard = url.replace(/\\.json$/, \"/0.json\");",
+                  "  pm.sendRequest(shard, (error, response) => {",
+                  "    pm.test(\"Published whole or as shards\", () => {",
+                  "      pm.expect(error, \"shard request\").to.equal(null);",
+                  "      pm.expect(response.code, \"not published in this release\").to.equal(200);",
+                  "    });",
+                  "    if (error === null && response.code === 200) check(response.json(), shard);",
+                  "  });",
+                  "} else {",
+                  "  pm.test(\"Loads\", () => {",
+                  "    pm.expect(pm.response.code, \"not published in this release\").to.equal(200);",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/releases/{{release}}/regions/{{state}}.json",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "releases",
+                "{{release}}",
+                "regions",
+                "{{state}}.json"
+              ]
+            },
+            "description": "A state, its counties, their species and effort.\n\nPath: `releases/{{release}}/regions/{{state}}.json`. Format: `region/1`, schema `schemas/region-1.json`.\n- `{{state}}`: a state code, `us-` and the postal abbreviation\n\nSaves the first species with a result in `{{county}}` into `{{species}}`, so the county's results below exist."
+          },
+          "response": [
+            {
+              "name": "Example (made up)",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/releases/{{release}}/regions/{{state}}.json",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "releases",
+                    "{{release}}",
+                    "regions",
+                    "{{state}}.json"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": \"releases/2026-01-05/regions/us-zz.json\",\n  \"kind\": \"region\",\n  \"format\": \"region/1.0\",\n  \"provenance\": {\n    \"release\": \"2026-01-05\",\n    \"sources\": [\"example\"],\n    \"licences\": [\"CC-BY-4.0\"],\n    \"gbif_download_dois\": [\"10.0000/example\"],\n    \"method\": \"test-1\",\n    \"taxonomy\": \"test-taxonomy\",\n    \"boundaries\": \"test-boundaries\",\n    \"ranges\": null,\n    \"protection\": null,\n    \"code\": \"0.0.0\",\n    \"run\": \"run-1\"\n  },\n  \"data\": {\n    \"state\": \"us-zz\",\n    \"name\": \"Zed\",\n    \"slug\": \"zed\",\n    \"areas\": [\n      {\n        \"area\": \"99001\",\n        \"level\": \"county\",\n        \"name\": \"Example\",\n        \"slug\": \"example\",\n        \"species_keys\": [\"EX1\"],\n        \"range_species_keys\": [],\n        \"effort\": [40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40]\n      }\n    ]\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "County outlines",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const KIND = \"boundaries\";",
+                  "const SPLIT = true;",
+                  "function saved(file) {",
+                  "  // Nothing to save.",
+                  "}",
+                  "",
+                  "// The test every request in the Postman collection runs, in Postman's script",
+                  "// sandbox. scripts/postman.ts puts it after each request's `KIND`, `SPLIT`",
+                  "// and `saved(file)`, which saves values for later requests. It checks that",
+                  "// the file loads, is the expected kind and major format version, and matches",
+                  "// its JSON Schema, which it reads from the release's schemas/ folder. A file",
+                  "// split into shards is checked through its first shard.",
+                  "",
+                  "const MAJOR = 1;",
+                  "",
+                  "/**",
+                  " * Postman's validator reads JSON Schema draft-07, and these schemas are",
+                  " * 2020-12. The only 2020-12 keyword they use is `prefixItems`, which becomes",
+                  " * draft-07's tuple form: `items` as a list, and `additionalItems` for what",
+                  " * `items` said about the rest.",
+                  " */",
+                  "function draft07(node) {",
+                  "  if (Array.isArray(node)) return node.map(draft07);",
+                  "  if (node === null || typeof node !== \"object\") return node;",
+                  "  const out = {};",
+                  "  for (const [key, value] of Object.entries(node))",
+                  "    if (key !== \"$schema\" && key !== \"prefixItems\") out[key] = draft07(value);",
+                  "  if (\"prefixItems\" in node) {",
+                  "    out.items = draft07(node.prefixItems);",
+                  "    out.additionalItems = \"items\" in node ? draft07(node.items) : true;",
+                  "  }",
+                  "  return out;",
+                  "}",
+                  "",
+                  "function check(file, url) {",
+                  "  saved(file);",
+                  "  pm.test(`${KIND}/${String(MAJOR)}: ${url}`, () => {",
+                  "    pm.expect(file.kind, \"kind\").to.equal(KIND);",
+                  "    pm.expect(file.format, \"format\").to.match(",
+                  "      new RegExp(`^${KIND}/${String(MAJOR)}\\\\.\\\\d+$`),",
+                  "    );",
+                  "  });",
+                  "  const schema = `${pm.variables.get(\"baseUrl\")}/releases/${pm.variables.get(\"release\")}/schemas/${KIND}-${String(MAJOR)}.json`;",
+                  "  pm.sendRequest(schema, (error, response) => {",
+                  "    pm.test(`Matches schemas/${KIND}-${String(MAJOR)}.json`, () => {",
+                  "      pm.expect(error, \"schema request\").to.equal(null);",
+                  "      pm.expect(response.code, \"schema status\").to.equal(200);",
+                  "      const Ajv = require(\"ajv\");",
+                  "      const validate = new Ajv({ allErrors: true }).compile(",
+                  "        draft07(response.json()),",
+                  "      );",
+                  "      pm.expect(",
+                  "        validate(file),",
+                  "        JSON.stringify(validate.errors, null, 2),",
+                  "      ).to.equal(true);",
+                  "    });",
+                  "  });",
+                  "}",
+                  "",
+                  "const url = pm.request.url.toString();",
+                  "if (pm.response.code === 200) {",
+                  "  check(pm.response.json(), url);",
+                  "} else if (pm.response.code === 404 && SPLIT) {",
+                  "  // Not published whole: it may be split into <name>/0.json, <name>/1.json…",
+                  "  const shard = url.replace(/\\.json$/, \"/0.json\");",
+                  "  pm.sendRequest(shard, (error, response) => {",
+                  "    pm.test(\"Published whole or as shards\", () => {",
+                  "      pm.expect(error, \"shard request\").to.equal(null);",
+                  "      pm.expect(response.code, \"not published in this release\").to.equal(200);",
+                  "    });",
+                  "    if (error === null && response.code === 200) check(response.json(), shard);",
+                  "  });",
+                  "} else {",
+                  "  pm.test(\"Loads\", () => {",
+                  "    pm.expect(pm.response.code, \"not published in this release\").to.equal(200);",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/releases/{{release}}/places/{{state}}/boundaries.json",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "releases",
+                "{{release}}",
+                "places",
+                "{{state}}",
+                "boundaries.json"
+              ]
+            },
+            "description": "County outlines for a state's map, as a GeoJSON FeatureCollection. For display only.\n\nPath: `releases/{{release}}/places/{{state}}/boundaries.json`. Format: `boundaries/1`, schema `schemas/boundaries-1.json`.\n- `{{state}}`: a state code, `us-` and the postal abbreviation"
+          },
+          "response": [
+            {
+              "name": "Example (made up)",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/releases/{{release}}/places/{{state}}/boundaries.json",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "releases",
+                    "{{release}}",
+                    "places",
+                    "{{state}}",
+                    "boundaries.json"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": \"releases/2026-01-05/places/us-zz/boundaries.json\",\n  \"kind\": \"boundaries\",\n  \"format\": \"boundaries/1.0\",\n  \"provenance\": {\n    \"release\": \"2026-01-05\",\n    \"sources\": [\"example\"],\n    \"licences\": [\"CC-BY-4.0\"],\n    \"gbif_download_dois\": [\"10.0000/example\"],\n    \"method\": \"test-1\",\n    \"taxonomy\": \"test-taxonomy\",\n    \"boundaries\": \"test-boundaries\",\n    \"ranges\": null,\n    \"protection\": null,\n    \"code\": \"0.0.0\",\n    \"run\": \"run-1\"\n  },\n  \"data\": {\n    \"type\": \"FeatureCollection\",\n    \"features\": [\n      {\n        \"type\": \"Feature\",\n        \"properties\": {\n          \"area\": \"99001\",\n          \"name\": \"Example\",\n          \"slug\": \"example\"\n        },\n        \"geometry\": {\n          \"type\": \"MultiPolygon\",\n          \"coordinates\": [\n            [\n              [\n                [0, 0],\n                [1, 0],\n                [0, 1],\n                [0, 0]\n              ]\n            ]\n          ]\n        }\n      }\n    ]\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "ZIP codes",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.variables.set(\"zipPrefix\", String(pm.variables.get(\"zip\")).slice(0, 3));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const KIND = \"postal\";",
+                  "const SPLIT = true;",
+                  "function saved(file) {",
+                  "  // Nothing to save.",
+                  "}",
+                  "",
+                  "// The test every request in the Postman collection runs, in Postman's script",
+                  "// sandbox. scripts/postman.ts puts it after each request's `KIND`, `SPLIT`",
+                  "// and `saved(file)`, which saves values for later requests. It checks that",
+                  "// the file loads, is the expected kind and major format version, and matches",
+                  "// its JSON Schema, which it reads from the release's schemas/ folder. A file",
+                  "// split into shards is checked through its first shard.",
+                  "",
+                  "const MAJOR = 1;",
+                  "",
+                  "/**",
+                  " * Postman's validator reads JSON Schema draft-07, and these schemas are",
+                  " * 2020-12. The only 2020-12 keyword they use is `prefixItems`, which becomes",
+                  " * draft-07's tuple form: `items` as a list, and `additionalItems` for what",
+                  " * `items` said about the rest.",
+                  " */",
+                  "function draft07(node) {",
+                  "  if (Array.isArray(node)) return node.map(draft07);",
+                  "  if (node === null || typeof node !== \"object\") return node;",
+                  "  const out = {};",
+                  "  for (const [key, value] of Object.entries(node))",
+                  "    if (key !== \"$schema\" && key !== \"prefixItems\") out[key] = draft07(value);",
+                  "  if (\"prefixItems\" in node) {",
+                  "    out.items = draft07(node.prefixItems);",
+                  "    out.additionalItems = \"items\" in node ? draft07(node.items) : true;",
+                  "  }",
+                  "  return out;",
+                  "}",
+                  "",
+                  "function check(file, url) {",
+                  "  saved(file);",
+                  "  pm.test(`${KIND}/${String(MAJOR)}: ${url}`, () => {",
+                  "    pm.expect(file.kind, \"kind\").to.equal(KIND);",
+                  "    pm.expect(file.format, \"format\").to.match(",
+                  "      new RegExp(`^${KIND}/${String(MAJOR)}\\\\.\\\\d+$`),",
+                  "    );",
+                  "  });",
+                  "  const schema = `${pm.variables.get(\"baseUrl\")}/releases/${pm.variables.get(\"release\")}/schemas/${KIND}-${String(MAJOR)}.json`;",
+                  "  pm.sendRequest(schema, (error, response) => {",
+                  "    pm.test(`Matches schemas/${KIND}-${String(MAJOR)}.json`, () => {",
+                  "      pm.expect(error, \"schema request\").to.equal(null);",
+                  "      pm.expect(response.code, \"schema status\").to.equal(200);",
+                  "      const Ajv = require(\"ajv\");",
+                  "      const validate = new Ajv({ allErrors: true }).compile(",
+                  "        draft07(response.json()),",
+                  "      );",
+                  "      pm.expect(",
+                  "        validate(file),",
+                  "        JSON.stringify(validate.errors, null, 2),",
+                  "      ).to.equal(true);",
+                  "    });",
+                  "  });",
+                  "}",
+                  "",
+                  "const url = pm.request.url.toString();",
+                  "if (pm.response.code === 200) {",
+                  "  check(pm.response.json(), url);",
+                  "} else if (pm.response.code === 404 && SPLIT) {",
+                  "  // Not published whole: it may be split into <name>/0.json, <name>/1.json…",
+                  "  const shard = url.replace(/\\.json$/, \"/0.json\");",
+                  "  pm.sendRequest(shard, (error, response) => {",
+                  "    pm.test(\"Published whole or as shards\", () => {",
+                  "      pm.expect(error, \"shard request\").to.equal(null);",
+                  "      pm.expect(response.code, \"not published in this release\").to.equal(200);",
+                  "    });",
+                  "    if (error === null && response.code === 200) check(response.json(), shard);",
+                  "  });",
+                  "} else {",
+                  "  pm.test(\"Loads\", () => {",
+                  "    pm.expect(pm.response.code, \"not published in this release\").to.equal(200);",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/releases/{{release}}/postal/us/{{zipPrefix}}.json",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "releases",
+                "{{release}}",
+                "postal",
+                "us",
+                "{{zipPrefix}}.json"
+              ]
+            },
+            "description": "US ZIP codes sharing a 3-digit prefix, and the counties each falls in.\n\nPath: `releases/{{release}}/postal/us/{{zipPrefix}}.json`. Format: `postal/1`, schema `schemas/postal-1.json`.\n- `{{zipPrefix}}`: the first 3 digits of `{{zip}}`, set before sending"
+          },
+          "response": [
+            {
+              "name": "Example (made up)",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/releases/{{release}}/postal/us/{{zipPrefix}}.json",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "releases",
+                    "{{release}}",
+                    "postal",
+                    "us",
+                    "{{zipPrefix}}.json"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": \"releases/2026-01-05/postal/us/999.json\",\n  \"kind\": \"postal\",\n  \"format\": \"postal/1.0\",\n  \"provenance\": {\n    \"release\": \"2026-01-05\",\n    \"sources\": [\"example\"],\n    \"licences\": [\"CC-BY-4.0\"],\n    \"gbif_download_dois\": [\"10.0000/example\"],\n    \"method\": \"test-1\",\n    \"taxonomy\": \"test-taxonomy\",\n    \"boundaries\": \"test-boundaries\",\n    \"ranges\": null,\n    \"protection\": null,\n    \"code\": \"0.0.0\",\n    \"run\": \"run-1\"\n  },\n  \"data\": {\n    \"zips\": {\n      \"99901\": [\n        [\"99001\", 0.75],\n        [\"99002\", 0.25]\n      ]\n    }\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "5. Results",
+      "description": "When a species is recorded, week by week, and where the records came from.",
+      "item": [
+        {
+          "name": "State result",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const KIND = \"state-weekly\";",
+                  "const SPLIT = false;",
+                  "function saved(file) {",
+                  "  // Nothing to save.",
+                  "}",
+                  "",
+                  "// The test every request in the Postman collection runs, in Postman's script",
+                  "// sandbox. scripts/postman.ts puts it after each request's `KIND`, `SPLIT`",
+                  "// and `saved(file)`, which saves values for later requests. It checks that",
+                  "// the file loads, is the expected kind and major format version, and matches",
+                  "// its JSON Schema, which it reads from the release's schemas/ folder. A file",
+                  "// split into shards is checked through its first shard.",
+                  "",
+                  "const MAJOR = 1;",
+                  "",
+                  "/**",
+                  " * Postman's validator reads JSON Schema draft-07, and these schemas are",
+                  " * 2020-12. The only 2020-12 keyword they use is `prefixItems`, which becomes",
+                  " * draft-07's tuple form: `items` as a list, and `additionalItems` for what",
+                  " * `items` said about the rest.",
+                  " */",
+                  "function draft07(node) {",
+                  "  if (Array.isArray(node)) return node.map(draft07);",
+                  "  if (node === null || typeof node !== \"object\") return node;",
+                  "  const out = {};",
+                  "  for (const [key, value] of Object.entries(node))",
+                  "    if (key !== \"$schema\" && key !== \"prefixItems\") out[key] = draft07(value);",
+                  "  if (\"prefixItems\" in node) {",
+                  "    out.items = draft07(node.prefixItems);",
+                  "    out.additionalItems = \"items\" in node ? draft07(node.items) : true;",
+                  "  }",
+                  "  return out;",
+                  "}",
+                  "",
+                  "function check(file, url) {",
+                  "  saved(file);",
+                  "  pm.test(`${KIND}/${String(MAJOR)}: ${url}`, () => {",
+                  "    pm.expect(file.kind, \"kind\").to.equal(KIND);",
+                  "    pm.expect(file.format, \"format\").to.match(",
+                  "      new RegExp(`^${KIND}/${String(MAJOR)}\\\\.\\\\d+$`),",
+                  "    );",
+                  "  });",
+                  "  const schema = `${pm.variables.get(\"baseUrl\")}/releases/${pm.variables.get(\"release\")}/schemas/${KIND}-${String(MAJOR)}.json`;",
+                  "  pm.sendRequest(schema, (error, response) => {",
+                  "    pm.test(`Matches schemas/${KIND}-${String(MAJOR)}.json`, () => {",
+                  "      pm.expect(error, \"schema request\").to.equal(null);",
+                  "      pm.expect(response.code, \"schema status\").to.equal(200);",
+                  "      const Ajv = require(\"ajv\");",
+                  "      const validate = new Ajv({ allErrors: true }).compile(",
+                  "        draft07(response.json()),",
+                  "      );",
+                  "      pm.expect(",
+                  "        validate(file),",
+                  "        JSON.stringify(validate.errors, null, 2),",
+                  "      ).to.equal(true);",
+                  "    });",
+                  "  });",
+                  "}",
+                  "",
+                  "const url = pm.request.url.toString();",
+                  "if (pm.response.code === 200) {",
+                  "  check(pm.response.json(), url);",
+                  "} else if (pm.response.code === 404 && SPLIT) {",
+                  "  // Not published whole: it may be split into <name>/0.json, <name>/1.json…",
+                  "  const shard = url.replace(/\\.json$/, \"/0.json\");",
+                  "  pm.sendRequest(shard, (error, response) => {",
+                  "    pm.test(\"Published whole or as shards\", () => {",
+                  "      pm.expect(error, \"shard request\").to.equal(null);",
+                  "      pm.expect(response.code, \"not published in this release\").to.equal(200);",
+                  "    });",
+                  "    if (error === null && response.code === 200) check(response.json(), shard);",
+                  "  });",
+                  "} else {",
+                  "  pm.test(\"Loads\", () => {",
+                  "    pm.expect(pm.response.code, \"not published in this release\").to.equal(200);",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/releases/{{release}}/results/{{state}}/{{species}}.json",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "releases",
+                "{{release}}",
+                "results",
+                "{{state}}",
+                "{{species}}.json"
+              ]
+            },
+            "description": "A species' weekly result for a state.\n\nPath: `releases/{{release}}/results/{{state}}/{{species}}.json`. Format: `state-weekly/1`, schema `schemas/state-weekly-1.json`.\n- `{{state}}`: a state code, `us-` and the postal abbreviation\n- `{{species}}`: a species key, from the catalogue"
+          },
+          "response": [
+            {
+              "name": "Example (made up)",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/releases/{{release}}/results/{{state}}/{{species}}.json",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "releases",
+                    "{{release}}",
+                    "results",
+                    "{{state}}",
+                    "{{species}}.json"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": \"releases/2026-01-05/results/us-zz/EX1.json\",\n  \"kind\": \"state-weekly\",\n  \"format\": \"state-weekly/1.0\",\n  \"provenance\": {\n    \"release\": \"2026-01-05\",\n    \"sources\": [\"example\"],\n    \"licences\": [\"CC-BY-4.0\"],\n    \"gbif_download_dois\": [\"10.0000/example\"],\n    \"method\": \"test-1\",\n    \"taxonomy\": \"test-taxonomy\",\n    \"boundaries\": \"test-boundaries\",\n    \"ranges\": null,\n    \"protection\": null,\n    \"code\": \"0.0.0\",\n    \"run\": \"run-1\"\n  },\n  \"data\": {\n    \"area\": \"us-zz\",\n    \"species_key\": \"EX1\",\n    \"included_records\": 168,\n    \"contributing_years\": 4,\n    \"thresholds\": {\n      \"records\": 20,\n      \"years\": 5\n    },\n    \"weekly\": {\n      \"records\": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 9, 10, 10, 10, 10, 10, 10, 9, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],\n      \"years\": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 3, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]\n    },\n    \"season\": [14, 22, 35],\n    \"season_withheld\": null,\n    \"effort\": [40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40],\n    \"limits\": \"These results show when people recorded a species, not when or where it occurs.\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "County result",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const KIND = \"county-weekly\";",
+                  "const SPLIT = false;",
+                  "function saved(file) {",
+                  "  // Nothing to save.",
+                  "}",
+                  "",
+                  "// The test every request in the Postman collection runs, in Postman's script",
+                  "// sandbox. scripts/postman.ts puts it after each request's `KIND`, `SPLIT`",
+                  "// and `saved(file)`, which saves values for later requests. It checks that",
+                  "// the file loads, is the expected kind and major format version, and matches",
+                  "// its JSON Schema, which it reads from the release's schemas/ folder. A file",
+                  "// split into shards is checked through its first shard.",
+                  "",
+                  "const MAJOR = 1;",
+                  "",
+                  "/**",
+                  " * Postman's validator reads JSON Schema draft-07, and these schemas are",
+                  " * 2020-12. The only 2020-12 keyword they use is `prefixItems`, which becomes",
+                  " * draft-07's tuple form: `items` as a list, and `additionalItems` for what",
+                  " * `items` said about the rest.",
+                  " */",
+                  "function draft07(node) {",
+                  "  if (Array.isArray(node)) return node.map(draft07);",
+                  "  if (node === null || typeof node !== \"object\") return node;",
+                  "  const out = {};",
+                  "  for (const [key, value] of Object.entries(node))",
+                  "    if (key !== \"$schema\" && key !== \"prefixItems\") out[key] = draft07(value);",
+                  "  if (\"prefixItems\" in node) {",
+                  "    out.items = draft07(node.prefixItems);",
+                  "    out.additionalItems = \"items\" in node ? draft07(node.items) : true;",
+                  "  }",
+                  "  return out;",
+                  "}",
+                  "",
+                  "function check(file, url) {",
+                  "  saved(file);",
+                  "  pm.test(`${KIND}/${String(MAJOR)}: ${url}`, () => {",
+                  "    pm.expect(file.kind, \"kind\").to.equal(KIND);",
+                  "    pm.expect(file.format, \"format\").to.match(",
+                  "      new RegExp(`^${KIND}/${String(MAJOR)}\\\\.\\\\d+$`),",
+                  "    );",
+                  "  });",
+                  "  const schema = `${pm.variables.get(\"baseUrl\")}/releases/${pm.variables.get(\"release\")}/schemas/${KIND}-${String(MAJOR)}.json`;",
+                  "  pm.sendRequest(schema, (error, response) => {",
+                  "    pm.test(`Matches schemas/${KIND}-${String(MAJOR)}.json`, () => {",
+                  "      pm.expect(error, \"schema request\").to.equal(null);",
+                  "      pm.expect(response.code, \"schema status\").to.equal(200);",
+                  "      const Ajv = require(\"ajv\");",
+                  "      const validate = new Ajv({ allErrors: true }).compile(",
+                  "        draft07(response.json()),",
+                  "      );",
+                  "      pm.expect(",
+                  "        validate(file),",
+                  "        JSON.stringify(validate.errors, null, 2),",
+                  "      ).to.equal(true);",
+                  "    });",
+                  "  });",
+                  "}",
+                  "",
+                  "const url = pm.request.url.toString();",
+                  "if (pm.response.code === 200) {",
+                  "  check(pm.response.json(), url);",
+                  "} else if (pm.response.code === 404 && SPLIT) {",
+                  "  // Not published whole: it may be split into <name>/0.json, <name>/1.json…",
+                  "  const shard = url.replace(/\\.json$/, \"/0.json\");",
+                  "  pm.sendRequest(shard, (error, response) => {",
+                  "    pm.test(\"Published whole or as shards\", () => {",
+                  "      pm.expect(error, \"shard request\").to.equal(null);",
+                  "      pm.expect(response.code, \"not published in this release\").to.equal(200);",
+                  "    });",
+                  "    if (error === null && response.code === 200) check(response.json(), shard);",
+                  "  });",
+                  "} else {",
+                  "  pm.test(\"Loads\", () => {",
+                  "    pm.expect(pm.response.code, \"not published in this release\").to.equal(200);",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/releases/{{release}}/results/{{state}}/{{county}}/{{species}}.json",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "releases",
+                "{{release}}",
+                "results",
+                "{{state}}",
+                "{{county}}",
+                "{{species}}.json"
+              ]
+            },
+            "description": "A species' weekly result for a county.\n\nPath: `releases/{{release}}/results/{{state}}/{{county}}/{{species}}.json`. Format: `county-weekly/1`, schema `schemas/county-weekly-1.json`.\n- `{{state}}`: a state code, `us-` and the postal abbreviation\n- `{{county}}`: a county's 5-digit Census code (GEOID)\n- `{{species}}`: a species key, from the catalogue"
+          },
+          "response": [
+            {
+              "name": "Example (made up)",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/releases/{{release}}/results/{{state}}/{{county}}/{{species}}.json",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "releases",
+                    "{{release}}",
+                    "results",
+                    "{{state}}",
+                    "{{county}}",
+                    "{{species}}.json"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": \"releases/2026-01-05/results/us-zz/99001/EX1.json\",\n  \"kind\": \"county-weekly\",\n  \"format\": \"county-weekly/1.0\",\n  \"provenance\": {\n    \"release\": \"2026-01-05\",\n    \"sources\": [\"example\"],\n    \"licences\": [\"CC-BY-4.0\"],\n    \"gbif_download_dois\": [\"10.0000/example\"],\n    \"method\": \"test-1\",\n    \"taxonomy\": \"test-taxonomy\",\n    \"boundaries\": \"test-boundaries\",\n    \"ranges\": null,\n    \"protection\": null,\n    \"code\": \"0.0.0\",\n    \"run\": \"run-1\"\n  },\n  \"data\": {\n    \"area\": \"99001\",\n    \"species_key\": \"EX1\",\n    \"included_records\": 168,\n    \"contributing_years\": 4,\n    \"thresholds\": {\n      \"records\": 20,\n      \"years\": 5\n    },\n    \"weekly\": {\n      \"records\": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 9, 10, 10, 10, 10, 10, 10, 9, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],\n      \"years\": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 3, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]\n    },\n    \"season\": [14, 22, 35],\n    \"season_withheld\": null,\n    \"effort\": [40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40],\n    \"limits\": \"These results show when people recorded a species, not when or where it occurs.\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Backyard",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const KIND = \"backyard\";",
+                  "const SPLIT = true;",
+                  "function saved(file) {",
+                  "  // Nothing to save.",
+                  "}",
+                  "",
+                  "// The test every request in the Postman collection runs, in Postman's script",
+                  "// sandbox. scripts/postman.ts puts it after each request's `KIND`, `SPLIT`",
+                  "// and `saved(file)`, which saves values for later requests. It checks that",
+                  "// the file loads, is the expected kind and major format version, and matches",
+                  "// its JSON Schema, which it reads from the release's schemas/ folder. A file",
+                  "// split into shards is checked through its first shard.",
+                  "",
+                  "const MAJOR = 1;",
+                  "",
+                  "/**",
+                  " * Postman's validator reads JSON Schema draft-07, and these schemas are",
+                  " * 2020-12. The only 2020-12 keyword they use is `prefixItems`, which becomes",
+                  " * draft-07's tuple form: `items` as a list, and `additionalItems` for what",
+                  " * `items` said about the rest.",
+                  " */",
+                  "function draft07(node) {",
+                  "  if (Array.isArray(node)) return node.map(draft07);",
+                  "  if (node === null || typeof node !== \"object\") return node;",
+                  "  const out = {};",
+                  "  for (const [key, value] of Object.entries(node))",
+                  "    if (key !== \"$schema\" && key !== \"prefixItems\") out[key] = draft07(value);",
+                  "  if (\"prefixItems\" in node) {",
+                  "    out.items = draft07(node.prefixItems);",
+                  "    out.additionalItems = \"items\" in node ? draft07(node.items) : true;",
+                  "  }",
+                  "  return out;",
+                  "}",
+                  "",
+                  "function check(file, url) {",
+                  "  saved(file);",
+                  "  pm.test(`${KIND}/${String(MAJOR)}: ${url}`, () => {",
+                  "    pm.expect(file.kind, \"kind\").to.equal(KIND);",
+                  "    pm.expect(file.format, \"format\").to.match(",
+                  "      new RegExp(`^${KIND}/${String(MAJOR)}\\\\.\\\\d+$`),",
+                  "    );",
+                  "  });",
+                  "  const schema = `${pm.variables.get(\"baseUrl\")}/releases/${pm.variables.get(\"release\")}/schemas/${KIND}-${String(MAJOR)}.json`;",
+                  "  pm.sendRequest(schema, (error, response) => {",
+                  "    pm.test(`Matches schemas/${KIND}-${String(MAJOR)}.json`, () => {",
+                  "      pm.expect(error, \"schema request\").to.equal(null);",
+                  "      pm.expect(response.code, \"schema status\").to.equal(200);",
+                  "      const Ajv = require(\"ajv\");",
+                  "      const validate = new Ajv({ allErrors: true }).compile(",
+                  "        draft07(response.json()),",
+                  "      );",
+                  "      pm.expect(",
+                  "        validate(file),",
+                  "        JSON.stringify(validate.errors, null, 2),",
+                  "      ).to.equal(true);",
+                  "    });",
+                  "  });",
+                  "}",
+                  "",
+                  "const url = pm.request.url.toString();",
+                  "if (pm.response.code === 200) {",
+                  "  check(pm.response.json(), url);",
+                  "} else if (pm.response.code === 404 && SPLIT) {",
+                  "  // Not published whole: it may be split into <name>/0.json, <name>/1.json…",
+                  "  const shard = url.replace(/\\.json$/, \"/0.json\");",
+                  "  pm.sendRequest(shard, (error, response) => {",
+                  "    pm.test(\"Published whole or as shards\", () => {",
+                  "      pm.expect(error, \"shard request\").to.equal(null);",
+                  "      pm.expect(response.code, \"not published in this release\").to.equal(200);",
+                  "    });",
+                  "    if (error === null && response.code === 200) check(response.json(), shard);",
+                  "  });",
+                  "} else {",
+                  "  pm.test(\"Loads\", () => {",
+                  "    pm.expect(pm.response.code, \"not published in this release\").to.equal(200);",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/releases/{{release}}/backyard/{{state}}/{{county}}.json",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "releases",
+                "{{release}}",
+                "backyard",
+                "{{state}}",
+                "{{county}}.json"
+              ]
+            },
+            "description": "A county's Backyard label for each species and week.\n\nPath: `releases/{{release}}/backyard/{{state}}/{{county}}.json`. Format: `backyard/1`, schema `schemas/backyard-1.json`.\n- `{{state}}`: a state code, `us-` and the postal abbreviation\n- `{{county}}`: a county's 5-digit Census code (GEOID)"
+          },
+          "response": [
+            {
+              "name": "Example (made up)",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/releases/{{release}}/backyard/{{state}}/{{county}}.json",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "releases",
+                    "{{release}}",
+                    "backyard",
+                    "{{state}}",
+                    "{{county}}.json"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": \"releases/2026-01-05/backyard/us-zz/99001.json\",\n  \"kind\": \"backyard\",\n  \"format\": \"backyard/1.0\",\n  \"provenance\": {\n    \"release\": \"2026-01-05\",\n    \"sources\": [\"example\"],\n    \"licences\": [\"CC-BY-4.0\"],\n    \"gbif_download_dois\": [\"10.0000/example\"],\n    \"method\": \"test-1\",\n    \"taxonomy\": \"test-taxonomy\",\n    \"boundaries\": \"test-boundaries\",\n    \"ranges\": null,\n    \"protection\": null,\n    \"code\": \"0.0.0\",\n    \"run\": \"run-1\"\n  },\n  \"data\": {\n    \"area\": \"99001\",\n    \"method\": \"test-1\",\n    \"evidence_through\": \"2025-12-31\",\n    \"effort\": [40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40],\n    \"species\": [\n      {\n        \"species_key\": \"EX1\",\n        \"group\": \"birds\",\n        \"labels\": \"nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn\",\n        \"range\": null\n      }\n    ]\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Attribution",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const KIND = \"attribution\";",
+                  "const SPLIT = true;",
+                  "function saved(file) {",
+                  "  // Nothing to save.",
+                  "}",
+                  "",
+                  "// The test every request in the Postman collection runs, in Postman's script",
+                  "// sandbox. scripts/postman.ts puts it after each request's `KIND`, `SPLIT`",
+                  "// and `saved(file)`, which saves values for later requests. It checks that",
+                  "// the file loads, is the expected kind and major format version, and matches",
+                  "// its JSON Schema, which it reads from the release's schemas/ folder. A file",
+                  "// split into shards is checked through its first shard.",
+                  "",
+                  "const MAJOR = 1;",
+                  "",
+                  "/**",
+                  " * Postman's validator reads JSON Schema draft-07, and these schemas are",
+                  " * 2020-12. The only 2020-12 keyword they use is `prefixItems`, which becomes",
+                  " * draft-07's tuple form: `items` as a list, and `additionalItems` for what",
+                  " * `items` said about the rest.",
+                  " */",
+                  "function draft07(node) {",
+                  "  if (Array.isArray(node)) return node.map(draft07);",
+                  "  if (node === null || typeof node !== \"object\") return node;",
+                  "  const out = {};",
+                  "  for (const [key, value] of Object.entries(node))",
+                  "    if (key !== \"$schema\" && key !== \"prefixItems\") out[key] = draft07(value);",
+                  "  if (\"prefixItems\" in node) {",
+                  "    out.items = draft07(node.prefixItems);",
+                  "    out.additionalItems = \"items\" in node ? draft07(node.items) : true;",
+                  "  }",
+                  "  return out;",
+                  "}",
+                  "",
+                  "function check(file, url) {",
+                  "  saved(file);",
+                  "  pm.test(`${KIND}/${String(MAJOR)}: ${url}`, () => {",
+                  "    pm.expect(file.kind, \"kind\").to.equal(KIND);",
+                  "    pm.expect(file.format, \"format\").to.match(",
+                  "      new RegExp(`^${KIND}/${String(MAJOR)}\\\\.\\\\d+$`),",
+                  "    );",
+                  "  });",
+                  "  const schema = `${pm.variables.get(\"baseUrl\")}/releases/${pm.variables.get(\"release\")}/schemas/${KIND}-${String(MAJOR)}.json`;",
+                  "  pm.sendRequest(schema, (error, response) => {",
+                  "    pm.test(`Matches schemas/${KIND}-${String(MAJOR)}.json`, () => {",
+                  "      pm.expect(error, \"schema request\").to.equal(null);",
+                  "      pm.expect(response.code, \"schema status\").to.equal(200);",
+                  "      const Ajv = require(\"ajv\");",
+                  "      const validate = new Ajv({ allErrors: true }).compile(",
+                  "        draft07(response.json()),",
+                  "      );",
+                  "      pm.expect(",
+                  "        validate(file),",
+                  "        JSON.stringify(validate.errors, null, 2),",
+                  "      ).to.equal(true);",
+                  "    });",
+                  "  });",
+                  "}",
+                  "",
+                  "const url = pm.request.url.toString();",
+                  "if (pm.response.code === 200) {",
+                  "  check(pm.response.json(), url);",
+                  "} else if (pm.response.code === 404 && SPLIT) {",
+                  "  // Not published whole: it may be split into <name>/0.json, <name>/1.json…",
+                  "  const shard = url.replace(/\\.json$/, \"/0.json\");",
+                  "  pm.sendRequest(shard, (error, response) => {",
+                  "    pm.test(\"Published whole or as shards\", () => {",
+                  "      pm.expect(error, \"shard request\").to.equal(null);",
+                  "      pm.expect(response.code, \"not published in this release\").to.equal(200);",
+                  "    });",
+                  "    if (error === null && response.code === 200) check(response.json(), shard);",
+                  "  });",
+                  "} else {",
+                  "  pm.test(\"Loads\", () => {",
+                  "    pm.expect(pm.response.code, \"not published in this release\").to.equal(200);",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/releases/{{release}}/attribution/{{state}}/{{species}}.json",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "releases",
+                "{{release}}",
+                "attribution",
+                "{{state}}",
+                "{{species}}.json"
+              ]
+            },
+            "description": "The sources behind a result.\n\nPath: `releases/{{release}}/attribution/{{state}}/{{species}}.json`. Format: `attribution/1`, schema `schemas/attribution-1.json`.\n- `{{state}}`: a state code, `us-` and the postal abbreviation\n- `{{species}}`: a species key, from the catalogue\n- For a county, add it before the species: `attribution/{{state}}/{{county}}/{{species}}.json`"
+          },
+          "response": [
+            {
+              "name": "Example (made up)",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/releases/{{release}}/attribution/{{state}}/{{species}}.json",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "releases",
+                    "{{release}}",
+                    "attribution",
+                    "{{state}}",
+                    "{{species}}.json"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": \"releases/2026-01-05/attribution/us-zz/EX1.json\",\n  \"kind\": \"attribution\",\n  \"format\": \"attribution/1.0\",\n  \"provenance\": {\n    \"release\": \"2026-01-05\",\n    \"sources\": [\"example\"],\n    \"licences\": [\"CC-BY-4.0\"],\n    \"gbif_download_dois\": [\"10.0000/example\"],\n    \"method\": \"test-1\",\n    \"taxonomy\": \"test-taxonomy\",\n    \"boundaries\": \"test-boundaries\",\n    \"ranges\": null,\n    \"protection\": null,\n    \"code\": \"0.0.0\",\n    \"run\": \"run-1\"\n  },\n  \"data\": {\n    \"area\": \"us-zz\",\n    \"species_key\": \"EX1\",\n    \"datasets\": [\n      {\n        \"dataset_key\": \"d1\",\n        \"title\": \"Example dataset\",\n        \"publisher\": null,\n        \"citation\": null,\n        \"url\": null,\n        \"records\": 120\n      }\n    ],\n    \"gbif_download_dois\": [\"10.0000/example\"],\n    \"record_links\": null\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "6. Schemas",
+      "description": "The JSON Schema for each format, as each release copies it from this package. Set `file` in Params to another `<kind>-1.json`.",
+      "item": [
+        {
+          "name": "Schema",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Is a JSON Schema 2020-12\", () => {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(pm.response.json().$schema).to.equal(",
+                  "    \"https://json-schema.org/draft/2020-12/schema\",",
+                  "  );",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/releases/{{release}}/schemas/:file",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "releases",
+                "{{release}}",
+                "schemas",
+                ":file"
+              ],
+              "variable": [
+                {
+                  "key": "file",
+                  "value": "catalogue-1.json",
+                  "description": "`<kind>-<major>.json`"
+                }
+              ]
+            },
+            "description": "A format's JSON Schema, with every field described. `all-1.json` holds them all, by kind."
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://api.openphenology.com",
+      "type": "string",
+      "description": "The API."
+    },
+    {
+      "key": "release",
+      "value": "2026-10-19",
+      "type": "string",
+      "description": "A release ID, its date."
+    },
+    {
+      "key": "state",
+      "value": "us-oh",
+      "type": "string",
+      "description": "A state code."
+    },
+    {
+      "key": "county",
+      "value": "39049",
+      "type": "string",
+      "description": "A county's 5-digit Census code."
+    },
+    {
+      "key": "species",
+      "value": "example-species",
+      "type": "string",
+      "description": "A species key."
+    },
+    {
+      "key": "zip",
+      "value": "43215",
+      "type": "string",
+      "description": "A 5-digit ZIP code."
+    }
+  ]
+}

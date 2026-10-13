@@ -8,6 +8,9 @@ All notable changes to this package are recorded here. The format follows
 
 ### Added
 
+- A Postman collection in `postman/` (not in the npm package): a request for
+  every published file kind, with descriptions, examples and tests that check
+  each file against its JSON Schema.
 - `weekOf`, `BACKYARD_LABELS` and `backyardLabel`: weeks and Backyard
   labels as the data rules define them, so every reader counts weeks the way
   the data was made.
