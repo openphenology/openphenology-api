@@ -42,6 +42,18 @@ county)`.
 - Results show when people recorded a species, not when or where it occurs.
   Each result carries this note in `data.limits`.
 
+## Schemas
+
+The package includes a JSON Schema (2020-12) for each file format, named
+`<kind>-<major>.json`. Use them to check files with any JSON Schema validator:
+
+```ts
+import schema from "@openphenology/api/schemas/county-weekly-1.json" with { type: "json" };
+```
+
+A schema accepts every minor version of its major version, and fields a later
+minor version adds.
+
 ## Requirements
 
 Works on servers and in browsers:
@@ -66,6 +78,7 @@ pnpm install
 pnpm exec playwright install chromium firefox webkit   # test browsers
 pnpm check    # formatting, lint, typecheck, tests in Node.js and browsers, build, size
 pnpm format   # fix formatting
+pnpm schemas  # write schemas/*.json from schemas/index.ts
 ```
 
 ## Licence

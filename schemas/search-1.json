@@ -1,0 +1,175 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "OpenPhenology search/1",
+  "description": "Every searchable name, as [name, kind, species key]. May be split into shards.",
+  "type": "object",
+  "required": [
+    "id",
+    "kind",
+    "format",
+    "provenance",
+    "data"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "kind": {
+      "const": "search"
+    },
+    "format": {
+      "type": "string",
+      "pattern": "^search/1\\.\\d+$"
+    },
+    "provenance": {
+      "type": "object",
+      "required": [
+        "release",
+        "sources",
+        "licences",
+        "gbif_download_dois",
+        "method",
+        "taxonomy",
+        "boundaries",
+        "ranges",
+        "protection",
+        "code",
+        "run"
+      ],
+      "properties": {
+        "release": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "licences": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "gbif_download_dois": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "method": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "taxonomy": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "boundaries": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "ranges": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "protection": {
+          "anyOf": [
+            {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "code": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "run": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "data": {
+      "type": "object",
+      "required": [
+        "names"
+      ],
+      "properties": {
+        "names": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "enum": [
+                  "scientific",
+                  "common",
+                  "synonym"
+                ]
+              },
+              {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9._-]+$"
+              }
+            ],
+            "items": false,
+            "minItems": 3
+          }
+        }
+      }
+    }
+  }
+}

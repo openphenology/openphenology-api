@@ -299,6 +299,8 @@ async function sha256(text: string): Promise<string> {
 export interface FakeServer {
   readonly fetch: typeof fetch;
   readonly requests: string[];
+  /** Every file served, by path from the API root. */
+  readonly files: ReadonlyMap<string, string>;
   /** Replace a file's body as served, without changing the manifest. */
   readonly tamper: (path: string, body: string) => void;
   /** Answer the next requests for a path with these statuses first. */
@@ -407,6 +409,7 @@ export async function fakeServer(): Promise<FakeServer> {
   return {
     fetch: fakeFetch,
     requests,
+    files: bodies,
     tamper: (path, body) => bodies.set(path, body),
     failNext: (path, ...statuses) => failures.set(path, statuses),
   };
