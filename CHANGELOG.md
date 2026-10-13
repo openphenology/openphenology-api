@@ -8,6 +8,17 @@ All notable changes to this package are recorded here. The format follows
 
 ### Added
 
+- Data rules 1.24, each readable alongside the earlier files:
+  - `species/1.3`: `inaturalist_taxon_id`, the species' iNaturalist taxon
+    ID or `null`.
+  - `search/1.1`: names of kind `other-name`, the species' other English
+    common names.
+  - `backyard/1.1`: each species' county `records`, `weekly`, `season` and
+    `season_withheld`, repeating its county result, or `null`, `null`, `[]`
+    and `null` without one.
+  - The manifest lists `archive.tar.gz`, every other file of the release in
+    one download, with `format` `null`; `ManifestEntry.format` is now
+    `string | null`.
 - `terms/1.1`: `scope`, what the CC BY 4.0 licence covers, word for word as
   the data rules give it (data rules 1.23). `terms/1.0` files, which lack it,
   still read.

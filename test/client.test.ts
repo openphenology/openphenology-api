@@ -185,6 +185,7 @@ describe("files", () => {
     expect((await release.searchNames()).map(([name]) => name)).toEqual([
       "Exemplum primum",
       "Example bird",
+      "Sample songbird",
     ]);
     expect((await release.groups())?.data.groups[0]?.group).toBe("birds");
     expect((await release.notes())?.data.results.added).toBe(2);

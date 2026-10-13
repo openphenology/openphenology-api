@@ -1,7 +1,7 @@
 {
   "id": "releases/2026-01-05/species/EX1.json",
   "kind": "species",
-  "format": "species/1.2",
+  "format": "species/1.3",
   "provenance": {
     "release": "2026-01-05",
     "sources": ["example"],
@@ -58,6 +58,7 @@
         "listed_name": "Exemplum primum",
         "status": "invasive"
       }
-    ]
+    ],
+    "inaturalist_taxon_id": 900001
   }
 }

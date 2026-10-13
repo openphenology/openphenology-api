@@ -1,7 +1,7 @@
 {
   "id": "releases/2026-01-05/backyard/us-zz/99001.json",
   "kind": "backyard",
-  "format": "backyard/1.0",
+  "format": "backyard/1.1",
   "provenance": {
     "release": "2026-01-05",
     "sources": ["example"],
@@ -25,7 +25,11 @@
         "species_key": "EX1",
         "group": "birds",
         "labels": "nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn",
-        "range": null
+        "range": null,
+        "records": 40,
+        "weekly": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+        "season": [14, 22, 35],
+        "season_withheld": null
       }
     ]
   }
