@@ -15,6 +15,7 @@ All notable changes to this package are recorded here. The format follows
   terms.
 - Files split into shards are read as one file.
 - A pinned release that is not available is an `ApiError` when it opens.
+- `client.release({ refresh: true })` picks up a new current release.
 - Optional SHA-256 checks against the release manifest.
 - Timeouts, retries, and `ApiError` and `FormatError` errors.
 - TypeScript types for the published files.
