@@ -8,6 +8,9 @@ All notable changes to this package are recorded here. The format follows
 
 ### Added
 
+- `species/1.2`: each species has `introductions`, its US-RIIS listings in
+  the lower 48 states as introduced or invasive (data rules 1.22), as
+  `SpeciesIntroduction`. Earlier species files, which lack it, still read.
 - `species/1.1`: each species has `statuses`, its listings on the federal
   Endangered Species Act list and Ohio's lists (data rules 1.21), as
   `SpeciesListing`. `species/1.0` files, which lack it, still read.

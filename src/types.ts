@@ -298,6 +298,12 @@ export type SpeciesFile = PublishedFile<
      * `species/1.1`, so absent from `species/1.0` files.
      */
     readonly statuses?: readonly SpeciesListing[];
+    /**
+     * The species' US-RIIS listings in the lower 48 states: introduced, or
+     * introduced and assessed as invasive. Empty when it is not listed, which
+     * never means native. Added in `species/1.2`, so absent from earlier files.
+     */
+    readonly introductions?: readonly SpeciesIntroduction[];
   }
 >;
 
@@ -313,6 +319,18 @@ export interface SpeciesListing {
   readonly status: string;
   /** The federal list's own description of where the listing applies, such as `Wherever found`; `null` for a state list. */
   readonly where: string | null;
+}
+
+/** One US-RIIS listing of a species, or of a subspecies or variety of it. */
+export interface SpeciesIntroduction {
+  /** The list: US-RIIS ver. 2.0, conterminous 48 states. */
+  readonly source: "us-riis-l48-v2";
+  /** Where the listing applies: the 48 conterminous states and DC. */
+  readonly region: "us-l48";
+  /** The scientific name the list gives; it shows when only a subspecies or variety is listed. */
+  readonly listed_name: string;
+  /** `introduced`, or `invasive`: causing, or likely to cause, harm there. */
+  readonly status: "introduced" | "invasive";
 }
 
 /** `slugs.json`: species page slugs and redirects. */

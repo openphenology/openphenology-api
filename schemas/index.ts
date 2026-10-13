@@ -468,10 +468,19 @@ export const schemas = {
               where: nullable(text),
             }),
           ),
+          introductions: list(
+            object({
+              source: { const: "us-riis-l48-v2" },
+              region: { const: "us-l48" },
+              listed_name: text,
+              status: { enum: ["introduced", "invasive"] },
+            }),
+          ),
         },
       ),
     ),
     sinceMinorData("species", 1, ["statuses"]),
+    sinceMinorData("species", 2, ["introductions"]),
   ),
 
   slugs: file(

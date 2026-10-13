@@ -1,7 +1,7 @@
 {
   "id": "releases/2026-01-05/species/EX1.json",
   "kind": "species",
-  "format": "species/1.1",
+  "format": "species/1.2",
   "provenance": {
     "release": "2026-01-05",
     "sources": ["example"],
@@ -49,6 +49,14 @@
         "listed_name": "Exemplum primum",
         "status": "Threatened",
         "where": "Wherever found"
+      }
+    ],
+    "introductions": [
+      {
+        "source": "us-riis-l48-v2",
+        "region": "us-l48",
+        "listed_name": "Exemplum primum",
+        "status": "invasive"
       }
     ]
   }

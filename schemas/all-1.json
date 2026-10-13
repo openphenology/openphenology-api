@@ -2107,6 +2107,41 @@
                 }
               }
             }
+          },
+          "introductions": {
+            "description": "The species' US-RIIS listings in the lower 48 states: introduced, or\nintroduced and assessed as invasive. Empty when it is not listed, which\nnever means native. Added in `species/1.2`, so absent from earlier files.",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "source",
+                "region",
+                "listed_name",
+                "status"
+              ],
+              "properties": {
+                "source": {
+                  "description": "The list: US-RIIS ver. 2.0, conterminous 48 states.",
+                  "const": "us-riis-l48-v2"
+                },
+                "region": {
+                  "description": "Where the listing applies: the 48 conterminous states and DC.",
+                  "const": "us-l48"
+                },
+                "listed_name": {
+                  "description": "The scientific name the list gives; it shows when only a subspecies or variety is listed.",
+                  "type": "string",
+                  "minLength": 1
+                },
+                "status": {
+                  "description": "`introduced`, or `invasive`: causing, or likely to cause, harm there.",
+                  "enum": [
+                    "introduced",
+                    "invasive"
+                  ]
+                }
+              }
+            }
           }
         }
       }
@@ -2133,6 +2168,33 @@
               },
               "required": [
                 "statuses"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "if": {
+          "type": "object",
+          "properties": {
+            "format": {
+              "enum": [
+                "species/1.0",
+                "species/1.1"
+              ]
+            }
+          }
+        },
+        "else": {
+          "type": "object",
+          "properties": {
+            "data": {
+              "type": "object",
+              "properties": {
+                "introductions": true
+              },
+              "required": [
+                "introductions"
               ]
             }
           }

@@ -90,6 +90,16 @@ describe("schemas", () => {
     expect(errors(file)).toEqual([]);
   });
 
+  test("a species/1.1 file needs no introductions", async () => {
+    const file = structuredClone(
+      (await published()).get("releases/2026-01-05/species/EX1.json"),
+    );
+    if (!file) throw new Error("missing fixture");
+    file.format = "species/1.1";
+    delete file.data.introductions;
+    expect(errors(file)).toEqual([]);
+  });
+
   test("fields a later minor version adds are allowed", async () => {
     const file = structuredClone(
       (await published()).get("releases/2026-01-05/methods.json"),
@@ -200,6 +210,27 @@ describe("schemas reject", () => {
       "releases/2026-01-05/species/EX1.json",
       (f) => {
         first(f.data.statuses).place = "99001";
+      },
+    ],
+    [
+      "a species/1.2 file without introductions",
+      "releases/2026-01-05/species/EX1.json",
+      (f) => {
+        delete f.data.introductions;
+      },
+    ],
+    [
+      "an introduction from another source",
+      "releases/2026-01-05/species/EX1.json",
+      (f) => {
+        first(f.data.introductions).source = "griis-canada";
+      },
+    ],
+    [
+      "an introduction saying native",
+      "releases/2026-01-05/species/EX1.json",
+      (f) => {
+        first(f.data.introductions).status = "native";
       },
     ],
     [
