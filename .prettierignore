@@ -6,3 +6,6 @@ schemas/*.json
 schemas/examples/*.json
 docs
 .readme
+# Written by pnpm postman
+postman/*.json
+scripts/postman-collection-v2.1.0.schema.json

@@ -73,4 +73,25 @@ export default tseslint.config(
     },
   },
   { files: ["eslint.config.js"], ...tseslint.configs.disableTypeChecked },
+  {
+    // Runs in Postman's script sandbox, as part of each request's test.
+    files: ["scripts/postman-sandbox.js"],
+    ...tseslint.configs.disableTypeChecked,
+    languageOptions: {
+      ...tseslint.configs.disableTypeChecked.languageOptions,
+      sourceType: "script",
+      globals: {
+        pm: "readonly",
+        require: "readonly",
+        KIND: "readonly",
+        SPLIT: "readonly",
+        saved: "readonly",
+      },
+    },
+    // The sandbox loads its bundled libraries, such as ajv, with require().
+    rules: {
+      ...tseslint.configs.disableTypeChecked.rules,
+      "@typescript-eslint/no-require-imports": "off",
+    },
+  },
 );

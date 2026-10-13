@@ -51,8 +51,10 @@
     "docs:check": "typedoc --emit none && node scripts/llms.ts && node scripts/readme.ts",
     "schemas": "node scripts/schemas.ts",
     "schemas:check": "node scripts/schemas.ts --check",
+    "postman": "node scripts/postman.ts",
+    "postman:check": "node scripts/postman.ts --check && node scripts/newman.ts",
     "check": "pnpm check:node && vitest run --project 'browser*'",
-    "check:node": "pnpm format:check && pnpm schemas:check && pnpm lint && pnpm typecheck && pnpm docs:check && pnpm test:node && pnpm build && pnpm size",
+    "check:node": "pnpm format:check && pnpm schemas:check && pnpm postman:check && pnpm lint && pnpm typecheck && pnpm docs:check && pnpm test:node && pnpm build && pnpm size",
     "size": "node scripts/size.mjs"
   },
   "devDependencies": {
@@ -61,8 +63,10 @@
     "@vitest/browser-playwright": "5.0.3",
     "@vitest/coverage-v8": "5.0.3",
     "ajv": "8.20.0",
+    "ajv-draft-04": "1.0.0",
     "eslint": "10.12.0",
     "eslint-plugin-jsdoc": "65.1.0",
+    "newman": "6.2.2",
     "playwright": "1.64.0",
     "prettier": "3.9.10",
     "typedoc": "0.28.20",

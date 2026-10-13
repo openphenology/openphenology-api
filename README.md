@@ -192,6 +192,13 @@ import schema from "@openphenology/api/schemas/county-weekly-1.json" with { type
 import example from "@openphenology/api/schemas/examples/county-weekly-1.json" with { type: "json" };
 ```
 
+## Try it in Postman
+
+[`postman/`](postman/README.md) has a Postman collection with a request for
+every published file, each with a description, an example and tests. In
+Postman, choose **Import** and paste
+`https://raw.githubusercontent.com/openphenology/openphenology-api/main/postman/openphenology.postman_collection.json`.
+
 ## More
 
 - [CHANGELOG.md](CHANGELOG.md): what changed in each version. Versions follow
