@@ -39,9 +39,9 @@
       },
       {
         "path": "species/EX1.json",
-        "sha256": "a5c846cce4ab9cd4e704fd389560586466cc1331d97564ae19785b2519a682f6",
-        "format": "species/1.2",
-        "bytes": 985
+        "sha256": "31a2f3bd543104051595caffdb2f9f95a2f34b14d23e3a016806e07676eed532",
+        "format": "species/1.3",
+        "bytes": 1015
       },
       {
         "path": "slugs.json",
@@ -57,9 +57,9 @@
       },
       {
         "path": "search/index.json",
-        "sha256": "ddbe194ae1497fb9e07926eae984192e9c1c6e7fc932c450cc3530fd7b0b050a",
-        "format": "search/1.0",
-        "bytes": 437
+        "sha256": "8571c6ad55d1b6873ca13ce317d4675585f91b6c554388bcdddc8101f10f6752",
+        "format": "search/1.1",
+        "bytes": 476
       },
       {
         "path": "regions/us-zz.json",
@@ -75,9 +75,9 @@
       },
       {
         "path": "backyard/us-zz/99001.json",
-        "sha256": "e1cb8c48fd358e4a70790c820b354a78ca0a07e9ee8b59a3a4fc5c68c81a89f8",
-        "format": "backyard/1.0",
-        "bytes": 731
+        "sha256": "376554c40305f481624346c89b853ed7fc36a0acec84ccda28bf62a96d12fc76",
+        "format": "backyard/1.1",
+        "bytes": 904
       },
       {
         "path": "methods.json",
@@ -114,6 +114,12 @@
         "sha256": "6502115386a34b5e9b7046a0d5f4633aa6ed1bba729a8df90e8b62de634d5293",
         "format": "county-weekly/1.0",
         "bytes": 1055
+      },
+      {
+        "path": "archive.tar.gz",
+        "sha256": "eac08293266f6a619ff1dc43a3100fb86aaf596bd581fc111d3818cef37a066c",
+        "format": null,
+        "bytes": 15
       }
     ],
     "counts": {

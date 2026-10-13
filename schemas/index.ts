@@ -128,6 +128,25 @@ const seasonMatchesWithheld: Schema = {
     },
   ],
 };
+/** `format` is null for `archive.tar.gz`, the one file that is not JSON, and only for it. */
+const archiveHasNoFormat: Schema = {
+  anyOf: [
+    {
+      type: "object",
+      properties: {
+        path: { const: "archive.tar.gz" },
+        format: { type: "null" },
+      },
+    },
+    {
+      type: "object",
+      properties: {
+        path: { not: { const: "archive.tar.gz" } },
+        format: { type: "string" },
+      },
+    },
+  ],
+};
 const season = list(week, { maxItems: 3 });
 const seasonWithheld = nullable({
   enum: ["year-round", "two-seasons", "one-year", "precision"],
@@ -356,12 +375,15 @@ export const schemas = {
       release: date,
       published_at: time,
       files: list(
-        object({
-          path: text,
-          format: pattern("^[a-z]+(-[a-z]+)*/\\d+\\.\\d+$"),
-          sha256: pattern("^[0-9a-f]{64}$"),
-          bytes: count,
-        }),
+        object(
+          {
+            path: text,
+            format: nullable(pattern("^[a-z]+(-[a-z]+)*/\\d+\\.\\d+$")),
+            sha256: pattern("^[0-9a-f]{64}$"),
+            bytes: count,
+          },
+          archiveHasNoFormat,
+        ),
       ),
       counts: object({
         species: count,
@@ -482,11 +504,13 @@ export const schemas = {
               status: { enum: ["introduced", "invasive"] },
             }),
           ),
+          inaturalist_taxon_id: nullable({ type: "integer", minimum: 1 }),
         },
       ),
     ),
     sinceMinorData("species", 1, ["statuses"]),
     sinceMinorData("species", 2, ["introductions"]),
+    sinceMinorData("species", 3, ["inaturalist_taxon_id"]),
   ),
 
   slugs: file(
@@ -521,7 +545,11 @@ export const schemas = {
     "Every searchable name, as [name, kind, species key]. May be split into shards.",
     object({
       names: list(
-        tuple(text, { enum: ["scientific", "common", "synonym"] }, speciesKey),
+        tuple(
+          text,
+          { enum: ["scientific", "common", "other-name", "synonym"] },
+          speciesKey,
+        ),
       ),
     }),
   ),
@@ -583,24 +611,37 @@ export const schemas = {
     }),
   ),
 
-  backyard: file(
-    "backyard",
-    "A county's Backyard label for each species and week.",
-    object({
-      area: county,
-      method: text,
-      evidence_through: nullable(date),
-      effort: weekly,
-      species: list(
-        object({
-          species_key: speciesKey,
-          group: nullable(group),
-          labels: pattern("^[csrmn]{53}$"),
-          range: nullable(
-            object({ source: nullable(string), seasons: rangeSeasons }),
+  backyard: withRules(
+    file(
+      "backyard",
+      "A county's Backyard label for each species and week.",
+      object({
+        area: county,
+        method: text,
+        evidence_through: nullable(date),
+        effort: weekly,
+        species: list(
+          withOptional(
+            object({
+              species_key: speciesKey,
+              group: nullable(group),
+              labels: pattern("^[csrmn]{53}$"),
+              range: nullable(
+                object({ source: nullable(string), seasons: rangeSeasons }),
+              ),
+            }),
+            {
+              records: nullable(count),
+              weekly: nullable(weekly),
+              season,
+              season_withheld: seasonWithheld,
+            },
           ),
-        }),
-      ),
+        ),
+      }),
+    ),
+    sinceMinor("backyard", 1, {
+      species: ["records", "weekly", "season", "season_withheld"],
     }),
   ),
 

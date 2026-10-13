@@ -191,9 +191,16 @@
                 "minLength": 1
               },
               "format": {
-                "description": "Its format and version, such as `catalogue/1.0`.",
-                "type": "string",
-                "pattern": "^[a-z]+(-[a-z]+)*/\\d+\\.\\d+$"
+                "description": "Its format and version, such as `catalogue/1.0`; `null` for\n`archive.tar.gz`, the release's one file that is not JSON.",
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^[a-z]+(-[a-z]+)*/\\d+\\.\\d+$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
               },
               "sha256": {
                 "description": "Its lowercase hex SHA-256.",
@@ -205,7 +212,37 @@
                 "type": "integer",
                 "minimum": 0
               }
-            }
+            },
+            "allOf": [
+              {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "path": {
+                        "const": "archive.tar.gz"
+                      },
+                      "format": {
+                        "type": "null"
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "path": {
+                        "not": {
+                          "const": "archive.tar.gz"
+                        }
+                      },
+                      "format": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
           }
         },
         "counts": {

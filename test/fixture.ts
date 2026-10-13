@@ -19,7 +19,12 @@ const weeks = (value: number): number[] =>
 export const RELEASE = "2026-01-05";
 
 /** Formats the made-up release publishes at a later minor version than 1.0. */
-const MINOR: Readonly<Record<string, number>> = { catalogue: 1, species: 2 };
+const MINOR: Readonly<Record<string, number>> = {
+  catalogue: 1,
+  species: 3,
+  search: 1,
+  backyard: 1,
+};
 
 /** Wraps data as the release file at `path`. */
 export const wrap = (path: string, kind: string, data: unknown) => ({
@@ -139,6 +144,7 @@ const files: [string, string, unknown][] = [
           status: "invasive",
         },
       ],
+      inaturalist_taxon_id: 900001,
     },
   ],
   [
@@ -163,6 +169,7 @@ const files: [string, string, unknown][] = [
       names: [
         ["Exemplum primum", "scientific", "EX1"],
         ["Example bird", "common", "EX1"],
+        ["Sample songbird", "other-name", "EX1"],
       ],
     },
   ],
@@ -220,6 +227,10 @@ const files: [string, string, unknown][] = [
           group: "birds",
           labels: "n".repeat(53),
           range: null,
+          records: 40,
+          weekly: weeks(1),
+          season: [14, 22, 35],
+          season_withheld: null,
         },
       ],
     },
@@ -350,6 +361,15 @@ export async function fakeServer(): Promise<FakeServer> {
       bytes: body.length,
     });
   }
+  // The release archive is listed, not served: it is not JSON, so its
+  // manifest entry has no format.
+  const archive = "made-up archive";
+  entries.push({
+    path: "archive.tar.gz",
+    sha256: await sha256(archive),
+    format: null,
+    bytes: archive.length,
+  });
   bodies.set(
     `releases/${RELEASE}/manifest.json`,
     JSON.stringify({

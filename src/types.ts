@@ -131,8 +131,11 @@ export type TermsFile = PublishedFile<
 export interface ManifestEntry {
   /** Path relative to the release folder, for example `catalogue/0.json`. */
   readonly path: string;
-  /** Its format and version, such as `catalogue/1.0`. */
-  readonly format: string;
+  /**
+   * Its format and version, such as `catalogue/1.0`; `null` for
+   * `archive.tar.gz`, the release's one file that is not JSON.
+   */
+  readonly format: string | null;
   /** Its lowercase hex SHA-256. */
   readonly sha256: string;
   /** Its size in bytes, uncompressed. */
@@ -309,6 +312,11 @@ export type SpeciesFile = PublishedFile<
      * never means native. Added in `species/1.2`, so absent from earlier files.
      */
     readonly introductions?: readonly SpeciesIntroduction[];
+    /**
+     * The species' iNaturalist taxon ID, or `null` when it has none. Added in
+     * `species/1.3`, so absent from earlier files.
+     */
+    readonly inaturalist_taxon_id?: number | null;
   }
 >;
 
@@ -370,7 +378,7 @@ export type GroupsFile = PublishedFile<
 /** One searchable name: the name, what kind it is, and its species key. */
 export type SearchName = readonly [
   string,
-  "scientific" | "common" | "synonym",
+  "scientific" | "common" | "other-name" | "synonym",
   string,
 ];
 /** `search/index.json` or one of its shards: every name, for search on the device. */
@@ -518,6 +526,20 @@ export type BackyardFile = PublishedFile<
         /** The range's seasons there. */
         readonly seasons: readonly RangeSeason[];
       } | null;
+      /**
+       * The county result's records counted, or `null` without a county
+       * result. Added in `backyard/1.1`, so absent from `backyard/1.0` files.
+       */
+      readonly records?: number | null;
+      /**
+       * The county result's weekly records, weeks 1 to 53, or `null` without
+       * a county result. Added in `backyard/1.1`.
+       */
+      readonly weekly?: readonly number[] | null;
+      /** The county result's season weeks, or empty. Added in `backyard/1.1`. */
+      readonly season?: SeasonWeeks;
+      /** Why the county result's season is withheld, or `null`. Added in `backyard/1.1`. */
+      readonly season_withheld?: Withheld | null;
     }[];
   }
 >;

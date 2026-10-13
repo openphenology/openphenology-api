@@ -108,6 +108,44 @@ describe("schemas", () => {
     expect(errors(file)).toEqual([]);
   });
 
+  test("a species/1.2 file needs no iNaturalist taxon ID", async () => {
+    const file = structuredClone(
+      (await published()).get("releases/2026-01-05/species/EX1.json"),
+    );
+    if (!file) throw new Error("missing fixture");
+    file.format = "species/1.2";
+    delete file.data.inaturalist_taxon_id;
+    expect(errors(file)).toEqual([]);
+  });
+
+  test("a backyard/1.0 file needs no county records or seasons", async () => {
+    const file = structuredClone(
+      (await published()).get("releases/2026-01-05/backyard/us-zz/99001.json"),
+    );
+    if (!file) throw new Error("missing fixture");
+    file.format = "backyard/1.0";
+    const species = first(file.data.species);
+    delete species.records;
+    delete species.weekly;
+    delete species.season;
+    delete species.season_withheld;
+    expect(errors(file)).toEqual([]);
+  });
+
+  test("a Backyard species without a county result has null records and weeks", async () => {
+    const file = structuredClone(
+      (await published()).get("releases/2026-01-05/backyard/us-zz/99001.json"),
+    );
+    if (!file) throw new Error("missing fixture");
+    Object.assign(first(file.data.species), {
+      records: null,
+      weekly: null,
+      season: [],
+      season_withheld: null,
+    });
+    expect(errors(file)).toEqual([]);
+  });
+
   test("fields a later minor version adds are allowed", async () => {
     const file = structuredClone(
       (await published()).get("releases/2026-01-05/methods.json"),
@@ -246,6 +284,58 @@ describe("schemas reject", () => {
       "releases/2026-01-05/species/EX1.json",
       (f) => {
         first(f.data.introductions).status = "native";
+      },
+    ],
+    [
+      "a species/1.3 file without an iNaturalist taxon ID",
+      "releases/2026-01-05/species/EX1.json",
+      (f) => {
+        delete f.data.inaturalist_taxon_id;
+      },
+    ],
+    [
+      "an iNaturalist taxon ID that is not a whole number",
+      "releases/2026-01-05/species/EX1.json",
+      (f) => {
+        f.data.inaturalist_taxon_id = "12345";
+      },
+    ],
+    [
+      "a search name of an unknown kind",
+      "releases/2026-01-05/search/index.json",
+      (f) => {
+        first(f.data.names)[1] = "nickname";
+      },
+    ],
+    [
+      "a backyard/1.1 species without its county records",
+      "releases/2026-01-05/backyard/us-zz/99001.json",
+      (f) => {
+        delete first(f.data.species).records;
+      },
+    ],
+    [
+      "a Backyard species with weekly records that are not 53 weeks",
+      "releases/2026-01-05/backyard/us-zz/99001.json",
+      (f) => {
+        first(f.data.species).weekly = [1, 2, 3];
+      },
+    ],
+    [
+      "a JSON file in the manifest without a format",
+      "releases/2026-01-05/manifest.json",
+      (f) => {
+        first(f.data.files).format = null;
+      },
+    ],
+    [
+      "the archive in the manifest with a format",
+      "releases/2026-01-05/manifest.json",
+      (f) => {
+        const files = f.data.files as Record<string, unknown>[];
+        const archive = files.find((e) => e.path === "archive.tar.gz");
+        if (archive === undefined) throw new Error("no archive");
+        archive.format = "archive/1.0";
       },
     ],
     [
