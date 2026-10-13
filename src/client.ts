@@ -34,15 +34,18 @@ import type {
   TermsFile,
 } from "./types.ts";
 
+/** Where the published data is served. The default `baseUrl`. */
 export const PRODUCTION_URL = "https://api.openphenology.com/";
+/** Where staging data is served, behind access control. Not public. */
 export const STAGING_URL = "https://api-staging.openphenology.com/";
 
+/** How a client reads the published data. Every option has a default. */
 export interface ClientOptions {
-  /** Where the files are served. Defaults to production. */
+  /** Where the files are served. Defaults to {@link PRODUCTION_URL}. */
   readonly baseUrl?: string;
-  /** Read this release instead of the current one. */
+  /** Read this release, such as `2026-10-19`, instead of the current one. */
   readonly release?: string;
-  /** Check each release file against its SHA-256 in the manifest. */
+  /** Check each release file against its SHA-256 in the manifest. Defaults to `false`. */
   readonly verify?: boolean;
   /** Milliseconds before one attempt is abandoned. Defaults to 10 000. */
   readonly timeoutMs?: number;
@@ -52,6 +55,16 @@ export interface ClientOptions {
   readonly signal?: AbortSignal;
   /** The fetch implementation. Defaults to the global one. */
   readonly fetch?: typeof fetch;
+}
+
+/** Options for {@link Client.release}. */
+export interface ReleaseOptions {
+  /**
+   * Read `current.json` again and return the release it names now. A
+   * `Release` already returned keeps reading its own files. No effect on a
+   * pinned release.
+   */
+  readonly refresh?: boolean;
 }
 
 /**
@@ -78,6 +91,11 @@ const SPLIT: Readonly<Record<string, readonly string[]>> = {
 /**
  * Reads `<name>.json`, or when it is not published and its kind can be split,
  * its shards `<name>/0.json`, `<name>/1.json` and so on, joined into one file.
+ *
+ * @param path The file's path.
+ * @param kind The file's kind, which says whether and how it is split.
+ * @param read Reads one file, or `null` when it does not exist.
+ * @returns The file, or `null` when neither it nor any shard exists.
  */
 async function readSplit<File extends PublishedFile<string, unknown>>(
   path: string,
@@ -112,13 +130,23 @@ async function readSplit<File extends PublishedFile<string, unknown>>(
 const wait = (ms: number): Promise<void> =>
   new Promise((resolve) => setTimeout(resolve, ms));
 
-/** Reads published OpenPhenology data. */
+/**
+ * Reads published OpenPhenology data. Create one with {@link createClient}.
+ *
+ * @example
+ * const client = createClient();
+ * const release = await client.release();
+ * const result = await release.countyResult("us-oh", "39049", speciesKey);
+ */
 export class Client {
   readonly #base: URL;
   readonly #options: ClientOptions;
   #release: Promise<Release> | undefined;
   #opened: Release | undefined;
 
+  /**
+   * @param options How to read the data. Every option has a default.
+   */
   constructor(options: ClientOptions = {}) {
     this.#base = new URL(options.baseUrl ?? PRODUCTION_URL);
     if (!this.#base.pathname.endsWith("/")) this.#base.pathname += "/";
@@ -129,11 +157,15 @@ export class Client {
    * The release this client reads: the pinned one, or the current one read once
    * from `current.json`, so every later read comes from the same release.
    *
-   * @param options.refresh Read `current.json` again and return the release it
-   *   names now. A `Release` already returned keeps reading its own files. No
-   *   effect on a pinned release.
+   * @param options Pass `{ refresh: true }` to read `current.json` again.
+   * @returns The release. Later calls return the same one until a refresh
+   *   finds a new current release.
+   * @throws {ApiError} Rejects when `current.json` cannot be read, or when a
+   *   pinned release is not published or has been withdrawn (status 404).
+   * @throws {FormatError} Rejects when `current.json` is malformed.
+   * @throws {RangeError} Rejects when the release ID is malformed.
    */
-  release(options: { readonly refresh?: boolean } = {}): Promise<Release> {
+  release(options: ReleaseOptions = {}): Promise<Release> {
     if (options.refresh === true && this.#options.release === undefined)
       this.#release = undefined;
     this.#release ??= this.#openRelease().then(
@@ -146,6 +178,12 @@ export class Client {
     return this.#release;
   }
 
+  /**
+   * Opens the pinned or current release.
+   *
+   * @returns The release.
+   * @throws {ApiError} When a pinned release has no `methods.json`.
+   */
   async #openRelease(): Promise<Release> {
     const pinned = this.#options.release;
     if (pinned !== undefined) {
@@ -164,7 +202,13 @@ export class Client {
     return this.#opened?.id === id ? this.#opened : new Release(this, id);
   }
 
-  /** Every release and its status, from `releases.json`. */
+  /**
+   * Every release and its status, from `releases.json`.
+   *
+   * @returns The file, joined from its shards when it is split.
+   * @throws {ApiError} Rejects when it cannot be read or does not exist.
+   * @throws {FormatError} Rejects when it is malformed.
+   */
   async releases(): Promise<ReleasesFile> {
     const file = await readSplit<ReleasesFile>(
       "releases.json",
@@ -180,7 +224,14 @@ export class Client {
     return file;
   }
 
-  /** The licence, how to cite and credit, and the contact, from `terms.json`. */
+  /**
+   * The licence, how to cite OpenPhenology and credit its sources, and the
+   * contact address, from `terms.json`.
+   *
+   * @returns The file.
+   * @throws {ApiError} Rejects when it cannot be read or does not exist.
+   * @throws {FormatError} Rejects when it is malformed.
+   */
   async terms(): Promise<TermsFile> {
     return parseFile<TermsFile>(
       "terms.json",
@@ -189,11 +240,24 @@ export class Client {
     );
   }
 
+  /**
+   * Whether release files are checked against the manifest.
+   *
+   * @returns The `verify` option.
+   */
   get verify(): boolean {
     return this.#options.verify ?? false;
   }
 
-  /** Fetches a file's bytes, or `undefined` when it does not exist. */
+  /**
+   * Fetches a file's bytes, with the client's timeout and retries.
+   *
+   * @param path The file's path from the API root.
+   * @returns The bytes, or `undefined` when the file does not exist (404).
+   * @throws {ApiError} Rejects after a network error, a timeout or an
+   *   unexpected status, once retries are used up or the signal is aborted.
+   * @internal
+   */
   async getBytes(path: string): Promise<ArrayBuffer | undefined> {
     const url = new URL(path, this.#base).href;
     const doFetch = this.#options.fetch ?? fetch;
@@ -232,19 +296,42 @@ export class Client {
     }
   }
 
-  /** Fetches and parses a JSON file, throwing when it does not exist. */
+  /**
+   * Fetches and parses a JSON file.
+   *
+   * @param path The file's path from the API root.
+   * @returns The parsed JSON.
+   * @throws {ApiError} Rejects when the file cannot be read or does not exist.
+   * @throws {FormatError} Rejects when it is not valid JSON.
+   * @internal
+   */
   async getJson(path: string): Promise<unknown> {
     const bytes = await this.getBytes(path);
     if (bytes === undefined) throw this.notFound(path);
     return decode(path, bytes);
   }
 
-  /** The error for a file that does not exist. @internal */
+  /**
+   * The error for a file that does not exist.
+   *
+   * @param path The file's path from the API root.
+   * @param message The error message.
+   * @returns An `ApiError` with status 404.
+   * @internal
+   */
   notFound(path: string, message = `Not found: ${path}`): ApiError {
     return new ApiError(message, new URL(path, this.#base).href, 404);
   }
 }
 
+/**
+ * Parses a file's bytes as JSON.
+ *
+ * @param path The file's path, for errors.
+ * @param bytes The bytes.
+ * @returns The parsed JSON.
+ * @throws {FormatError} When the bytes are not valid JSON.
+ */
 function decode(path: string, bytes: ArrayBuffer): unknown {
   try {
     return JSON.parse(new TextDecoder().decode(bytes));
@@ -253,18 +340,40 @@ function decode(path: string, bytes: ArrayBuffer): unknown {
   }
 }
 
-/** One release. Its files never change, so each is fetched at most once. */
+/**
+ * One release, from {@link Client.release}. Its files never change, so each
+ * is fetched at most once.
+ *
+ * Reads that take a state, county, species or ZIP code check it first and
+ * throw a `RangeError` straight away when it is malformed, so a code can
+ * never change the path requested. A file that is not published is `null`.
+ * A failed request rejects with an `ApiError`, and a malformed file with a
+ * `FormatError`.
+ */
 export class Release {
+  /** The release ID, its date: for example `2026-10-19`. */
   readonly id: string;
   readonly #client: Client;
   readonly #files = new Map<string, Promise<unknown>>();
 
+  /**
+   * @param client The client that reads its files.
+   * @param id The release ID.
+   * @internal
+   */
   constructor(client: Client, id: string) {
     this.#client = client;
     this.id = id;
   }
 
-  /** The release manifest: every file, with its SHA-256, counts and format versions. */
+  /**
+   * The release manifest: every file, with its SHA-256, size and format, and
+   * the release's counts.
+   *
+   * @returns The manifest.
+   * @throws {ApiError} Rejects when the release is not available (status 404)
+   *   or the request fails.
+   */
   manifest(): Promise<ManifestFile> {
     return this.#read("manifest.json", false).then((value) => {
       if (value === undefined) throw this.unavailable("manifest.json");
@@ -272,7 +381,13 @@ export class Release {
     });
   }
 
-  /** The error for a release that is not published, or has been withdrawn. @internal */
+  /**
+   * The error for a release that is not published, or has been withdrawn.
+   *
+   * @param path The missing file's path inside the release.
+   * @returns An `ApiError` with status 404.
+   * @internal
+   */
   unavailable(path: string): ApiError {
     return this.#client.notFound(
       `releases/${this.id}/${path}`,
@@ -280,18 +395,35 @@ export class Release {
     );
   }
 
-  /** What changed since the previous release. */
+  /**
+   * What changed since the previous release: results added, changed and
+   * removed, species key changes, corrections and format changes.
+   *
+   * @returns The notes, or `null` when not published.
+   */
   notes(): Promise<NotesFile | null> {
     return this.#file<NotesFile>("notes.json", "notes");
   }
 
-  /** Every species with a result or a mapped range, from the catalogue or all its shards. */
+  /**
+   * Every species with a result or a mapped range, by scientific name.
+   *
+   * @returns The species, from the catalogue or all its shards; empty when
+   *   not published.
+   */
   async catalogue(): Promise<CatalogueEntry[]> {
     const file = await this.#file<CatalogueFile>("catalogue.json", "catalogue");
     return [...(file?.data.species ?? [])];
   }
 
-  /** One species: names, classification, and every area with a result or mapped range. */
+  /**
+   * One species: its names, classification, and every area where it has a
+   * result or is within its mapped range.
+   *
+   * @param key The species key.
+   * @returns The species, or `null` when not published.
+   * @throws {RangeError} When the key is malformed.
+   */
   species(key: string): Promise<SpeciesFile | null> {
     return this.#file<SpeciesFile>(
       `species/${speciesKey(key)}.json`,
@@ -299,7 +431,12 @@ export class Release {
     );
   }
 
-  /** The species key for a page slug, following a redirect; `null` when unknown. */
+  /**
+   * The species key for a page slug, following a redirect from an old slug.
+   *
+   * @param slug The slug, such as `northern-cardinal`.
+   * @returns The species key, or `null` when the slug is unknown.
+   */
   async speciesBySlug(slug: string): Promise<string | null> {
     const file = await this.#file<SlugsFile>("slugs.json", "slugs");
     if (!file) return null;
@@ -307,18 +444,34 @@ export class Release {
     return species[slug] ?? species[redirects[slug] ?? ""] ?? null;
   }
 
-  /** The browse groups, in display order. */
+  /**
+   * The browse groups, such as birds or flowering plants, in display order.
+   *
+   * @returns The groups, or `null` when not published.
+   */
   groups(): Promise<GroupsFile | null> {
     return this.#file<GroupsFile>("groups.json", "groups");
   }
 
-  /** Every searchable name, from the search index or all its shards. */
+  /**
+   * Every searchable name, for search on the device.
+   *
+   * @returns `[name, kind, speciesKey]` triples, from the search index or all
+   *   its shards; empty when not published.
+   */
   async searchNames(): Promise<SearchName[]> {
     const file = await this.#file<SearchFile>("search/index.json", "search");
     return [...(file?.data.names ?? [])];
   }
 
-  /** A state, its counties, their species and effort. */
+  /**
+   * A state and its counties: their names, slugs, species with a result,
+   * species whose mapped range covers them, and weekly effort.
+   *
+   * @param state The state code, such as `us-oh`.
+   * @returns The region, or `null` when not published.
+   * @throws {RangeError} When the state code is malformed.
+   */
   async region(state: string): Promise<RegionFile | null> {
     const path = `regions/${stateCode(state)}.json`;
     const file = await this.#file<RegionFile>(path, "region");
@@ -328,13 +481,33 @@ export class Release {
     return file;
   }
 
-  /** A species' result for a whole state, or `null` when none is published. */
+  /**
+   * A species' weekly result for a whole state.
+   *
+   * @param state The state code, such as `us-oh`.
+   * @param species The species key.
+   * @returns The result, or `null` when none is published. A result withheld
+   *   for protection or for too little evidence is not published.
+   * @throws {RangeError} When a code is malformed.
+   */
   stateResult(state: string, species: string): Promise<StateResultFile | null> {
     const path = `results/${stateCode(state)}/${speciesKey(species)}.json`;
     return this.#result<StateResultFile>(path, "state-weekly");
   }
 
-  /** A species' result for one county, or `null` when none is published. */
+  /**
+   * A species' weekly result for one county.
+   *
+   * @param state The state code, such as `us-oh`.
+   * @param county The county's GEOID, such as `39049`.
+   * @param species The species key.
+   * @returns The result, or `null` when none is published. A result withheld
+   *   for protection or for too little evidence is not published.
+   * @throws {RangeError} When a code is malformed.
+   * @example
+   * const result = await release.countyResult("us-oh", "39049", speciesKey);
+   * if (result) console.log(result.data.season); // [early, middle, late] weeks
+   */
   countyResult(
     state: string,
     county: string,
@@ -344,7 +517,16 @@ export class Release {
     return this.#result<CountyResultFile>(path, "county-weekly");
   }
 
-  /** The sources behind a result: datasets, GBIF download DOIs and record links. */
+  /**
+   * The sources behind a result: datasets, GBIF download DOIs, and links to
+   * the records (`null` for a sensitive species).
+   *
+   * @param state The state code, such as `us-oh`.
+   * @param species The species key.
+   * @param county The county's GEOID, for a county result.
+   * @returns The attribution, or `null` when not published.
+   * @throws {RangeError} When a code is malformed.
+   */
   attribution(
     state: string,
     species: string,
@@ -360,7 +542,15 @@ export class Release {
     );
   }
 
-  /** A county's Backyard labels for every week. */
+  /**
+   * A county's Backyard labels: for each species, one letter per week saying
+   * how it is reported there at that time of year.
+   *
+   * @param state The state code, such as `us-oh`.
+   * @param county The county's GEOID, such as `39049`.
+   * @returns The labels, or `null` when not published.
+   * @throws {RangeError} When a code is malformed.
+   */
   async backyard(state: string, county: string): Promise<BackyardFile | null> {
     const path = `backyard/${stateCode(state)}/${countyCode(county)}.json`;
     const file = await this.#file<BackyardFile>(path, "backyard");
@@ -373,17 +563,33 @@ export class Release {
     return file;
   }
 
-  /** How results are made: the method and its numbers. */
+  /**
+   * How results are made: the method, its thresholds and versions, and the
+   * note on what results do not show.
+   *
+   * @returns The methods, or `null` when not published.
+   */
   methods(): Promise<MethodsFile | null> {
     return this.#file<MethodsFile>("methods.json", "methods");
   }
 
-  /** Each source, its licence and how to credit it. */
+  /**
+   * Each source the release uses, its licence and how to credit it.
+   *
+   * @returns The sources, or `null` when not published.
+   */
   sources(): Promise<SourcesFile | null> {
     return this.#file<SourcesFile>("sources.json", "sources");
   }
 
-  /** County outlines for a state's map. For display only. */
+  /**
+   * County outlines for a state's map, as GeoJSON. Simplified for display
+   * only; not for placing records.
+   *
+   * @param state The state code, such as `us-oh`.
+   * @returns The outlines, or `null` when not published.
+   * @throws {RangeError} When the state code is malformed.
+   */
   boundaries(state: string): Promise<BoundariesFile | null> {
     return this.#file<BoundariesFile>(
       `places/${stateCode(state)}/boundaries.json`,
@@ -393,8 +599,15 @@ export class Release {
 
   /**
    * The counties a US ZIP code falls in, largest share of its land first.
-   * Empty when the ZIP code has no Census area. Only the file for its first
-   * three digits is requested.
+   * Only the file for its first three digits is requested.
+   *
+   * @param zip A 5-digit ZIP code.
+   * @returns Each county's GEOID and its share of the ZIP code's land, from 0
+   *   to 1; empty when the ZIP code has no Census area.
+   * @throws {RangeError} When the ZIP code is malformed.
+   * @example
+   * const [first] = await release.zipCounties("43215");
+   * if (first) await release.backyard("us-oh", first.area);
    */
   async zipCounties(zip: string): Promise<{ area: string; share: number }[]> {
     const code = zipCode(zip);
@@ -408,6 +621,13 @@ export class Release {
     }));
   }
 
+  /**
+   * Reads a result and checks its weekly lists.
+   *
+   * @param path The file's path inside the release.
+   * @param kind `state-weekly` or `county-weekly`.
+   * @returns The result, or `null` when not published.
+   */
   async #result<File extends CountyResultFile | StateResultFile>(
     path: string,
     kind: File["kind"],
@@ -425,7 +645,13 @@ export class Release {
     return file;
   }
 
-  /** A release file, joined from its shards when it is split. */
+  /**
+   * A release file, joined from its shards when it is split.
+   *
+   * @param path The file's path inside the release.
+   * @param kind The file's kind.
+   * @returns The file, or `null` when not published.
+   */
   #file<File extends PublishedFile<string, unknown>>(
     path: string,
     kind: File["kind"],
@@ -436,7 +662,14 @@ export class Release {
     });
   }
 
-  /** Reads a release file once; later calls share the same result. */
+  /**
+   * Reads a release file once; later calls share the same result. A failure
+   * is not kept.
+   *
+   * @param path The file's path inside the release.
+   * @param verify Whether to check it against the manifest.
+   * @returns The parsed JSON, or `undefined` when it does not exist.
+   */
   #read(path: string, verify: boolean): Promise<unknown> {
     let file = this.#files.get(path);
     if (!file) {
@@ -447,6 +680,14 @@ export class Release {
     return file;
   }
 
+  /**
+   * Fetches, checks and parses a release file.
+   *
+   * @param path The file's path inside the release.
+   * @param verify Whether to check it against the manifest.
+   * @returns The parsed JSON, or `undefined` when it does not exist.
+   * @throws {FormatError} When its SHA-256 does not match the manifest.
+   */
   async #load(path: string, verify: boolean): Promise<unknown> {
     let entry: ManifestEntry | undefined;
     if (verify) {
@@ -468,7 +709,16 @@ export class Release {
   }
 }
 
-/** Creates a client for the published data. */
+/**
+ * Creates a client for the published data.
+ *
+ * @param options How to read the data. Every option has a default.
+ * @returns A new client. Each client keeps its own cache of release files.
+ * @example
+ * import { createClient } from "@openphenology/api";
+ *
+ * const release = await createClient().release();
+ */
 export function createClient(options?: ClientOptions): Client {
   return new Client(options);
 }
