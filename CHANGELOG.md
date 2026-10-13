@@ -24,7 +24,8 @@ First release.
 - Files split into shards are read as one file.
 - Checks on every file's format version and 53-week lists, and optional
   SHA-256 checks against the manifest.
-- Timeouts, retries, and `ApiError` and `FormatError` errors.
+- Timeouts, retries, and `ApiError` and `FormatError` errors, each with a
+  stable `code`.
 - TypeScript types with documentation, and a JSON Schema for each file format
   with every field described and a made-up example file.
 - Works in Node.js and browsers, and installs from npm or a Git commit.

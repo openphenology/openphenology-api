@@ -285,7 +285,12 @@ export class Client {
         response = await doFetch(url, { signal });
       } catch (error) {
         if (this.#options.signal?.aborted === true || attempt >= retries) {
-          throw new ApiError(`Request failed: ${url}`, url, undefined, {
+          const code = this.#options.signal?.aborted
+            ? "aborted"
+            : (error as { name?: unknown } | null)?.name === "TimeoutError"
+              ? "timeout"
+              : "network";
+          throw new ApiError(code, `Request failed: ${url}`, url, undefined, {
             cause: error,
           });
         }
@@ -302,6 +307,7 @@ export class Client {
         continue;
       }
       throw new ApiError(
+        "status",
         `HTTP ${String(response.status)}: ${url}`,
         url,
         response.status,
@@ -328,12 +334,17 @@ export class Client {
    * The error for a file that does not exist.
    *
    * @param path The file's path from the API root.
+   * @param code `not-found`, or `release-unavailable` for a release.
    * @param message The error message.
    * @returns An `ApiError` with status 404.
    * @internal
    */
-  notFound(path: string, message = `Not found: ${path}`): ApiError {
-    return new ApiError(message, new URL(path, this.#base).href, 404);
+  notFound(
+    path: string,
+    code: "not-found" | "release-unavailable" = "not-found",
+    message = `Not found: ${path}`,
+  ): ApiError {
+    return new ApiError(code, message, new URL(path, this.#base).href, 404);
   }
 }
 
@@ -349,7 +360,7 @@ function decode(path: string, bytes: ArrayBuffer): unknown {
   try {
     return JSON.parse(new TextDecoder().decode(bytes));
   } catch {
-    throw new FormatError(`${path}: not valid JSON`, path);
+    throw new FormatError("not-json", `${path}: not valid JSON`, path);
   }
 }
 
@@ -408,6 +419,7 @@ export class Release {
   unavailable(path: string): ApiError {
     return this.#client.notFound(
       `releases/${this.id}/${path}`,
+      "release-unavailable",
       `Release ${this.id} is not available`,
     );
   }
@@ -719,6 +731,7 @@ export class Release {
     if (bytes === undefined) return undefined;
     if (entry && (await sha256(bytes)) !== entry.sha256) {
       throw new FormatError(
+        "checksum",
         `${path}: SHA-256 does not match the manifest`,
         path,
       );

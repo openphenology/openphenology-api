@@ -1,7 +1,7 @@
 // Light checks on each file before it is used: the shared wrapper, the
 // format's major version, and the lists that must hold 53 weeks. The full
 // JSON Schemas live in schemas/.
-import { FormatError } from "./errors.ts";
+import { FormatError, type FormatErrorCode } from "./errors.ts";
 import { WEEKS, type PublishedFile } from "./types.ts";
 
 /** Format major versions this package reads. */
@@ -23,10 +23,15 @@ const isObject = (value: unknown): value is Json =>
  *
  * @param path The file's path.
  * @param message What is wrong.
+ * @param code What is wrong, as a stable code.
  * @throws {FormatError} Always.
  */
-function fail(path: string, message: string): never {
-  throw new FormatError(`${path}: ${message}`, path);
+function fail(
+  path: string,
+  message: string,
+  code: FormatErrorCode = "malformed",
+): never {
+  throw new FormatError(code, `${path}: ${message}`, path);
 }
 
 /**
@@ -45,7 +50,7 @@ export function parseFile<File extends PublishedFile<string, unknown>>(
   kind: File["kind"],
 ): File {
   if (!isObject(value)) fail(path, "not a JSON object");
-  if (value.kind !== kind) fail(path, `expected kind ${kind}`);
+  if (value.kind !== kind) fail(path, `expected kind ${kind}`, "wrong-kind");
   if (typeof value.id !== "string") fail(path, "missing id");
   if (!isObject(value.provenance)) fail(path, "missing provenance");
   if (!isObject(value.data)) fail(path, "missing data");
@@ -58,6 +63,7 @@ export function parseFile<File extends PublishedFile<string, unknown>>(
     fail(
       path,
       `format ${String(value.format)} is not supported by this version of @openphenology/api`,
+      "unsupported-version",
     );
   }
   return value as File;
