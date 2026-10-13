@@ -1,0 +1,546 @@
+// The source of the JSON Schemas in this folder. `pnpm schemas` writes them as
+// `<kind>-1.json`; `pnpm schemas:check` fails when the files are out of date.
+import type {
+  AttributionFile,
+  BackyardFile,
+  BoundariesFile,
+  CatalogueFile,
+  CountyResultFile,
+  CurrentFile,
+  GroupsFile,
+  ManifestFile,
+  MethodsFile,
+  NotesFile,
+  PostalFile,
+  RegionFile,
+  ReleasesFile,
+  SearchFile,
+  SlugsFile,
+  SourcesFile,
+  SpeciesFile,
+  StateResultFile,
+  TermsFile,
+} from "../src/types.ts";
+
+type Kind = (
+  | AttributionFile
+  | BackyardFile
+  | BoundariesFile
+  | CatalogueFile
+  | CountyResultFile
+  | CurrentFile
+  | GroupsFile
+  | ManifestFile
+  | MethodsFile
+  | NotesFile
+  | PostalFile
+  | RegionFile
+  | ReleasesFile
+  | SearchFile
+  | SlugsFile
+  | SourcesFile
+  | SpeciesFile
+  | StateResultFile
+  | TermsFile
+)["kind"];
+
+export type Schema = Readonly<Record<string, unknown>>;
+
+/** The major format version these schemas describe. */
+export const MAJOR = 1;
+
+const string: Schema = { type: "string" };
+const text: Schema = { type: "string", minLength: 1 };
+const nullable = (schema: Schema): Schema => ({
+  anyOf: [schema, { type: "null" }],
+});
+const list = (items: Schema, extra: Schema = {}): Schema => ({
+  type: "array",
+  items,
+  ...extra,
+});
+const tuple = (...items: Schema[]): Schema => ({
+  type: "array",
+  prefixItems: items,
+  items: false,
+  minItems: items.length,
+});
+const pattern = (regex: string): Schema => ({ type: "string", pattern: regex });
+
+/** An object with every listed field required; unknown fields are allowed, as a minor version can add them. */
+const object = (properties: Record<string, Schema>, ...rules: Schema[]) => ({
+  type: "object",
+  required: Object.keys(properties),
+  properties,
+  ...(rules.length > 0 ? { allOf: rules } : {}),
+});
+
+const date = pattern("^\\d{4}-\\d{2}-\\d{2}$");
+const time = pattern("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$");
+const STATE = "[a-z]{2}-[a-z0-9]{1,3}";
+const COUNTY = "\\d{5}";
+const KEY = "[A-Za-z0-9._-]+";
+const state = pattern(`^${STATE}$`);
+const county = pattern(`^${COUNTY}$`);
+const area: Schema = { anyOf: [state, county] };
+const speciesKey = pattern(`^${KEY}$`);
+const slug = pattern("^[a-z0-9]+(-[a-z0-9]+)*$");
+const group = pattern("^[a-z]+(-[a-z]+)*$");
+const count: Schema = { type: "integer", minimum: 0 };
+const week: Schema = { type: "integer", minimum: 1, maximum: 53 };
+const weekly = list(count, { minItems: 53, maxItems: 53 });
+const rangeSeasons = list({
+  enum: ["year-round", "summer", "winter", "migratory", "passage"],
+});
+
+/** `area` is a state code when `level` is `state`, and a county GEOID when it is `county`. */
+const areaMatchesLevel: Schema = {
+  anyOf: [
+    {
+      type: "object",
+      properties: { level: { const: "state" }, area: state },
+    },
+    {
+      type: "object",
+      properties: { level: { const: "county" }, area: county },
+    },
+  ],
+};
+
+/** `season` is three weeks with no reason withheld, or empty with the reason. */
+const seasonMatchesWithheld: Schema = {
+  anyOf: [
+    {
+      type: "object",
+      properties: {
+        season: { type: "array", minItems: 3 },
+        season_withheld: { type: "null" },
+      },
+    },
+    {
+      type: "object",
+      properties: {
+        season: { type: "array", maxItems: 0 },
+        season_withheld: {
+          enum: ["year-round", "two-seasons", "one-year", "precision"],
+        },
+      },
+    },
+  ],
+};
+const season = list(week, { maxItems: 3 });
+const seasonWithheld = nullable({
+  enum: ["year-round", "two-seasons", "one-year", "precision"],
+});
+
+const classification = {
+  kingdom: nullable(string),
+  phylum: nullable(string),
+  class: nullable(string),
+  order: nullable(string),
+  family: nullable(string),
+  genus: nullable(string),
+};
+
+const provenance = object({
+  release: date,
+  sources: list(string),
+  licences: list(string),
+  gbif_download_dois: list(string),
+  method: nullable(string),
+  taxonomy: nullable(string),
+  boundaries: nullable(string),
+  ranges: nullable(list(string)),
+  protection: nullable({ type: "object", additionalProperties: string }),
+  code: nullable(string),
+  run: nullable(string),
+});
+
+const weeklyResult = (where: Schema) =>
+  object(
+    {
+      area: where,
+      species_key: speciesKey,
+      included_records: count,
+      contributing_years: count,
+      thresholds: object({ records: count, years: count }),
+      weekly: object({ records: weekly, years: weekly }),
+      season,
+      season_withheld: seasonWithheld,
+      effort: weekly,
+      limits: text,
+    },
+    seasonMatchesWithheld,
+  );
+
+/** Each file's path from the API root, without `.json`. */
+const RELEASE = "releases/\\d{4}-\\d{2}-\\d{2}/";
+const paths: Record<Kind, string> = {
+  current: "current",
+  releases: "releases",
+  terms: "terms",
+  manifest: `${RELEASE}manifest`,
+  notes: `${RELEASE}notes`,
+  catalogue: `${RELEASE}catalogue`,
+  species: `${RELEASE}species/${KEY}`,
+  slugs: `${RELEASE}slugs`,
+  groups: `${RELEASE}groups`,
+  search: `${RELEASE}search/index`,
+  region: `${RELEASE}regions/${STATE}`,
+  "state-weekly": `${RELEASE}results/${STATE}/${KEY}`,
+  "county-weekly": `${RELEASE}results/${STATE}/${COUNTY}/${KEY}`,
+  attribution: `${RELEASE}attribution/${STATE}(/${COUNTY})?/${KEY}`,
+  backyard: `${RELEASE}backyard/${STATE}/${COUNTY}`,
+  methods: `${RELEASE}methods`,
+  sources: `${RELEASE}sources`,
+  boundaries: `${RELEASE}places/${STATE}/boundaries`,
+  postal: `${RELEASE}postal/us/\\d{3}`,
+};
+
+/** Wraps a format's `data` in the fields every published file shares. */
+const file = (kind: Kind, description: string, data: Schema): Schema => ({
+  $schema: "https://json-schema.org/draft/2020-12/schema",
+  title: `OpenPhenology ${kind}/${String(MAJOR)}`,
+  description,
+  ...object({
+    // The file's path; a shard of `<name>.json` is `<name>/<n>.json`.
+    id: pattern(`^${paths[kind]}(/\\d+)?\\.json$`),
+    kind: { const: kind },
+    format: pattern(`^${kind}/${String(MAJOR)}\\.\\d+$`),
+    provenance,
+    data,
+  }),
+});
+
+/** One schema per published file format, by kind. */
+export const schemas = {
+  current: file(
+    "current",
+    "The current release.",
+    object({ release: date, published_at: time }),
+  ),
+
+  releases: file(
+    "releases",
+    "Every release and its status.",
+    object({
+      releases: list(
+        object({
+          release: date,
+          status: { enum: ["current", "available", "withdrawn"] },
+          published_at: time,
+          doi: nullable(string),
+          builds_on: nullable(string),
+          reason: nullable(string),
+        }),
+      ),
+    }),
+  ),
+
+  terms: file(
+    "terms",
+    "The licence, how to cite and credit, and the contact.",
+    object({
+      licence: text,
+      licence_url: text,
+      cite: text,
+      credit: text,
+      warranty: text,
+      contact: text,
+    }),
+  ),
+
+  manifest: file(
+    "manifest",
+    "Every file in a release, with its SHA-256, size and format.",
+    object({
+      release: date,
+      published_at: time,
+      files: list(
+        object({
+          path: text,
+          format: pattern("^[a-z]+(-[a-z]+)*/\\d+\\.\\d+$"),
+          sha256: pattern("^[0-9a-f]{64}$"),
+          bytes: count,
+        }),
+      ),
+      counts: object({
+        species: count,
+        state_results: count,
+        county_results: count,
+        records: count,
+      }),
+    }),
+  ),
+
+  notes: file(
+    "notes",
+    "What changed since the previous release.",
+    object({
+      release: date,
+      previous: nullable(date),
+      results: object({ added: count, changed: count, removed: count }),
+      key_changes: list(object({ old: speciesKey, new: speciesKey })),
+      corrections: list(text),
+      formats: list(
+        object({ format: text, change: text, until: nullable(date) }),
+      ),
+    }),
+  ),
+
+  catalogue: file(
+    "catalogue",
+    "Species with a result or a mapped range, by scientific name. May be split into shards.",
+    object({
+      species: list(
+        object({
+          species_key: speciesKey,
+          scientific_name: text,
+          common_name: nullable(text),
+          rank: text,
+          ...classification,
+          group: nullable(group),
+          slug: nullable(slug),
+          states: list(state),
+        }),
+      ),
+    }),
+  ),
+
+  species: file(
+    "species",
+    "One species and every area with a result or within its mapped range.",
+    object({
+      species_key: speciesKey,
+      scientific_name: text,
+      authorship: nullable(text),
+      common_name: nullable(text),
+      synonyms: list(text),
+      rank: text,
+      classification: object(classification),
+      group: nullable(group),
+      slug: nullable(slug),
+      areas: list(
+        object(
+          {
+            area,
+            level: { enum: ["state", "county"] },
+            records: count,
+            season,
+            season_withheld: seasonWithheld,
+          },
+          areaMatchesLevel,
+          seasonMatchesWithheld,
+        ),
+      ),
+      ranges: list(
+        object(
+          {
+            area,
+            level: { enum: ["state", "county"] },
+            source: nullable(string),
+            seasons: rangeSeasons,
+          },
+          areaMatchesLevel,
+        ),
+      ),
+    }),
+  ),
+
+  slugs: file(
+    "slugs",
+    "Species page slugs, and redirects from old slugs.",
+    object({
+      species: {
+        type: "object",
+        propertyNames: slug,
+        additionalProperties: speciesKey,
+      },
+      redirects: {
+        type: "object",
+        propertyNames: slug,
+        additionalProperties: slug,
+      },
+    }),
+  ),
+
+  groups: file(
+    "groups",
+    "The browse groups, in display order.",
+    object({
+      groups: list(
+        object({ group, name: text, taxa: list(text), species: count }),
+      ),
+    }),
+  ),
+
+  search: file(
+    "search",
+    "Every searchable name, as [name, kind, species key]. May be split into shards.",
+    object({
+      names: list(
+        tuple(text, { enum: ["scientific", "common", "synonym"] }, speciesKey),
+      ),
+    }),
+  ),
+
+  region: file(
+    "region",
+    "A state, its counties, their species and effort.",
+    object({
+      state,
+      name: text,
+      slug,
+      areas: list(
+        object(
+          {
+            area,
+            level: { enum: ["state", "county"] },
+            name: text,
+            slug,
+            species_keys: list(speciesKey),
+            range_species_keys: list(speciesKey),
+            effort: weekly,
+          },
+          areaMatchesLevel,
+        ),
+      ),
+    }),
+  ),
+
+  "state-weekly": file(
+    "state-weekly",
+    "A species' weekly result for a state.",
+    weeklyResult(state),
+  ),
+
+  "county-weekly": file(
+    "county-weekly",
+    "A species' weekly result for a county.",
+    weeklyResult(county),
+  ),
+
+  attribution: file(
+    "attribution",
+    "The sources behind a result.",
+    object({
+      area,
+      species_key: speciesKey,
+      datasets: list(
+        object({
+          dataset_key: text,
+          title: nullable(string),
+          publisher: nullable(string),
+          citation: nullable(string),
+          url: nullable(string),
+          records: count,
+        }),
+      ),
+      gbif_download_dois: list(text),
+      record_links: nullable(list(text)),
+    }),
+  ),
+
+  backyard: file(
+    "backyard",
+    "A county's Backyard label for each species and week.",
+    object({
+      area: county,
+      method: text,
+      evidence_through: nullable(date),
+      effort: weekly,
+      species: list(
+        object({
+          species_key: speciesKey,
+          group: nullable(group),
+          labels: pattern("^[csrmn]{53}$"),
+          range: nullable(
+            object({ source: nullable(string), seasons: rangeSeasons }),
+          ),
+        }),
+      ),
+    }),
+  ),
+
+  methods: file(
+    "methods",
+    "How results are made: the method and its numbers.",
+    object({
+      method: text,
+      data_rules: text,
+      thresholds: { type: "object" },
+      weeks: text,
+      pooled_from: text,
+      taxonomy: text,
+      boundaries: text,
+      protection: { type: "object", additionalProperties: string },
+      ranges: list(text),
+      limits: text,
+    }),
+  ),
+
+  sources: file(
+    "sources",
+    "Each source, its licence and how to credit it.",
+    object({
+      sources: list(
+        object({
+          source: text,
+          name: text,
+          kind: text,
+          licence: text,
+          licence_url: nullable(text),
+          use: text,
+          reviewed: date,
+          credit: text,
+          url: text,
+        }),
+      ),
+    }),
+  ),
+
+  boundaries: file(
+    "boundaries",
+    "County outlines for a state's map, as a GeoJSON FeatureCollection. For display only.",
+    object({
+      type: { const: "FeatureCollection" },
+      features: list(
+        object({
+          type: { const: "Feature" },
+          properties: object({ area: county, name: text, slug }),
+          geometry: object({
+            type: { const: "MultiPolygon" },
+            coordinates: list(
+              list(
+                list(
+                  tuple(
+                    { type: "number", minimum: -180, maximum: 180 },
+                    { type: "number", minimum: -90, maximum: 90 },
+                  ),
+                  { minItems: 4 },
+                ),
+                { minItems: 1 },
+              ),
+              { minItems: 1 },
+            ),
+          }),
+        }),
+      ),
+    }),
+  ),
+
+  postal: file(
+    "postal",
+    "US ZIP codes sharing a 3-digit prefix, and the counties each falls in.",
+    object({
+      zips: {
+        type: "object",
+        propertyNames: pattern("^\\d{5}$"),
+        additionalProperties: list(
+          tuple(county, { type: "number", minimum: 0, maximum: 1 }),
+          { minItems: 1 },
+        ),
+      },
+    }),
+  ),
+} satisfies Record<Kind, Schema>;
