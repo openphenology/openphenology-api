@@ -14,6 +14,48 @@ describe("release", () => {
     expect(server.requests.filter((p) => p === "current.json")).toHaveLength(1);
   });
 
+  test("refresh reads current.json again", async () => {
+    const server = await fakeServer();
+    const client = createClient({ baseUrl: BASE, fetch: server.fetch });
+    const before = await client.release();
+    await before.stateResult("us-zz", "EX1");
+    expect(await client.release({ refresh: true })).toBe(before);
+
+    server.tamper(
+      "current.json",
+      JSON.stringify({
+        id: "current.json",
+        kind: "current",
+        format: "current/1.0",
+        provenance,
+        data: { release: "2026-01-12", published_at: "2026-01-12T06:00:00Z" },
+      }),
+    );
+    expect(await client.release()).toBe(before);
+    const after = await client.release({ refresh: true });
+    expect(after.id).toBe("2026-01-12");
+    expect(await client.release()).toBe(after);
+
+    // The earlier release still reads its own files, from its cache.
+    expect(await before.stateResult("us-zz", "EX1")).not.toBeNull();
+    expect(server.requests.filter((p) => p === "current.json")).toHaveLength(3);
+    expect(
+      server.requests.filter((p) => p.endsWith("results/us-zz/EX1.json")),
+    ).toEqual([`releases/${RELEASE}/results/us-zz/EX1.json`]);
+  });
+
+  test("refresh does nothing to a pinned release", async () => {
+    const server = await fakeServer();
+    const client = createClient({
+      baseUrl: BASE,
+      fetch: server.fetch,
+      release: RELEASE,
+    });
+    const release = await client.release();
+    expect(await client.release({ refresh: true })).toBe(release);
+    expect(server.requests).toEqual([`releases/${RELEASE}/methods.json`]);
+  });
+
   test("a pinned release skips current.json", async () => {
     const server = await fakeServer();
     const release = await createClient({

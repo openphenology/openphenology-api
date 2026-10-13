@@ -24,6 +24,10 @@ if (result) {
   the same release. Pass `{ release: "2026-10-19" }` to pin one. A pinned
   release that is not published, or has been withdrawn, is an `ApiError`
   (status 404).
+- `client.release({ refresh: true })` reads `current.json` again and returns
+  the release it names now. A long-running server should refresh every few
+  minutes; `current.json` is cached for about 5 minutes. A release already
+  returned keeps reading its own files.
 - A release reads its files by name. A file that is not published is `null`.
   - Species: `catalogue()`, `species(key)`, `speciesBySlug(slug)`, `groups()`
     and `searchNames()`.

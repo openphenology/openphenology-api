@@ -117,6 +117,7 @@ export class Client {
   readonly #base: URL;
   readonly #options: ClientOptions;
   #release: Promise<Release> | undefined;
+  #opened: Release | undefined;
 
   constructor(options: ClientOptions = {}) {
     this.#base = new URL(options.baseUrl ?? PRODUCTION_URL);
@@ -127,12 +128,21 @@ export class Client {
   /**
    * The release this client reads: the pinned one, or the current one read once
    * from `current.json`, so every later read comes from the same release.
+   *
+   * @param options.refresh Read `current.json` again and return the release it
+   *   names now. A `Release` already returned keeps reading its own files. No
+   *   effect on a pinned release.
    */
-  release(): Promise<Release> {
-    this.#release ??= this.#openRelease().catch((error: unknown) => {
+  release(options: { readonly refresh?: boolean } = {}): Promise<Release> {
+    if (options.refresh === true && this.#options.release === undefined)
       this.#release = undefined;
-      throw error;
-    });
+    this.#release ??= this.#openRelease().then(
+      (release) => (this.#opened = release),
+      (error: unknown) => {
+        this.#release = undefined;
+        throw error;
+      },
+    );
     return this.#release;
   }
 
@@ -149,7 +159,9 @@ export class Client {
       await this.getJson("current.json"),
       "current",
     );
-    return new Release(this, releaseId(current.data.release));
+    const id = releaseId(current.data.release);
+    // An unchanged release keeps the files it has already read.
+    return this.#opened?.id === id ? this.#opened : new Release(this, id);
   }
 
   /** Every release and its status, from `releases.json`. */
