@@ -9,11 +9,25 @@ type Json = Record<string, unknown>;
 const isObject = (value: unknown): value is Json =>
   typeof value === "object" && value !== null && !Array.isArray(value);
 
+/**
+ * @param path The file's path.
+ * @param message What is wrong.
+ * @throws {FormatError} Always.
+ */
 function fail(path: string, message: string): never {
   throw new FormatError(`${path}: ${message}`, path);
 }
 
-/** Checks the shared wrapper, the kind and the format's major version. */
+/**
+ * Checks the shared wrapper, the kind and the format's major version.
+ *
+ * @param path The file's path, for errors.
+ * @param value The parsed JSON.
+ * @param kind The kind the file must be.
+ * @returns The file, typed as its format.
+ * @throws {FormatError} When the wrapper is incomplete, the kind differs or
+ *   the major version is not 1.
+ */
 export function parseFile<File extends PublishedFile<string, unknown>>(
   path: string,
   value: unknown,
@@ -38,7 +52,14 @@ export function parseFile<File extends PublishedFile<string, unknown>>(
   return value as File;
 }
 
-/** Checks that a weekly list has one number per week. */
+/**
+ * Checks that a weekly list has one number per week.
+ *
+ * @param path The file's path, for errors.
+ * @param name The field, for errors.
+ * @param list The list.
+ * @throws {FormatError} When it is not 53 numbers.
+ */
 export function checkWeeks(path: string, name: string, list: unknown): void {
   if (
     !Array.isArray(list) ||
@@ -49,7 +70,14 @@ export function checkWeeks(path: string, name: string, list: unknown): void {
   }
 }
 
-/** Checks that Backyard labels are one letter per week: `c`, `s`, `r`, `m` or `n`. */
+/**
+ * Checks that Backyard labels are one letter per week: `c`, `s`, `r`, `m` or `n`.
+ *
+ * @param path The file's path, for errors.
+ * @param name The field, for errors.
+ * @param labels The labels.
+ * @throws {FormatError} When they are not 53 of those letters.
+ */
 export function checkLabels(path: string, name: string, labels: unknown): void {
   if (typeof labels !== "string" || !/^[csrmn]{53}$/.test(labels)) {
     fail(path, `${name} must be ${String(WEEKS)} Backyard labels`);

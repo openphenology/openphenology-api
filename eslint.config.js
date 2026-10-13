@@ -1,4 +1,5 @@
 import js from "@eslint/js";
+import jsdoc from "eslint-plugin-jsdoc";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
@@ -36,6 +37,36 @@ export default tseslint.config(
           "__dirname",
         ].map((name) => ({ name, message: "Not available in every runtime." })),
       ],
+    },
+  },
+  {
+    // Every export is documented, and its tags match what it takes and does.
+    files: ["src/**/*.ts"],
+    ...jsdoc.configs["flat/recommended-typescript-error"],
+  },
+  {
+    files: ["src/**/*.ts"],
+    rules: {
+      "jsdoc/require-jsdoc": [
+        "error",
+        {
+          publicOnly: true,
+          require: {
+            ClassDeclaration: true,
+            FunctionDeclaration: true,
+            MethodDefinition: true,
+          },
+          contexts: [
+            "TSInterfaceDeclaration",
+            "TSTypeAliasDeclaration",
+            "TSPropertySignature",
+            "ExportNamedDeclaration > VariableDeclaration",
+          ],
+        },
+      ],
+      "jsdoc/require-throws": "error",
+      "jsdoc/tag-lines": ["error", "any", { startLines: 1 }],
+      "jsdoc/check-tag-names": ["error", { definedTags: ["internal"] }],
     },
   },
   { files: ["eslint.config.js"], ...tseslint.configs.disableTypeChecked },
