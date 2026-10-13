@@ -2,25 +2,51 @@
 
 Thanks for helping. Bug reports and pull requests are welcome.
 
-## Setting up
+## Getting set up
 
-Needs Node.js 24 and pnpm (`corepack enable`).
+You need Node.js 24 (the version in `.node-version`) and Git.
 
-```sh
-pnpm install
-pnpm exec playwright install chromium firefox webkit   # test browsers
-```
+1. Clone the repository and install:
 
-## Checking a change
+   ```sh
+   git clone https://github.com/openphenology/openphenology-api.git
+   cd openphenology-api
+   corepack enable   # provides the pnpm version this repo pins
+   pnpm install
+   ```
 
-```sh
-pnpm check    # formatting, schemas, lint, typecheck, tests in Node.js and browsers, build, size
-pnpm format   # fix formatting
-pnpm schemas  # write schemas/*.json from schemas/index.ts
-pnpm docs     # build the API reference into docs/ with TypeDoc
-```
+2. Install the test browsers (once):
 
-`pnpm check` is what CI runs, and a pull request needs it to pass.
+   ```sh
+   pnpm exec playwright install chromium firefox webkit
+   ```
+
+3. Run every check, as CI does:
+
+   ```sh
+   pnpm check
+   ```
+
+If that passes, you're ready to make changes.
+
+## Useful commands
+
+| Command           | What it does                                                  |
+| ----------------- | ------------------------------------------------------------- |
+| `pnpm check`      | Everything CI runs. A pull request needs it to pass           |
+| `pnpm test`       | Tests in Node.js, then in Chromium, Firefox and WebKit        |
+| `pnpm format`     | Fixes formatting                                              |
+| `pnpm schemas`    | Rewrites `schemas/*.json` from `schemas/index.ts`             |
+| `pnpm docs:build` | Builds the API reference into `docs/`; open `docs/index.html` |
+
+## Where things are
+
+| Path       | Holds                                                        |
+| ---------- | ------------------------------------------------------------ |
+| `src/`     | The package: `client.ts` reads files, `types.ts` shapes them |
+| `schemas/` | The JSON Schemas, written in `index.ts`                      |
+| `test/`    | Tests, with a made-up release in `fixture.ts`                |
+| `scripts/` | The schema writer and the size check                         |
 
 ## Guidelines
 

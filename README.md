@@ -3,32 +3,59 @@
 Find out when each species is recorded, week by week, in US counties and
 states, from OpenPhenology's published data.
 
-The data is not yet published. The interface may change before 1.0.0.
+The interface may change before 1.0.0.
 
-## Install
-
-```sh
-npm install @openphenology/api
-```
-
-Works in Node.js 22 or later and in the last two versions of Chrome, Edge,
-Firefox and Safari. It has no dependencies.
+> **Not live yet.** The first data release hasn't been published, so until it
+> is, `release()` fails with an `ApiError` (status 404). Everything below works
+> as soon as it is.
 
 ## Quick start
 
-```ts
-import { createClient } from "@openphenology/api";
+1. Install the package. It needs Node.js 22 or later, and has no
+   dependencies.
 
-const release = await createClient().release();
+   ```sh
+   npm install @openphenology/api
+   ```
 
-// Franklin County, Ohio
-const result = await release.countyResult("us-oh", "39049", speciesKey);
-if (result) {
-  console.log(result.data.season); // [early, middle, late] weeks, or []
-}
-```
+2. Save this as `season.mjs`:
 
-Your editor shows what every method takes, returns and throws.
+   ```js
+   import { createClient } from "@openphenology/api";
+
+   const release = await createClient().release(); // the current release
+
+   const key = await release.speciesBySlug("northern-cardinal");
+   if (key) {
+     // Franklin County, Ohio
+     const result = await release.countyResult("us-oh", "39049", key);
+     console.log(result?.data.season); // e.g. [14, 22, 35]: early, middle, late week
+   }
+   ```
+
+3. Run it:
+
+   ```sh
+   node season.mjs
+   ```
+
+In a browser app, import the package the same way through your bundler, such
+as Vite or webpack. It works in the last two versions of Chrome, Edge,
+Firefox and Safari. Types are included, and your editor shows what every
+method takes, returns and throws.
+
+## Finding species and places
+
+Every read takes codes, not names:
+
+| You have             | Get the code with                                                  |
+| -------------------- | ------------------------------------------------------------------ |
+| A species' page slug | `release.speciesBySlug("northern-cardinal")`                       |
+| A name someone typed | `release.searchNames()`: every common, scientific and former name  |
+| Nothing yet          | `release.catalogue()`: every species with a result                 |
+| A state              | `us-` and its postal abbreviation, such as `us-oh`                 |
+| A county             | `release.region("us-oh")` lists each county's 5-digit Census code  |
+| A ZIP code           | `release.zipCounties("43215")` gives its counties and their states |
 
 ## Reading the results
 
@@ -51,6 +78,8 @@ Your editor shows what every method takes, returns and throws.
 
 ## Examples
 
+These continue from the quick start, with `release` already open.
+
 ### This week's Backyard labels for a ZIP code
 
 ```ts
@@ -72,7 +101,7 @@ if (county?.state) {
 
 ```ts
 const outlines = await release.boundaries("us-oh");
-// outlines.data is GeoJSON, ready for any map library
+// outlines.data is GeoJSON, ready for any map library. With MapLibre:
 map.addSource("counties", { type: "geojson", data: outlines?.data });
 ```
 
