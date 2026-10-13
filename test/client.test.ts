@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 import { ApiError, createClient, FormatError } from "../src/index.ts";
-import { fakeServer, RELEASE } from "./fixture.ts";
+import { fakeServer, RELEASE, provenance, wrap } from "./fixture.ts";
 
 const BASE = "https://example.test/";
 
@@ -156,6 +156,164 @@ describe("files", () => {
     );
     expect(() => release.stateResult("US-ZZ", "EX1")).toThrow(RangeError);
     expect(() => release.stateResult("us-zz", "a/b")).toThrow(RangeError);
+  });
+});
+
+describe("shards", () => {
+  const at = (path: string) => `releases/${RELEASE}/${path}`;
+  const shard = (path: string, kind: string, data: unknown) =>
+    JSON.stringify(wrap(path, kind, data));
+
+  test("joins a split file's lists in shard order", async () => {
+    const server = await fakeServer();
+    const area = { area: "us-zz", species_key: "EX9", gbif_download_dois: [] };
+    const dataset = (key: string) => ({
+      dataset_key: key,
+      title: null,
+      publisher: null,
+      citation: null,
+      url: null,
+      records: 1,
+    });
+    for (const [n, key, link] of [
+      [0, "d1", "https://example.test/1"],
+      [1, "d2", "https://example.test/2"],
+    ] as const) {
+      const path = `attribution/us-zz/EX9/${String(n)}.json`;
+      server.tamper(
+        at(path),
+        shard(path, "attribution", {
+          ...area,
+          datasets: [dataset(key)],
+          record_links: [link],
+        }),
+      );
+    }
+    const release = await createClient({
+      baseUrl: BASE,
+      fetch: server.fetch,
+    }).release();
+    const file = await release.attribution("us-zz", "EX9");
+    expect(file?.data.datasets.map((d) => d.dataset_key)).toEqual(["d1", "d2"]);
+    expect(file?.data.record_links).toEqual([
+      "https://example.test/1",
+      "https://example.test/2",
+    ]);
+    expect(file?.data.area).toBe("us-zz");
+    expect(server.requests.filter((p) => p.includes("EX9"))).toEqual([
+      at("attribution/us-zz/EX9.json"),
+      at("attribution/us-zz/EX9/0.json"),
+      at("attribution/us-zz/EX9/1.json"),
+      at("attribution/us-zz/EX9/2.json"),
+    ]);
+  });
+
+  test("merges a split file's maps and keeps a list that is null", async () => {
+    const server = await fakeServer();
+    server.failNext(at("slugs.json"), 404);
+    for (const [n, slug, key] of [
+      [0, "first", "EX1"],
+      [1, "second", "EX2"],
+    ] as const) {
+      const path = `slugs/${String(n)}.json`;
+      server.tamper(
+        at(path),
+        shard(path, "slugs", { species: { [slug]: key }, redirects: {} }),
+      );
+    }
+    const path = "attribution/us-zz/EX8/0.json";
+    server.tamper(
+      at(path),
+      shard(path, "attribution", {
+        area: "us-zz",
+        species_key: "EX8",
+        datasets: [],
+        gbif_download_dois: [],
+        record_links: null,
+      }),
+    );
+    const release = await createClient({
+      baseUrl: BASE,
+      fetch: server.fetch,
+    }).release();
+    expect(await release.speciesBySlug("second")).toBe("EX2");
+    expect(await release.speciesBySlug("first")).toBe("EX1");
+    expect(
+      (await release.attribution("us-zz", "EX8"))?.data.record_links,
+    ).toBeNull();
+  });
+
+  test("reads releases.json from its shards", async () => {
+    const server = await fakeServer();
+    server.failNext("releases.json", 404);
+    const entry = (release: string) => ({
+      release,
+      status: "available",
+      published_at: `${release}T06:00:00Z`,
+      doi: null,
+      builds_on: null,
+      reason: null,
+    });
+    for (const [n, release] of [
+      [0, "2026-01-05"],
+      [1, "2026-01-12"],
+    ] as const) {
+      server.tamper(
+        `releases/${String(n)}.json`,
+        JSON.stringify({
+          id: `releases/${String(n)}.json`,
+          kind: "releases",
+          format: "releases/1.0",
+          provenance,
+          data: { releases: [entry(release)] },
+        }),
+      );
+    }
+    const file = await createClient({
+      baseUrl: BASE,
+      fetch: server.fetch,
+    }).releases();
+    expect(file.data.releases.map((r) => r.release)).toEqual([
+      "2026-01-05",
+      "2026-01-12",
+    ]);
+  });
+
+  test("a missing releases.json with no shards is an ApiError", async () => {
+    const server = await fakeServer();
+    server.failNext("releases.json", 404);
+    await expect(
+      createClient({ baseUrl: BASE, fetch: server.fetch }).releases(),
+    ).rejects.toMatchObject({ name: "ApiError", status: 404 });
+  });
+
+  test("a kind that is never split is not looked for in shards", async () => {
+    const server = await fakeServer();
+    const release = await createClient({
+      baseUrl: BASE,
+      fetch: server.fetch,
+    }).release();
+    expect(await release.stateResult("us-zz", "NOPE")).toBeNull();
+    expect(server.requests.filter((p) => p.includes("NOPE"))).toEqual([
+      at("results/us-zz/NOPE.json"),
+    ]);
+  });
+
+  test("with verify, only shards the manifest lists are requested", async () => {
+    const server = await fakeServer();
+    const release = await createClient({
+      baseUrl: BASE,
+      fetch: server.fetch,
+      verify: true,
+    }).release();
+    expect((await release.catalogue()).map((s) => s.species_key)).toEqual([
+      "EX1",
+      "EX2",
+    ]);
+    expect(server.requests.filter((p) => p.includes("catalogue"))).toEqual([
+      at("catalogue/0.json"),
+      at("catalogue/1.json"),
+    ]);
   });
 });
 
