@@ -1,7 +1,7 @@
 {
   "id": "releases/2026-01-05/catalogue/0.json",
   "kind": "catalogue",
-  "format": "catalogue/1.0",
+  "format": "catalogue/1.1",
   "provenance": {
     "release": "2026-01-05",
     "sources": ["example"],
@@ -30,7 +30,10 @@
         "genus": "Exemplum",
         "group": "birds",
         "slug": "exemplum-primum",
-        "states": ["us-zz"]
+        "states": ["us-zz"],
+        "seasons": {
+          "us-zz": [14, 22, 35]
+        }
       }
     ]
   }

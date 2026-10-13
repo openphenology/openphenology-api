@@ -227,6 +227,12 @@ export interface CatalogueEntry extends Classification {
   readonly slug: string | null;
   /** States with a result for this species. */
   readonly states: readonly Area[];
+  /**
+   * Each state in `states` with its season weeks, exactly as the species file
+   * gives them; empty when the species file has none or withholds them.
+   * Added in `catalogue/1.1`, so absent from `catalogue/1.0` files.
+   */
+  readonly seasons?: Readonly<Record<Area, SeasonWeeks>>;
 }
 /** `catalogue.json` or one of its shards: the species with results. */
 export type CatalogueFile = PublishedFile<

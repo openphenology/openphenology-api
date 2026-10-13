@@ -173,6 +173,67 @@ const weeklyResult = (where: Schema) =>
     seasonMatchesWithheld,
   );
 
+/** Adds file-level rules to a schema. */
+const withRules = (schema: Schema, ...rules: Schema[]): Schema => ({
+  ...schema,
+  allOf: rules,
+});
+
+/** Adds fields that a later minor version requires and earlier ones lack. */
+const withOptional = (
+  schema: Schema,
+  properties: Record<string, Schema>,
+): Schema => ({
+  ...schema,
+  properties: {
+    ...(schema.properties as Record<string, Schema>),
+    ...properties,
+  },
+});
+
+/**
+ * From minor version `minor` on, each item of the named `data` lists requires
+ * the given fields, which `withOptional` added. Earlier minors are exempt.
+ */
+const sinceMinor = (
+  kind: Kind,
+  minor: number,
+  lists: Record<string, readonly string[]>,
+): Schema => ({
+  if: {
+    type: "object",
+    properties: {
+      format: {
+        enum: Array.from(
+          { length: minor },
+          (_, earlier) => `${kind}/${String(MAJOR)}.${String(earlier)}`,
+        ),
+      },
+    },
+  },
+  else: {
+    type: "object",
+    properties: {
+      data: {
+        type: "object",
+        properties: Object.fromEntries(
+          Object.entries(lists).map(([name, fields]) => [
+            name,
+            {
+              type: "array",
+              items: {
+                type: "object",
+                properties: Object.fromEntries(fields.map((f) => [f, true])),
+                required: fields,
+              },
+            },
+          ]),
+        ),
+      },
+    },
+  },
+});
+
 /** Each file's path from the API root, without `.json`. */
 const RELEASE = "releases/\\d{4}-\\d{2}-\\d{2}/";
 const paths: Record<Kind, string> = {
@@ -288,23 +349,41 @@ export const schemas = {
     }),
   ),
 
-  catalogue: file(
-    "catalogue",
-    "Species with a result or a mapped range, by scientific name. May be split into shards.",
-    object({
-      species: list(
-        object({
-          species_key: speciesKey,
-          scientific_name: text,
-          common_name: nullable(text),
-          rank: text,
-          ...classification,
-          group: nullable(group),
-          slug: nullable(slug),
-          states: list(state),
-        }),
-      ),
-    }),
+  catalogue: withRules(
+    file(
+      "catalogue",
+      "Species with a result or a mapped range, by scientific name. May be split into shards.",
+      object({
+        species: list(
+          withOptional(
+            object({
+              species_key: speciesKey,
+              scientific_name: text,
+              common_name: nullable(text),
+              rank: text,
+              ...classification,
+              group: nullable(group),
+              slug: nullable(slug),
+              states: list(state),
+            }),
+            {
+              seasons: {
+                type: "object",
+                propertyNames: state,
+                additionalProperties: {
+                  ...season,
+                  anyOf: [
+                    { type: "array", maxItems: 0 },
+                    { type: "array", minItems: 3 },
+                  ],
+                },
+              },
+            },
+          ),
+        ),
+      }),
+    ),
+    sinceMinor("catalogue", 1, { species: ["seasons"] }),
   ),
 
   species: file(

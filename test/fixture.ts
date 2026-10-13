@@ -18,11 +18,14 @@ const weeks = (value: number): number[] =>
 
 export const RELEASE = "2026-01-05";
 
+/** Formats the made-up release publishes at a later minor version than 1.0. */
+const MINOR: Readonly<Record<string, number>> = { catalogue: 1 };
+
 /** Wraps data as the release file at `path`. */
 export const wrap = (path: string, kind: string, data: unknown) => ({
   id: `releases/${RELEASE}/${path}`,
   kind,
-  format: `${kind}/1.0`,
+  format: `${kind}/1.${String(MINOR[kind] ?? 0)}`,
   provenance,
   data,
 });
@@ -36,7 +39,7 @@ const classification = {
   genus: "Exemplum",
 };
 
-const entry = (key: string, name: string) => ({
+const entry = (key: string, name: string, season: number[] = []) => ({
   species_key: key,
   scientific_name: name,
   common_name: null,
@@ -45,6 +48,7 @@ const entry = (key: string, name: string) => ({
   group: "birds",
   slug: name.toLowerCase().replace(" ", "-"),
   states: ["us-zz"],
+  seasons: { "us-zz": season },
 });
 
 /** Made-up records each week, rising from week 12 to a peak and falling by week 37. */
@@ -85,7 +89,7 @@ const files: [string, string, unknown][] = [
     "catalogue/0.json",
     "catalogue",
     {
-      species: [entry("EX1", "Exemplum primum")],
+      species: [entry("EX1", "Exemplum primum", [14, 22, 35])],
     },
   ],
   [

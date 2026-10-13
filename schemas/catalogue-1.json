@@ -305,11 +305,74 @@
                   "type": "string",
                   "pattern": "^[a-z]{2}-[a-z0-9]{1,3}$"
                 }
+              },
+              "seasons": {
+                "description": "Each state in `states` with its season weeks, exactly as the species file\ngives them; empty when the species file has none or withholds them.\nAdded in `catalogue/1.1`, so absent from `catalogue/1.0` files.",
+                "type": "object",
+                "propertyNames": {
+                  "type": "string",
+                  "pattern": "^[a-z]{2}-[a-z0-9]{1,3}$"
+                },
+                "additionalProperties": {
+                  "type": "array",
+                  "items": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 53
+                  },
+                  "maxItems": 3,
+                  "anyOf": [
+                    {
+                      "type": "array",
+                      "maxItems": 0
+                    },
+                    {
+                      "type": "array",
+                      "minItems": 3
+                    }
+                  ]
+                }
               }
             }
           }
         }
       }
     }
-  }
+  },
+  "allOf": [
+    {
+      "if": {
+        "type": "object",
+        "properties": {
+          "format": {
+            "enum": [
+              "catalogue/1.0"
+            ]
+          }
+        }
+      },
+      "else": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "object",
+            "properties": {
+              "species": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "seasons": true
+                  },
+                  "required": [
+                    "seasons"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
 }

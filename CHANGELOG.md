@@ -6,6 +6,12 @@ All notable changes to this package are recorded here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- `catalogue/1.1`: each catalogue species has `seasons`, its season weeks in
+  each state with a result (data rules 1.20). `catalogue/1.0` files, which lack
+  it, still read.
+
 ## [0.1.0] - 2026-10-13
 
 First release.
