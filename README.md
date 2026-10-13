@@ -184,7 +184,8 @@ The data is licensed CC BY 4.0. `client.terms()` says how to cite it, and
 
 A JSON Schema for each file format is included, with every field described,
 and a made-up example file for each one. Use them to check files with any
-validator, or to see what a file looks like:
+validator, or to see what a file looks like. `schemas/all-1.json` holds every
+schema in one file, by kind:
 
 ```ts
 import schema from "@openphenology/api/schemas/county-weekly-1.json" with { type: "json" };

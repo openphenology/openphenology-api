@@ -1,0 +1,5064 @@
+{
+  "current": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "OpenPhenology current/1",
+    "description": "The current release.",
+    "type": "object",
+    "required": [
+      "id",
+      "kind",
+      "format",
+      "provenance",
+      "data"
+    ],
+    "properties": {
+      "id": {
+        "description": "The file's path from the API root.",
+        "type": "string",
+        "pattern": "^current(/\\d+)?\\.json$"
+      },
+      "kind": {
+        "description": "The format's name, such as `county-weekly`.",
+        "const": "current"
+      },
+      "format": {
+        "description": "Format name and version, for example `county-weekly/1.0`.",
+        "type": "string",
+        "pattern": "^current/1\\.\\d+$"
+      },
+      "provenance": {
+        "description": "Where the content came from.",
+        "type": "object",
+        "required": [
+          "release",
+          "sources",
+          "licences",
+          "gbif_download_dois",
+          "method",
+          "taxonomy",
+          "boundaries",
+          "ranges",
+          "protection",
+          "code",
+          "run"
+        ],
+        "properties": {
+          "release": {
+            "description": "The release the file belongs to, such as `2026-10-19`.",
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          },
+          "sources": {
+            "description": "Source IDs, as listed in `sources.json`.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "licences": {
+            "description": "The licences of those sources.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "gbif_download_dois": {
+            "description": "The GBIF downloads the records came from, as DOIs.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "method": {
+            "description": "The method version, such as `seasonal-3`.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "taxonomy": {
+            "description": "The taxonomy version species keys come from.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "boundaries": {
+            "description": "The boundary version areas come from.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "ranges": {
+            "description": "Each mapped range edition used.",
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "protection": {
+            "description": "The version of each sensitive-species list applied, by list.",
+            "anyOf": [
+              {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "code": {
+            "description": "The commit of the code that produced the file.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "run": {
+            "description": "The run that produced the file.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "data": {
+        "description": "The content, as the format sets out.",
+        "type": "object",
+        "required": [
+          "release",
+          "published_at"
+        ],
+        "properties": {
+          "release": {
+            "description": "The current release ID.",
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          },
+          "published_at": {
+            "description": "When it was published, `YYYY-MM-DDTHH:MM:SSZ`.",
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$"
+          }
+        }
+      }
+    }
+  },
+  "releases": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "OpenPhenology releases/1",
+    "description": "Every release and its status.",
+    "type": "object",
+    "required": [
+      "id",
+      "kind",
+      "format",
+      "provenance",
+      "data"
+    ],
+    "properties": {
+      "id": {
+        "description": "The file's path from the API root.",
+        "type": "string",
+        "pattern": "^releases(/\\d+)?\\.json$"
+      },
+      "kind": {
+        "description": "The format's name, such as `county-weekly`.",
+        "const": "releases"
+      },
+      "format": {
+        "description": "Format name and version, for example `county-weekly/1.0`.",
+        "type": "string",
+        "pattern": "^releases/1\\.\\d+$"
+      },
+      "provenance": {
+        "description": "Where the content came from.",
+        "type": "object",
+        "required": [
+          "release",
+          "sources",
+          "licences",
+          "gbif_download_dois",
+          "method",
+          "taxonomy",
+          "boundaries",
+          "ranges",
+          "protection",
+          "code",
+          "run"
+        ],
+        "properties": {
+          "release": {
+            "description": "The release the file belongs to, such as `2026-10-19`.",
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          },
+          "sources": {
+            "description": "Source IDs, as listed in `sources.json`.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "licences": {
+            "description": "The licences of those sources.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "gbif_download_dois": {
+            "description": "The GBIF downloads the records came from, as DOIs.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "method": {
+            "description": "The method version, such as `seasonal-3`.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "taxonomy": {
+            "description": "The taxonomy version species keys come from.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "boundaries": {
+            "description": "The boundary version areas come from.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "ranges": {
+            "description": "Each mapped range edition used.",
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "protection": {
+            "description": "The version of each sensitive-species list applied, by list.",
+            "anyOf": [
+              {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "code": {
+            "description": "The commit of the code that produced the file.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "run": {
+            "description": "The run that produced the file.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "data": {
+        "description": "The content, as the format sets out.",
+        "type": "object",
+        "required": [
+          "releases"
+        ],
+        "properties": {
+          "releases": {
+            "description": "Every release.",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "release",
+                "status",
+                "published_at",
+                "doi",
+                "builds_on",
+                "reason"
+              ],
+              "properties": {
+                "release": {
+                  "description": "The release ID, its date.",
+                  "type": "string",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                },
+                "status": {
+                  "description": "`current`, `available`, or `withdrawn` for a release whose files are deleted.",
+                  "enum": [
+                    "current",
+                    "available",
+                    "withdrawn"
+                  ]
+                },
+                "published_at": {
+                  "description": "When it was published, `YYYY-MM-DDTHH:MM:SSZ`.",
+                  "type": "string",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$"
+                },
+                "doi": {
+                  "description": "Its DOI, when it is registered as a GBIF derived dataset.",
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "builds_on": {
+                  "description": "The DOI of the latest registered release it builds on.",
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "reason": {
+                  "description": "Why it was withdrawn.",
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "terms": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "OpenPhenology terms/1",
+    "description": "The licence, how to cite and credit, and the contact.",
+    "type": "object",
+    "required": [
+      "id",
+      "kind",
+      "format",
+      "provenance",
+      "data"
+    ],
+    "properties": {
+      "id": {
+        "description": "The file's path from the API root.",
+        "type": "string",
+        "pattern": "^terms(/\\d+)?\\.json$"
+      },
+      "kind": {
+        "description": "The format's name, such as `county-weekly`.",
+        "const": "terms"
+      },
+      "format": {
+        "description": "Format name and version, for example `county-weekly/1.0`.",
+        "type": "string",
+        "pattern": "^terms/1\\.\\d+$"
+      },
+      "provenance": {
+        "description": "Where the content came from.",
+        "type": "object",
+        "required": [
+          "release",
+          "sources",
+          "licences",
+          "gbif_download_dois",
+          "method",
+          "taxonomy",
+          "boundaries",
+          "ranges",
+          "protection",
+          "code",
+          "run"
+        ],
+        "properties": {
+          "release": {
+            "description": "The release the file belongs to, such as `2026-10-19`.",
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          },
+          "sources": {
+            "description": "Source IDs, as listed in `sources.json`.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "licences": {
+            "description": "The licences of those sources.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "gbif_download_dois": {
+            "description": "The GBIF downloads the records came from, as DOIs.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "method": {
+            "description": "The method version, such as `seasonal-3`.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "taxonomy": {
+            "description": "The taxonomy version species keys come from.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "boundaries": {
+            "description": "The boundary version areas come from.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "ranges": {
+            "description": "Each mapped range edition used.",
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "protection": {
+            "description": "The version of each sensitive-species list applied, by list.",
+            "anyOf": [
+              {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "code": {
+            "description": "The commit of the code that produced the file.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "run": {
+            "description": "The run that produced the file.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "data": {
+        "description": "The content, as the format sets out.",
+        "type": "object",
+        "required": [
+          "licence",
+          "licence_url",
+          "cite",
+          "credit",
+          "warranty",
+          "contact"
+        ],
+        "properties": {
+          "licence": {
+            "description": "The licence of the outputs: `CC-BY-4.0`.",
+            "type": "string",
+            "minLength": 1
+          },
+          "licence_url": {
+            "description": "Where the licence is published.",
+            "type": "string",
+            "minLength": 1
+          },
+          "cite": {
+            "description": "How to cite OpenPhenology.",
+            "type": "string",
+            "minLength": 1
+          },
+          "credit": {
+            "description": "How to credit the sources.",
+            "type": "string",
+            "minLength": 1
+          },
+          "warranty": {
+            "description": "The disclaimer of warranty.",
+            "type": "string",
+            "minLength": 1
+          },
+          "contact": {
+            "description": "The contact address.",
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  },
+  "manifest": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "OpenPhenology manifest/1",
+    "description": "Every file in a release, with its SHA-256, size and format.",
+    "type": "object",
+    "required": [
+      "id",
+      "kind",
+      "format",
+      "provenance",
+      "data"
+    ],
+    "properties": {
+      "id": {
+        "description": "The file's path from the API root.",
+        "type": "string",
+        "pattern": "^releases/\\d{4}-\\d{2}-\\d{2}/manifest(/\\d+)?\\.json$"
+      },
+      "kind": {
+        "description": "The format's name, such as `county-weekly`.",
+        "const": "manifest"
+      },
+      "format": {
+        "description": "Format name and version, for example `county-weekly/1.0`.",
+        "type": "string",
+        "pattern": "^manifest/1\\.\\d+$"
+      },
+      "provenance": {
+        "description": "Where the content came from.",
+        "type": "object",
+        "required": [
+          "release",
+          "sources",
+          "licences",
+          "gbif_download_dois",
+          "method",
+          "taxonomy",
+          "boundaries",
+          "ranges",
+          "protection",
+          "code",
+          "run"
+        ],
+        "properties": {
+          "release": {
+            "description": "The release the file belongs to, such as `2026-10-19`.",
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          },
+          "sources": {
+            "description": "Source IDs, as listed in `sources.json`.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "licences": {
+            "description": "The licences of those sources.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "gbif_download_dois": {
+            "description": "The GBIF downloads the records came from, as DOIs.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "method": {
+            "description": "The method version, such as `seasonal-3`.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "taxonomy": {
+            "description": "The taxonomy version species keys come from.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "boundaries": {
+            "description": "The boundary version areas come from.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "ranges": {
+            "description": "Each mapped range edition used.",
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "protection": {
+            "description": "The version of each sensitive-species list applied, by list.",
+            "anyOf": [
+              {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "code": {
+            "description": "The commit of the code that produced the file.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "run": {
+            "description": "The run that produced the file.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "data": {
+        "description": "The content, as the format sets out.",
+        "type": "object",
+        "required": [
+          "release",
+          "published_at",
+          "files",
+          "counts"
+        ],
+        "properties": {
+          "release": {
+            "description": "The release ID.",
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          },
+          "published_at": {
+            "description": "When it was published, `YYYY-MM-DDTHH:MM:SSZ`.",
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$"
+          },
+          "files": {
+            "description": "Every file in the release.",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "path",
+                "format",
+                "sha256",
+                "bytes"
+              ],
+              "properties": {
+                "path": {
+                  "description": "Path relative to the release folder, for example `catalogue/0.json`.",
+                  "type": "string",
+                  "minLength": 1
+                },
+                "format": {
+                  "description": "Its format and version, such as `catalogue/1.0`.",
+                  "type": "string",
+                  "pattern": "^[a-z]+(-[a-z]+)*/\\d+\\.\\d+$"
+                },
+                "sha256": {
+                  "description": "Its lowercase hex SHA-256.",
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{64}$"
+                },
+                "bytes": {
+                  "description": "Its size in bytes, uncompressed.",
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          },
+          "counts": {
+            "description": "How much the release holds.",
+            "type": "object",
+            "required": [
+              "species",
+              "state_results",
+              "county_results",
+              "records"
+            ],
+            "properties": {
+              "species": {
+                "description": "Species in the release.",
+                "type": "integer",
+                "minimum": 0
+              },
+              "state_results": {
+                "description": "State results.",
+                "type": "integer",
+                "minimum": 0
+              },
+              "county_results": {
+                "description": "County results.",
+                "type": "integer",
+                "minimum": 0
+              },
+              "records": {
+                "description": "Records counted.",
+                "type": "integer",
+                "minimum": 0
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "notes": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "OpenPhenology notes/1",
+    "description": "What changed since the previous release.",
+    "type": "object",
+    "required": [
+      "id",
+      "kind",
+      "format",
+      "provenance",
+      "data"
+    ],
+    "properties": {
+      "id": {
+        "description": "The file's path from the API root.",
+        "type": "string",
+        "pattern": "^releases/\\d{4}-\\d{2}-\\d{2}/notes(/\\d+)?\\.json$"
+      },
+      "kind": {
+        "description": "The format's name, such as `county-weekly`.",
+        "const": "notes"
+      },
+      "format": {
+        "description": "Format name and version, for example `county-weekly/1.0`.",
+        "type": "string",
+        "pattern": "^notes/1\\.\\d+$"
+      },
+      "provenance": {
+        "description": "Where the content came from.",
+        "type": "object",
+        "required": [
+          "release",
+          "sources",
+          "licences",
+          "gbif_download_dois",
+          "method",
+          "taxonomy",
+          "boundaries",
+          "ranges",
+          "protection",
+          "code",
+          "run"
+        ],
+        "properties": {
+          "release": {
+            "description": "The release the file belongs to, such as `2026-10-19`.",
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          },
+          "sources": {
+            "description": "Source IDs, as listed in `sources.json`.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "licences": {
+            "description": "The licences of those sources.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "gbif_download_dois": {
+            "description": "The GBIF downloads the records came from, as DOIs.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "method": {
+            "description": "The method version, such as `seasonal-3`.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "taxonomy": {
+            "description": "The taxonomy version species keys come from.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "boundaries": {
+            "description": "The boundary version areas come from.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "ranges": {
+            "description": "Each mapped range edition used.",
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "protection": {
+            "description": "The version of each sensitive-species list applied, by list.",
+            "anyOf": [
+              {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "code": {
+            "description": "The commit of the code that produced the file.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "run": {
+            "description": "The run that produced the file.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "data": {
+        "description": "The content, as the format sets out.",
+        "type": "object",
+        "required": [
+          "release",
+          "previous",
+          "results",
+          "key_changes",
+          "corrections",
+          "formats"
+        ],
+        "properties": {
+          "release": {
+            "description": "The release ID.",
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          },
+          "previous": {
+            "description": "The previous release, or `null` for the first one.",
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "results": {
+            "description": "How many results were added, changed and removed.",
+            "type": "object",
+            "required": [
+              "added",
+              "changed",
+              "removed"
+            ],
+            "properties": {
+              "added": {
+                "description": "Results added.",
+                "type": "integer",
+                "minimum": 0
+              },
+              "changed": {
+                "description": "Results changed.",
+                "type": "integer",
+                "minimum": 0
+              },
+              "removed": {
+                "description": "Results removed.",
+                "type": "integer",
+                "minimum": 0
+              }
+            }
+          },
+          "key_changes": {
+            "description": "Species keys that changed with the taxonomy.",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "old",
+                "new"
+              ],
+              "properties": {
+                "old": {
+                  "description": "The key before.",
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9._-]+$"
+                },
+                "new": {
+                  "description": "The key now.",
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9._-]+$"
+                }
+              }
+            }
+          },
+          "corrections": {
+            "description": "Corrections, as short texts.",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "formats": {
+            "description": "Format changes, including a major version carried alongside the old one.",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "format",
+                "change",
+                "until"
+              ],
+              "properties": {
+                "format": {
+                  "description": "The format and version.",
+                  "type": "string",
+                  "minLength": 1
+                },
+                "change": {
+                  "description": "What changed.",
+                  "type": "string",
+                  "minLength": 1
+                },
+                "until": {
+                  "description": "When the old version stops, or `null`.",
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "catalogue": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "OpenPhenology catalogue/1",
+    "description": "Species with a result or a mapped range, by scientific name. May be split into shards.",
+    "type": "object",
+    "required": [
+      "id",
+      "kind",
+      "format",
+      "provenance",
+      "data"
+    ],
+    "properties": {
+      "id": {
+        "description": "The file's path from the API root.",
+        "type": "string",
+        "pattern": "^releases/\\d{4}-\\d{2}-\\d{2}/catalogue(/\\d+)?\\.json$"
+      },
+      "kind": {
+        "description": "The format's name, such as `county-weekly`.",
+        "const": "catalogue"
+      },
+      "format": {
+        "description": "Format name and version, for example `county-weekly/1.0`.",
+        "type": "string",
+        "pattern": "^catalogue/1\\.\\d+$"
+      },
+      "provenance": {
+        "description": "Where the content came from.",
+        "type": "object",
+        "required": [
+          "release",
+          "sources",
+          "licences",
+          "gbif_download_dois",
+          "method",
+          "taxonomy",
+          "boundaries",
+          "ranges",
+          "protection",
+          "code",
+          "run"
+        ],
+        "properties": {
+          "release": {
+            "description": "The release the file belongs to, such as `2026-10-19`.",
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          },
+          "sources": {
+            "description": "Source IDs, as listed in `sources.json`.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "licences": {
+            "description": "The licences of those sources.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "gbif_download_dois": {
+            "description": "The GBIF downloads the records came from, as DOIs.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "method": {
+            "description": "The method version, such as `seasonal-3`.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "taxonomy": {
+            "description": "The taxonomy version species keys come from.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "boundaries": {
+            "description": "The boundary version areas come from.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "ranges": {
+            "description": "Each mapped range edition used.",
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "protection": {
+            "description": "The version of each sensitive-species list applied, by list.",
+            "anyOf": [
+              {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "code": {
+            "description": "The commit of the code that produced the file.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "run": {
+            "description": "The run that produced the file.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "data": {
+        "description": "The content, as the format sets out.",
+        "type": "object",
+        "required": [
+          "species"
+        ],
+        "properties": {
+          "species": {
+            "description": "The species, by scientific name.",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "species_key",
+                "scientific_name",
+                "common_name",
+                "rank",
+                "kingdom",
+                "phylum",
+                "class",
+                "order",
+                "family",
+                "genus",
+                "group",
+                "slug",
+                "states"
+              ],
+              "properties": {
+                "species_key": {
+                  "description": "The species key in the shared taxonomy.",
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9._-]+$"
+                },
+                "scientific_name": {
+                  "description": "The scientific name, without authorship.",
+                  "type": "string",
+                  "minLength": 1
+                },
+                "common_name": {
+                  "description": "The display name, or `null` when there is none.",
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "rank": {
+                  "description": "The taxonomic rank, such as `species`.",
+                  "type": "string",
+                  "minLength": 1
+                },
+                "kingdom": {
+                  "description": "The kingdom.",
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "phylum": {
+                  "description": "The phylum.",
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "class": {
+                  "description": "The class.",
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "order": {
+                  "description": "The order.",
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "family": {
+                  "description": "The family.",
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "genus": {
+                  "description": "The genus.",
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "group": {
+                  "description": "The browse group, such as `birds`.",
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "pattern": "^[a-z]+(-[a-z]+)*$"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "slug": {
+                  "description": "The page slug.",
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "states": {
+                  "description": "States with a result for this species.",
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "pattern": "^[a-z]{2}-[a-z0-9]{1,3}$"
+                  }
+                },
+                "seasons": {
+                  "description": "Each state in `states` with its season weeks, exactly as the species file\ngives them; empty when the species file has none or withholds them.\nAdded in `catalogue/1.1`, so absent from `catalogue/1.0` files.",
+                  "type": "object",
+                  "propertyNames": {
+                    "type": "string",
+                    "pattern": "^[a-z]{2}-[a-z0-9]{1,3}$"
+                  },
+                  "additionalProperties": {
+                    "type": "array",
+                    "items": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 53
+                    },
+                    "maxItems": 3,
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "maxItems": 0
+                      },
+                      {
+                        "type": "array",
+                        "minItems": 3
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "allOf": [
+      {
+        "if": {
+          "type": "object",
+          "properties": {
+            "format": {
+              "enum": [
+                "catalogue/1.0"
+              ]
+            }
+          }
+        },
+        "else": {
+          "type": "object",
+          "properties": {
+            "data": {
+              "type": "object",
+              "properties": {
+                "species": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "seasons": true
+                    },
+                    "required": [
+                      "seasons"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    ]
+  },
+  "species": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "OpenPhenology species/1",
+    "description": "One species and every area with a result or within its mapped range.",
+    "type": "object",
+    "required": [
+      "id",
+      "kind",
+      "format",
+      "provenance",
+      "data"
+    ],
+    "properties": {
+      "id": {
+        "description": "The file's path from the API root.",
+        "type": "string",
+        "pattern": "^releases/\\d{4}-\\d{2}-\\d{2}/species/[A-Za-z0-9._-]+(/\\d+)?\\.json$"
+      },
+      "kind": {
+        "description": "The format's name, such as `county-weekly`.",
+        "const": "species"
+      },
+      "format": {
+        "description": "Format name and version, for example `county-weekly/1.0`.",
+        "type": "string",
+        "pattern": "^species/1\\.\\d+$"
+      },
+      "provenance": {
+        "description": "Where the content came from.",
+        "type": "object",
+        "required": [
+          "release",
+          "sources",
+          "licences",
+          "gbif_download_dois",
+          "method",
+          "taxonomy",
+          "boundaries",
+          "ranges",
+          "protection",
+          "code",
+          "run"
+        ],
+        "properties": {
+          "release": {
+            "description": "The release the file belongs to, such as `2026-10-19`.",
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          },
+          "sources": {
+            "description": "Source IDs, as listed in `sources.json`.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "licences": {
+            "description": "The licences of those sources.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "gbif_download_dois": {
+            "description": "The GBIF downloads the records came from, as DOIs.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "method": {
+            "description": "The method version, such as `seasonal-3`.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "taxonomy": {
+            "description": "The taxonomy version species keys come from.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "boundaries": {
+            "description": "The boundary version areas come from.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "ranges": {
+            "description": "Each mapped range edition used.",
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "protection": {
+            "description": "The version of each sensitive-species list applied, by list.",
+            "anyOf": [
+              {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "code": {
+            "description": "The commit of the code that produced the file.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "run": {
+            "description": "The run that produced the file.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "data": {
+        "description": "The content, as the format sets out.",
+        "type": "object",
+        "required": [
+          "species_key",
+          "scientific_name",
+          "authorship",
+          "common_name",
+          "synonyms",
+          "rank",
+          "classification",
+          "group",
+          "slug",
+          "areas",
+          "ranges"
+        ],
+        "properties": {
+          "species_key": {
+            "description": "The species key in the shared taxonomy.",
+            "type": "string",
+            "pattern": "^[A-Za-z0-9._-]+$"
+          },
+          "scientific_name": {
+            "description": "The scientific name, without authorship.",
+            "type": "string",
+            "minLength": 1
+          },
+          "authorship": {
+            "description": "The authorship of the scientific name.",
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "common_name": {
+            "description": "The display name, or `null` when there is none.",
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "synonyms": {
+            "description": "Other scientific names, from the shared taxonomy.",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "rank": {
+            "description": "The taxonomic rank, such as `species`.",
+            "type": "string",
+            "minLength": 1
+          },
+          "classification": {
+            "description": "Kingdom to genus.",
+            "type": "object",
+            "required": [
+              "kingdom",
+              "phylum",
+              "class",
+              "order",
+              "family",
+              "genus"
+            ],
+            "properties": {
+              "kingdom": {
+                "description": "The kingdom.",
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "phylum": {
+                "description": "The phylum.",
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "class": {
+                "description": "The class.",
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "order": {
+                "description": "The order.",
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "family": {
+                "description": "The family.",
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "genus": {
+                "description": "The genus.",
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            }
+          },
+          "group": {
+            "description": "The browse group, such as `birds`.",
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[a-z]+(-[a-z]+)*$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "slug": {
+            "description": "The page slug.",
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "areas": {
+            "description": "Every area with a result.",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "area",
+                "level",
+                "records",
+                "season",
+                "season_withheld"
+              ],
+              "properties": {
+                "area": {
+                  "description": "The area code.",
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "pattern": "^[a-z]{2}-[a-z0-9]{1,3}$"
+                    },
+                    {
+                      "type": "string",
+                      "pattern": "^\\d{5}$"
+                    }
+                  ]
+                },
+                "level": {
+                  "description": "Whether it is a state or a county.",
+                  "enum": [
+                    "state",
+                    "county"
+                  ]
+                },
+                "records": {
+                  "description": "Records counted there.",
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "season": {
+                  "description": "Early, middle and late weeks, or empty.",
+                  "type": "array",
+                  "items": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 53
+                  },
+                  "maxItems": 3
+                },
+                "season_withheld": {
+                  "description": "Why `season` is empty, or `null`.",
+                  "anyOf": [
+                    {
+                      "enum": [
+                        "year-round",
+                        "two-seasons",
+                        "one-year",
+                        "precision"
+                      ]
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "allOf": [
+                {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "level": {
+                          "const": "state"
+                        },
+                        "area": {
+                          "type": "string",
+                          "pattern": "^[a-z]{2}-[a-z0-9]{1,3}$"
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "level": {
+                          "const": "county"
+                        },
+                        "area": {
+                          "type": "string",
+                          "pattern": "^\\d{5}$"
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "season": {
+                          "type": "array",
+                          "minItems": 3
+                        },
+                        "season_withheld": {
+                          "type": "null"
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "season": {
+                          "type": "array",
+                          "maxItems": 0
+                        },
+                        "season_withheld": {
+                          "enum": [
+                            "year-round",
+                            "two-seasons",
+                            "one-year",
+                            "precision"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          "ranges": {
+            "description": "Every area within its mapped range.",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "area",
+                "level",
+                "source",
+                "seasons"
+              ],
+              "properties": {
+                "area": {
+                  "description": "The area code.",
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "pattern": "^[a-z]{2}-[a-z0-9]{1,3}$"
+                    },
+                    {
+                      "type": "string",
+                      "pattern": "^\\d{5}$"
+                    }
+                  ]
+                },
+                "level": {
+                  "description": "Whether it is a state or a county.",
+                  "enum": [
+                    "state",
+                    "county"
+                  ]
+                },
+                "source": {
+                  "description": "The range's source ID.",
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "seasons": {
+                  "description": "The range's seasons there.",
+                  "type": "array",
+                  "items": {
+                    "enum": [
+                      "year-round",
+                      "summer",
+                      "winter",
+                      "migratory",
+                      "passage"
+                    ]
+                  }
+                }
+              },
+              "allOf": [
+                {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "level": {
+                          "const": "state"
+                        },
+                        "area": {
+                          "type": "string",
+                          "pattern": "^[a-z]{2}-[a-z0-9]{1,3}$"
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "level": {
+                          "const": "county"
+                        },
+                        "area": {
+                          "type": "string",
+                          "pattern": "^\\d{5}$"
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      }
+    }
+  },
+  "slugs": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "OpenPhenology slugs/1",
+    "description": "Species page slugs, and redirects from old slugs.",
+    "type": "object",
+    "required": [
+      "id",
+      "kind",
+      "format",
+      "provenance",
+      "data"
+    ],
+    "properties": {
+      "id": {
+        "description": "The file's path from the API root.",
+        "type": "string",
+        "pattern": "^releases/\\d{4}-\\d{2}-\\d{2}/slugs(/\\d+)?\\.json$"
+      },
+      "kind": {
+        "description": "The format's name, such as `county-weekly`.",
+        "const": "slugs"
+      },
+      "format": {
+        "description": "Format name and version, for example `county-weekly/1.0`.",
+        "type": "string",
+        "pattern": "^slugs/1\\.\\d+$"
+      },
+      "provenance": {
+        "description": "Where the content came from.",
+        "type": "object",
+        "required": [
+          "release",
+          "sources",
+          "licences",
+          "gbif_download_dois",
+          "method",
+          "taxonomy",
+          "boundaries",
+          "ranges",
+          "protection",
+          "code",
+          "run"
+        ],
+        "properties": {
+          "release": {
+            "description": "The release the file belongs to, such as `2026-10-19`.",
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          },
+          "sources": {
+            "description": "Source IDs, as listed in `sources.json`.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "licences": {
+            "description": "The licences of those sources.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "gbif_download_dois": {
+            "description": "The GBIF downloads the records came from, as DOIs.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "method": {
+            "description": "The method version, such as `seasonal-3`.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "taxonomy": {
+            "description": "The taxonomy version species keys come from.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "boundaries": {
+            "description": "The boundary version areas come from.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "ranges": {
+            "description": "Each mapped range edition used.",
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "protection": {
+            "description": "The version of each sensitive-species list applied, by list.",
+            "anyOf": [
+              {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "code": {
+            "description": "The commit of the code that produced the file.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "run": {
+            "description": "The run that produced the file.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "data": {
+        "description": "The content, as the format sets out.",
+        "type": "object",
+        "required": [
+          "species",
+          "redirects"
+        ],
+        "properties": {
+          "species": {
+            "description": "Slug to species key.",
+            "type": "object",
+            "propertyNames": {
+              "type": "string",
+              "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+            },
+            "additionalProperties": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9._-]+$"
+            }
+          },
+          "redirects": {
+            "description": "Old slug to current slug.",
+            "type": "object",
+            "propertyNames": {
+              "type": "string",
+              "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+            },
+            "additionalProperties": {
+              "type": "string",
+              "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+            }
+          }
+        }
+      }
+    }
+  },
+  "groups": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "OpenPhenology groups/1",
+    "description": "The browse groups, in display order.",
+    "type": "object",
+    "required": [
+      "id",
+      "kind",
+      "format",
+      "provenance",
+      "data"
+    ],
+    "properties": {
+      "id": {
+        "description": "The file's path from the API root.",
+        "type": "string",
+        "pattern": "^releases/\\d{4}-\\d{2}-\\d{2}/groups(/\\d+)?\\.json$"
+      },
+      "kind": {
+        "description": "The format's name, such as `county-weekly`.",
+        "const": "groups"
+      },
+      "format": {
+        "description": "Format name and version, for example `county-weekly/1.0`.",
+        "type": "string",
+        "pattern": "^groups/1\\.\\d+$"
+      },
+      "provenance": {
+        "description": "Where the content came from.",
+        "type": "object",
+        "required": [
+          "release",
+          "sources",
+          "licences",
+          "gbif_download_dois",
+          "method",
+          "taxonomy",
+          "boundaries",
+          "ranges",
+          "protection",
+          "code",
+          "run"
+        ],
+        "properties": {
+          "release": {
+            "description": "The release the file belongs to, such as `2026-10-19`.",
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          },
+          "sources": {
+            "description": "Source IDs, as listed in `sources.json`.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "licences": {
+            "description": "The licences of those sources.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "gbif_download_dois": {
+            "description": "The GBIF downloads the records came from, as DOIs.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "method": {
+            "description": "The method version, such as `seasonal-3`.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "taxonomy": {
+            "description": "The taxonomy version species keys come from.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "boundaries": {
+            "description": "The boundary version areas come from.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "ranges": {
+            "description": "Each mapped range edition used.",
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "protection": {
+            "description": "The version of each sensitive-species list applied, by list.",
+            "anyOf": [
+              {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "code": {
+            "description": "The commit of the code that produced the file.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "run": {
+            "description": "The run that produced the file.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "data": {
+        "description": "The content, as the format sets out.",
+        "type": "object",
+        "required": [
+          "groups"
+        ],
+        "properties": {
+          "groups": {
+            "description": "The groups, in display order.",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "group",
+                "name",
+                "taxa",
+                "species"
+              ],
+              "properties": {
+                "group": {
+                  "description": "The group's key, such as `birds`.",
+                  "type": "string",
+                  "pattern": "^[a-z]+(-[a-z]+)*$"
+                },
+                "name": {
+                  "description": "Its display name, such as `Birds`.",
+                  "type": "string",
+                  "minLength": 1
+                },
+                "taxa": {
+                  "description": "The taxon keys that place a species in it.",
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "species": {
+                  "description": "Species in it with a result.",
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "search": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "OpenPhenology search/1",
+    "description": "Every searchable name, as [name, kind, species key]. May be split into shards.",
+    "type": "object",
+    "required": [
+      "id",
+      "kind",
+      "format",
+      "provenance",
+      "data"
+    ],
+    "properties": {
+      "id": {
+        "description": "The file's path from the API root.",
+        "type": "string",
+        "pattern": "^releases/\\d{4}-\\d{2}-\\d{2}/search/index(/\\d+)?\\.json$"
+      },
+      "kind": {
+        "description": "The format's name, such as `county-weekly`.",
+        "const": "search"
+      },
+      "format": {
+        "description": "Format name and version, for example `county-weekly/1.0`.",
+        "type": "string",
+        "pattern": "^search/1\\.\\d+$"
+      },
+      "provenance": {
+        "description": "Where the content came from.",
+        "type": "object",
+        "required": [
+          "release",
+          "sources",
+          "licences",
+          "gbif_download_dois",
+          "method",
+          "taxonomy",
+          "boundaries",
+          "ranges",
+          "protection",
+          "code",
+          "run"
+        ],
+        "properties": {
+          "release": {
+            "description": "The release the file belongs to, such as `2026-10-19`.",
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          },
+          "sources": {
+            "description": "Source IDs, as listed in `sources.json`.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "licences": {
+            "description": "The licences of those sources.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "gbif_download_dois": {
+            "description": "The GBIF downloads the records came from, as DOIs.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "method": {
+            "description": "The method version, such as `seasonal-3`.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "taxonomy": {
+            "description": "The taxonomy version species keys come from.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "boundaries": {
+            "description": "The boundary version areas come from.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "ranges": {
+            "description": "Each mapped range edition used.",
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "protection": {
+            "description": "The version of each sensitive-species list applied, by list.",
+            "anyOf": [
+              {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "code": {
+            "description": "The commit of the code that produced the file.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "run": {
+            "description": "The run that produced the file.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "data": {
+        "description": "The content, as the format sets out.",
+        "type": "object",
+        "required": [
+          "names"
+        ],
+        "properties": {
+          "names": {
+            "description": "Every searchable name.",
+            "type": "array",
+            "items": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "string",
+                  "minLength": 1
+                },
+                {
+                  "enum": [
+                    "scientific",
+                    "common",
+                    "synonym"
+                  ]
+                },
+                {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9._-]+$"
+                }
+              ],
+              "items": false,
+              "minItems": 3
+            }
+          }
+        }
+      }
+    }
+  },
+  "region": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "OpenPhenology region/1",
+    "description": "A state, its counties, their species and effort.",
+    "type": "object",
+    "required": [
+      "id",
+      "kind",
+      "format",
+      "provenance",
+      "data"
+    ],
+    "properties": {
+      "id": {
+        "description": "The file's path from the API root.",
+        "type": "string",
+        "pattern": "^releases/\\d{4}-\\d{2}-\\d{2}/regions/[a-z]{2}-[a-z0-9]{1,3}(/\\d+)?\\.json$"
+      },
+      "kind": {
+        "description": "The format's name, such as `county-weekly`.",
+        "const": "region"
+      },
+      "format": {
+        "description": "Format name and version, for example `county-weekly/1.0`.",
+        "type": "string",
+        "pattern": "^region/1\\.\\d+$"
+      },
+      "provenance": {
+        "description": "Where the content came from.",
+        "type": "object",
+        "required": [
+          "release",
+          "sources",
+          "licences",
+          "gbif_download_dois",
+          "method",
+          "taxonomy",
+          "boundaries",
+          "ranges",
+          "protection",
+          "code",
+          "run"
+        ],
+        "properties": {
+          "release": {
+            "description": "The release the file belongs to, such as `2026-10-19`.",
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          },
+          "sources": {
+            "description": "Source IDs, as listed in `sources.json`.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "licences": {
+            "description": "The licences of those sources.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "gbif_download_dois": {
+            "description": "The GBIF downloads the records came from, as DOIs.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "method": {
+            "description": "The method version, such as `seasonal-3`.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "taxonomy": {
+            "description": "The taxonomy version species keys come from.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "boundaries": {
+            "description": "The boundary version areas come from.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "ranges": {
+            "description": "Each mapped range edition used.",
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "protection": {
+            "description": "The version of each sensitive-species list applied, by list.",
+            "anyOf": [
+              {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "code": {
+            "description": "The commit of the code that produced the file.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "run": {
+            "description": "The run that produced the file.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "data": {
+        "description": "The content, as the format sets out.",
+        "type": "object",
+        "required": [
+          "state",
+          "name",
+          "slug",
+          "areas"
+        ],
+        "properties": {
+          "state": {
+            "description": "The state code.",
+            "type": "string",
+            "pattern": "^[a-z]{2}-[a-z0-9]{1,3}$"
+          },
+          "name": {
+            "description": "The state's name.",
+            "type": "string",
+            "minLength": 1
+          },
+          "slug": {
+            "description": "The state's page slug.",
+            "type": "string",
+            "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+          },
+          "areas": {
+            "description": "The state, then each of its counties.",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "area",
+                "level",
+                "name",
+                "slug",
+                "species_keys",
+                "range_species_keys",
+                "effort"
+              ],
+              "properties": {
+                "area": {
+                  "description": "The area code.",
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "pattern": "^[a-z]{2}-[a-z0-9]{1,3}$"
+                    },
+                    {
+                      "type": "string",
+                      "pattern": "^\\d{5}$"
+                    }
+                  ]
+                },
+                "level": {
+                  "description": "Whether it is a state or a county.",
+                  "enum": [
+                    "state",
+                    "county"
+                  ]
+                },
+                "name": {
+                  "description": "Its name, such as `Franklin`.",
+                  "type": "string",
+                  "minLength": 1
+                },
+                "slug": {
+                  "description": "Its page slug.",
+                  "type": "string",
+                  "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+                },
+                "species_keys": {
+                  "description": "Species with a result there.",
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9._-]+$"
+                  }
+                },
+                "range_species_keys": {
+                  "description": "Species whose mapped range covers it.",
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9._-]+$"
+                  }
+                },
+                "effort": {
+                  "description": "Records of all species counted in the area, weeks 1 to 53.",
+                  "type": "array",
+                  "items": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "minItems": 53,
+                  "maxItems": 53
+                }
+              },
+              "allOf": [
+                {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "level": {
+                          "const": "state"
+                        },
+                        "area": {
+                          "type": "string",
+                          "pattern": "^[a-z]{2}-[a-z0-9]{1,3}$"
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "level": {
+                          "const": "county"
+                        },
+                        "area": {
+                          "type": "string",
+                          "pattern": "^\\d{5}$"
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      }
+    }
+  },
+  "state-weekly": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "OpenPhenology state-weekly/1",
+    "description": "A species' weekly result for a state.",
+    "type": "object",
+    "required": [
+      "id",
+      "kind",
+      "format",
+      "provenance",
+      "data"
+    ],
+    "properties": {
+      "id": {
+        "description": "The file's path from the API root.",
+        "type": "string",
+        "pattern": "^releases/\\d{4}-\\d{2}-\\d{2}/results/[a-z]{2}-[a-z0-9]{1,3}/[A-Za-z0-9._-]+(/\\d+)?\\.json$"
+      },
+      "kind": {
+        "description": "The format's name, such as `county-weekly`.",
+        "const": "state-weekly"
+      },
+      "format": {
+        "description": "Format name and version, for example `county-weekly/1.0`.",
+        "type": "string",
+        "pattern": "^state-weekly/1\\.\\d+$"
+      },
+      "provenance": {
+        "description": "Where the content came from.",
+        "type": "object",
+        "required": [
+          "release",
+          "sources",
+          "licences",
+          "gbif_download_dois",
+          "method",
+          "taxonomy",
+          "boundaries",
+          "ranges",
+          "protection",
+          "code",
+          "run"
+        ],
+        "properties": {
+          "release": {
+            "description": "The release the file belongs to, such as `2026-10-19`.",
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          },
+          "sources": {
+            "description": "Source IDs, as listed in `sources.json`.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "licences": {
+            "description": "The licences of those sources.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "gbif_download_dois": {
+            "description": "The GBIF downloads the records came from, as DOIs.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "method": {
+            "description": "The method version, such as `seasonal-3`.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "taxonomy": {
+            "description": "The taxonomy version species keys come from.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "boundaries": {
+            "description": "The boundary version areas come from.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "ranges": {
+            "description": "Each mapped range edition used.",
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "protection": {
+            "description": "The version of each sensitive-species list applied, by list.",
+            "anyOf": [
+              {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "code": {
+            "description": "The commit of the code that produced the file.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "run": {
+            "description": "The run that produced the file.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "data": {
+        "description": "The content, as the format sets out.",
+        "type": "object",
+        "required": [
+          "area",
+          "species_key",
+          "included_records",
+          "contributing_years",
+          "thresholds",
+          "weekly",
+          "season",
+          "season_withheld",
+          "effort",
+          "limits"
+        ],
+        "properties": {
+          "area": {
+            "description": "The area code.",
+            "type": "string",
+            "pattern": "^[a-z]{2}-[a-z0-9]{1,3}$"
+          },
+          "species_key": {
+            "description": "The species key.",
+            "type": "string",
+            "pattern": "^[A-Za-z0-9._-]+$"
+          },
+          "included_records": {
+            "description": "Records counted, over all weeks.",
+            "type": "integer",
+            "minimum": 0
+          },
+          "contributing_years": {
+            "description": "Calendar years with at least one counted record.",
+            "type": "integer",
+            "minimum": 0
+          },
+          "thresholds": {
+            "description": "The minimum records and years the method requires.",
+            "type": "object",
+            "required": [
+              "records",
+              "years"
+            ],
+            "properties": {
+              "records": {
+                "description": "Minimum records.",
+                "type": "integer",
+                "minimum": 0
+              },
+              "years": {
+                "description": "Minimum years.",
+                "type": "integer",
+                "minimum": 0
+              }
+            }
+          },
+          "weekly": {
+            "description": "Records counted and years contributing, each for weeks 1 to 53.",
+            "type": "object",
+            "required": [
+              "records",
+              "years"
+            ],
+            "properties": {
+              "records": {
+                "description": "Records counted, weeks 1 to 53.",
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "minItems": 53,
+                "maxItems": 53
+              },
+              "years": {
+                "description": "Years contributing, weeks 1 to 53.",
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "minItems": 53,
+                "maxItems": 53
+              }
+            }
+          },
+          "season": {
+            "description": "Early, middle and late weeks, or empty when withheld.",
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 53
+            },
+            "maxItems": 3
+          },
+          "season_withheld": {
+            "description": "Why `season` is empty, or `null`.",
+            "anyOf": [
+              {
+                "enum": [
+                  "year-round",
+                  "two-seasons",
+                  "one-year",
+                  "precision"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "effort": {
+            "description": "Records of all species counted in the area, weeks 1 to 53.",
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "minItems": 53,
+            "maxItems": 53
+          },
+          "limits": {
+            "description": "What the result does not show.",
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "allOf": [
+          {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "season": {
+                    "type": "array",
+                    "minItems": 3
+                  },
+                  "season_withheld": {
+                    "type": "null"
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "season": {
+                    "type": "array",
+                    "maxItems": 0
+                  },
+                  "season_withheld": {
+                    "enum": [
+                      "year-round",
+                      "two-seasons",
+                      "one-year",
+                      "precision"
+                    ]
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "county-weekly": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "OpenPhenology county-weekly/1",
+    "description": "A species' weekly result for a county.",
+    "type": "object",
+    "required": [
+      "id",
+      "kind",
+      "format",
+      "provenance",
+      "data"
+    ],
+    "properties": {
+      "id": {
+        "description": "The file's path from the API root.",
+        "type": "string",
+        "pattern": "^releases/\\d{4}-\\d{2}-\\d{2}/results/[a-z]{2}-[a-z0-9]{1,3}/\\d{5}/[A-Za-z0-9._-]+(/\\d+)?\\.json$"
+      },
+      "kind": {
+        "description": "The format's name, such as `county-weekly`.",
+        "const": "county-weekly"
+      },
+      "format": {
+        "description": "Format name and version, for example `county-weekly/1.0`.",
+        "type": "string",
+        "pattern": "^county-weekly/1\\.\\d+$"
+      },
+      "provenance": {
+        "description": "Where the content came from.",
+        "type": "object",
+        "required": [
+          "release",
+          "sources",
+          "licences",
+          "gbif_download_dois",
+          "method",
+          "taxonomy",
+          "boundaries",
+          "ranges",
+          "protection",
+          "code",
+          "run"
+        ],
+        "properties": {
+          "release": {
+            "description": "The release the file belongs to, such as `2026-10-19`.",
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          },
+          "sources": {
+            "description": "Source IDs, as listed in `sources.json`.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "licences": {
+            "description": "The licences of those sources.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "gbif_download_dois": {
+            "description": "The GBIF downloads the records came from, as DOIs.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "method": {
+            "description": "The method version, such as `seasonal-3`.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "taxonomy": {
+            "description": "The taxonomy version species keys come from.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "boundaries": {
+            "description": "The boundary version areas come from.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "ranges": {
+            "description": "Each mapped range edition used.",
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "protection": {
+            "description": "The version of each sensitive-species list applied, by list.",
+            "anyOf": [
+              {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "code": {
+            "description": "The commit of the code that produced the file.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "run": {
+            "description": "The run that produced the file.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "data": {
+        "description": "The content, as the format sets out.",
+        "type": "object",
+        "required": [
+          "area",
+          "species_key",
+          "included_records",
+          "contributing_years",
+          "thresholds",
+          "weekly",
+          "season",
+          "season_withheld",
+          "effort",
+          "limits"
+        ],
+        "properties": {
+          "area": {
+            "description": "The area code.",
+            "type": "string",
+            "pattern": "^\\d{5}$"
+          },
+          "species_key": {
+            "description": "The species key.",
+            "type": "string",
+            "pattern": "^[A-Za-z0-9._-]+$"
+          },
+          "included_records": {
+            "description": "Records counted, over all weeks.",
+            "type": "integer",
+            "minimum": 0
+          },
+          "contributing_years": {
+            "description": "Calendar years with at least one counted record.",
+            "type": "integer",
+            "minimum": 0
+          },
+          "thresholds": {
+            "description": "The minimum records and years the method requires.",
+            "type": "object",
+            "required": [
+              "records",
+              "years"
+            ],
+            "properties": {
+              "records": {
+                "description": "Minimum records.",
+                "type": "integer",
+                "minimum": 0
+              },
+              "years": {
+                "description": "Minimum years.",
+                "type": "integer",
+                "minimum": 0
+              }
+            }
+          },
+          "weekly": {
+            "description": "Records counted and years contributing, each for weeks 1 to 53.",
+            "type": "object",
+            "required": [
+              "records",
+              "years"
+            ],
+            "properties": {
+              "records": {
+                "description": "Records counted, weeks 1 to 53.",
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "minItems": 53,
+                "maxItems": 53
+              },
+              "years": {
+                "description": "Years contributing, weeks 1 to 53.",
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "minItems": 53,
+                "maxItems": 53
+              }
+            }
+          },
+          "season": {
+            "description": "Early, middle and late weeks, or empty when withheld.",
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 53
+            },
+            "maxItems": 3
+          },
+          "season_withheld": {
+            "description": "Why `season` is empty, or `null`.",
+            "anyOf": [
+              {
+                "enum": [
+                  "year-round",
+                  "two-seasons",
+                  "one-year",
+                  "precision"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "effort": {
+            "description": "Records of all species counted in the area, weeks 1 to 53.",
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "minItems": 53,
+            "maxItems": 53
+          },
+          "limits": {
+            "description": "What the result does not show.",
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "allOf": [
+          {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "season": {
+                    "type": "array",
+                    "minItems": 3
+                  },
+                  "season_withheld": {
+                    "type": "null"
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "season": {
+                    "type": "array",
+                    "maxItems": 0
+                  },
+                  "season_withheld": {
+                    "enum": [
+                      "year-round",
+                      "two-seasons",
+                      "one-year",
+                      "precision"
+                    ]
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "attribution": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "OpenPhenology attribution/1",
+    "description": "The sources behind a result.",
+    "type": "object",
+    "required": [
+      "id",
+      "kind",
+      "format",
+      "provenance",
+      "data"
+    ],
+    "properties": {
+      "id": {
+        "description": "The file's path from the API root.",
+        "type": "string",
+        "pattern": "^releases/\\d{4}-\\d{2}-\\d{2}/attribution/[a-z]{2}-[a-z0-9]{1,3}(/\\d{5})?/[A-Za-z0-9._-]+(/\\d+)?\\.json$"
+      },
+      "kind": {
+        "description": "The format's name, such as `county-weekly`.",
+        "const": "attribution"
+      },
+      "format": {
+        "description": "Format name and version, for example `county-weekly/1.0`.",
+        "type": "string",
+        "pattern": "^attribution/1\\.\\d+$"
+      },
+      "provenance": {
+        "description": "Where the content came from.",
+        "type": "object",
+        "required": [
+          "release",
+          "sources",
+          "licences",
+          "gbif_download_dois",
+          "method",
+          "taxonomy",
+          "boundaries",
+          "ranges",
+          "protection",
+          "code",
+          "run"
+        ],
+        "properties": {
+          "release": {
+            "description": "The release the file belongs to, such as `2026-10-19`.",
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          },
+          "sources": {
+            "description": "Source IDs, as listed in `sources.json`.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "licences": {
+            "description": "The licences of those sources.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "gbif_download_dois": {
+            "description": "The GBIF downloads the records came from, as DOIs.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "method": {
+            "description": "The method version, such as `seasonal-3`.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "taxonomy": {
+            "description": "The taxonomy version species keys come from.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "boundaries": {
+            "description": "The boundary version areas come from.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "ranges": {
+            "description": "Each mapped range edition used.",
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "protection": {
+            "description": "The version of each sensitive-species list applied, by list.",
+            "anyOf": [
+              {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "code": {
+            "description": "The commit of the code that produced the file.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "run": {
+            "description": "The run that produced the file.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "data": {
+        "description": "The content, as the format sets out.",
+        "type": "object",
+        "required": [
+          "area",
+          "species_key",
+          "datasets",
+          "gbif_download_dois",
+          "record_links"
+        ],
+        "properties": {
+          "area": {
+            "description": "The area code.",
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[a-z]{2}-[a-z0-9]{1,3}$"
+              },
+              {
+                "type": "string",
+                "pattern": "^\\d{5}$"
+              }
+            ]
+          },
+          "species_key": {
+            "description": "The species key.",
+            "type": "string",
+            "pattern": "^[A-Za-z0-9._-]+$"
+          },
+          "datasets": {
+            "description": "Each dataset the records came from.",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "dataset_key",
+                "title",
+                "publisher",
+                "citation",
+                "url",
+                "records"
+              ],
+              "properties": {
+                "dataset_key": {
+                  "description": "The dataset's key.",
+                  "type": "string",
+                  "minLength": 1
+                },
+                "title": {
+                  "description": "Its title.",
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "publisher": {
+                  "description": "Its publisher.",
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "citation": {
+                  "description": "How to cite it.",
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "url": {
+                  "description": "Its page.",
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "records": {
+                  "description": "Records it contributed.",
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          },
+          "gbif_download_dois": {
+            "description": "The GBIF downloads the records came from, as DOIs.",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "record_links": {
+            "description": "Links to the records behind the result; `null` for a sensitive species.",
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      }
+    }
+  },
+  "backyard": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "OpenPhenology backyard/1",
+    "description": "A county's Backyard label for each species and week.",
+    "type": "object",
+    "required": [
+      "id",
+      "kind",
+      "format",
+      "provenance",
+      "data"
+    ],
+    "properties": {
+      "id": {
+        "description": "The file's path from the API root.",
+        "type": "string",
+        "pattern": "^releases/\\d{4}-\\d{2}-\\d{2}/backyard/[a-z]{2}-[a-z0-9]{1,3}/\\d{5}(/\\d+)?\\.json$"
+      },
+      "kind": {
+        "description": "The format's name, such as `county-weekly`.",
+        "const": "backyard"
+      },
+      "format": {
+        "description": "Format name and version, for example `county-weekly/1.0`.",
+        "type": "string",
+        "pattern": "^backyard/1\\.\\d+$"
+      },
+      "provenance": {
+        "description": "Where the content came from.",
+        "type": "object",
+        "required": [
+          "release",
+          "sources",
+          "licences",
+          "gbif_download_dois",
+          "method",
+          "taxonomy",
+          "boundaries",
+          "ranges",
+          "protection",
+          "code",
+          "run"
+        ],
+        "properties": {
+          "release": {
+            "description": "The release the file belongs to, such as `2026-10-19`.",
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          },
+          "sources": {
+            "description": "Source IDs, as listed in `sources.json`.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "licences": {
+            "description": "The licences of those sources.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "gbif_download_dois": {
+            "description": "The GBIF downloads the records came from, as DOIs.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "method": {
+            "description": "The method version, such as `seasonal-3`.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "taxonomy": {
+            "description": "The taxonomy version species keys come from.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "boundaries": {
+            "description": "The boundary version areas come from.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "ranges": {
+            "description": "Each mapped range edition used.",
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "protection": {
+            "description": "The version of each sensitive-species list applied, by list.",
+            "anyOf": [
+              {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "code": {
+            "description": "The commit of the code that produced the file.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "run": {
+            "description": "The run that produced the file.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "data": {
+        "description": "The content, as the format sets out.",
+        "type": "object",
+        "required": [
+          "area",
+          "method",
+          "evidence_through",
+          "effort",
+          "species"
+        ],
+        "properties": {
+          "area": {
+            "description": "The county's 5-digit Census code.",
+            "type": "string",
+            "pattern": "^\\d{5}$"
+          },
+          "method": {
+            "description": "The method version.",
+            "type": "string",
+            "minLength": 1
+          },
+          "evidence_through": {
+            "description": "The latest record date counted, `YYYY-MM-DD`.",
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "effort": {
+            "description": "Records of all species counted in the county, weeks 1 to 53.",
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "minItems": 53,
+            "maxItems": 53
+          },
+          "species": {
+            "description": "Each species with a result or a mapped range covering the county.",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "species_key",
+                "group",
+                "labels",
+                "range"
+              ],
+              "properties": {
+                "species_key": {
+                  "description": "The species key.",
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9._-]+$"
+                },
+                "group": {
+                  "description": "The browse group.",
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "pattern": "^[a-z]+(-[a-z]+)*$"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "labels": {
+                  "description": "53 letters, one per week.",
+                  "type": "string",
+                  "pattern": "^[csrmn]{53}$"
+                },
+                "range": {
+                  "description": "The mapped range covering the county, or `null`.",
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "required": [
+                        "source",
+                        "seasons"
+                      ],
+                      "properties": {
+                        "source": {
+                          "description": "The range's source ID.",
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "seasons": {
+                          "description": "The range's seasons there.",
+                          "type": "array",
+                          "items": {
+                            "enum": [
+                              "year-round",
+                              "summer",
+                              "winter",
+                              "migratory",
+                              "passage"
+                            ]
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "methods": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "OpenPhenology methods/1",
+    "description": "How results are made: the method and its numbers.",
+    "type": "object",
+    "required": [
+      "id",
+      "kind",
+      "format",
+      "provenance",
+      "data"
+    ],
+    "properties": {
+      "id": {
+        "description": "The file's path from the API root.",
+        "type": "string",
+        "pattern": "^releases/\\d{4}-\\d{2}-\\d{2}/methods(/\\d+)?\\.json$"
+      },
+      "kind": {
+        "description": "The format's name, such as `county-weekly`.",
+        "const": "methods"
+      },
+      "format": {
+        "description": "Format name and version, for example `county-weekly/1.0`.",
+        "type": "string",
+        "pattern": "^methods/1\\.\\d+$"
+      },
+      "provenance": {
+        "description": "Where the content came from.",
+        "type": "object",
+        "required": [
+          "release",
+          "sources",
+          "licences",
+          "gbif_download_dois",
+          "method",
+          "taxonomy",
+          "boundaries",
+          "ranges",
+          "protection",
+          "code",
+          "run"
+        ],
+        "properties": {
+          "release": {
+            "description": "The release the file belongs to, such as `2026-10-19`.",
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          },
+          "sources": {
+            "description": "Source IDs, as listed in `sources.json`.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "licences": {
+            "description": "The licences of those sources.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "gbif_download_dois": {
+            "description": "The GBIF downloads the records came from, as DOIs.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "method": {
+            "description": "The method version, such as `seasonal-3`.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "taxonomy": {
+            "description": "The taxonomy version species keys come from.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "boundaries": {
+            "description": "The boundary version areas come from.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "ranges": {
+            "description": "Each mapped range edition used.",
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "protection": {
+            "description": "The version of each sensitive-species list applied, by list.",
+            "anyOf": [
+              {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "code": {
+            "description": "The commit of the code that produced the file.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "run": {
+            "description": "The run that produced the file.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "data": {
+        "description": "The content, as the format sets out.",
+        "type": "object",
+        "required": [
+          "method",
+          "data_rules",
+          "thresholds",
+          "weeks",
+          "pooled_from",
+          "taxonomy",
+          "boundaries",
+          "protection",
+          "ranges",
+          "limits"
+        ],
+        "properties": {
+          "method": {
+            "description": "The method version.",
+            "type": "string",
+            "minLength": 1
+          },
+          "data_rules": {
+            "description": "The data rules version.",
+            "type": "string",
+            "minLength": 1
+          },
+          "thresholds": {
+            "description": "Every number the method uses, by name.",
+            "type": "object"
+          },
+          "weeks": {
+            "description": "How weeks are counted.",
+            "type": "string",
+            "minLength": 1
+          },
+          "pooled_from": {
+            "description": "The first date records are pooled from.",
+            "type": "string",
+            "minLength": 1
+          },
+          "taxonomy": {
+            "description": "The taxonomy version.",
+            "type": "string",
+            "minLength": 1
+          },
+          "boundaries": {
+            "description": "The boundary version.",
+            "type": "string",
+            "minLength": 1
+          },
+          "protection": {
+            "description": "The version of each sensitive-species list, by list.",
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "ranges": {
+            "description": "Each mapped range edition.",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "limits": {
+            "description": "What results do not show.",
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  },
+  "sources": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "OpenPhenology sources/1",
+    "description": "Each source, its licence and how to credit it.",
+    "type": "object",
+    "required": [
+      "id",
+      "kind",
+      "format",
+      "provenance",
+      "data"
+    ],
+    "properties": {
+      "id": {
+        "description": "The file's path from the API root.",
+        "type": "string",
+        "pattern": "^releases/\\d{4}-\\d{2}-\\d{2}/sources(/\\d+)?\\.json$"
+      },
+      "kind": {
+        "description": "The format's name, such as `county-weekly`.",
+        "const": "sources"
+      },
+      "format": {
+        "description": "Format name and version, for example `county-weekly/1.0`.",
+        "type": "string",
+        "pattern": "^sources/1\\.\\d+$"
+      },
+      "provenance": {
+        "description": "Where the content came from.",
+        "type": "object",
+        "required": [
+          "release",
+          "sources",
+          "licences",
+          "gbif_download_dois",
+          "method",
+          "taxonomy",
+          "boundaries",
+          "ranges",
+          "protection",
+          "code",
+          "run"
+        ],
+        "properties": {
+          "release": {
+            "description": "The release the file belongs to, such as `2026-10-19`.",
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          },
+          "sources": {
+            "description": "Source IDs, as listed in `sources.json`.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "licences": {
+            "description": "The licences of those sources.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "gbif_download_dois": {
+            "description": "The GBIF downloads the records came from, as DOIs.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "method": {
+            "description": "The method version, such as `seasonal-3`.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "taxonomy": {
+            "description": "The taxonomy version species keys come from.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "boundaries": {
+            "description": "The boundary version areas come from.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "ranges": {
+            "description": "Each mapped range edition used.",
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "protection": {
+            "description": "The version of each sensitive-species list applied, by list.",
+            "anyOf": [
+              {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "code": {
+            "description": "The commit of the code that produced the file.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "run": {
+            "description": "The run that produced the file.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "data": {
+        "description": "The content, as the format sets out.",
+        "type": "object",
+        "required": [
+          "sources"
+        ],
+        "properties": {
+          "sources": {
+            "description": "Each source.",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "source",
+                "name",
+                "kind",
+                "licence",
+                "licence_url",
+                "use",
+                "reviewed",
+                "credit",
+                "url"
+              ],
+              "properties": {
+                "source": {
+                  "description": "The source ID.",
+                  "type": "string",
+                  "minLength": 1
+                },
+                "name": {
+                  "description": "Its name.",
+                  "type": "string",
+                  "minLength": 1
+                },
+                "kind": {
+                  "description": "What kind of source it is.",
+                  "type": "string",
+                  "minLength": 1
+                },
+                "licence": {
+                  "description": "Its licence.",
+                  "type": "string",
+                  "minLength": 1
+                },
+                "licence_url": {
+                  "description": "Where its licence is published.",
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "use": {
+                  "description": "What OpenPhenology uses it for.",
+                  "type": "string",
+                  "minLength": 1
+                },
+                "reviewed": {
+                  "description": "When its use was last reviewed, `YYYY-MM-DD`.",
+                  "type": "string",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                },
+                "credit": {
+                  "description": "How to credit it.",
+                  "type": "string",
+                  "minLength": 1
+                },
+                "url": {
+                  "description": "Its home page.",
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "boundaries": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "OpenPhenology boundaries/1",
+    "description": "County outlines for a state's map, as a GeoJSON FeatureCollection. For display only.",
+    "type": "object",
+    "required": [
+      "id",
+      "kind",
+      "format",
+      "provenance",
+      "data"
+    ],
+    "properties": {
+      "id": {
+        "description": "The file's path from the API root.",
+        "type": "string",
+        "pattern": "^releases/\\d{4}-\\d{2}-\\d{2}/places/[a-z]{2}-[a-z0-9]{1,3}/boundaries(/\\d+)?\\.json$"
+      },
+      "kind": {
+        "description": "The format's name, such as `county-weekly`.",
+        "const": "boundaries"
+      },
+      "format": {
+        "description": "Format name and version, for example `county-weekly/1.0`.",
+        "type": "string",
+        "pattern": "^boundaries/1\\.\\d+$"
+      },
+      "provenance": {
+        "description": "Where the content came from.",
+        "type": "object",
+        "required": [
+          "release",
+          "sources",
+          "licences",
+          "gbif_download_dois",
+          "method",
+          "taxonomy",
+          "boundaries",
+          "ranges",
+          "protection",
+          "code",
+          "run"
+        ],
+        "properties": {
+          "release": {
+            "description": "The release the file belongs to, such as `2026-10-19`.",
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          },
+          "sources": {
+            "description": "Source IDs, as listed in `sources.json`.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "licences": {
+            "description": "The licences of those sources.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "gbif_download_dois": {
+            "description": "The GBIF downloads the records came from, as DOIs.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "method": {
+            "description": "The method version, such as `seasonal-3`.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "taxonomy": {
+            "description": "The taxonomy version species keys come from.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "boundaries": {
+            "description": "The boundary version areas come from.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "ranges": {
+            "description": "Each mapped range edition used.",
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "protection": {
+            "description": "The version of each sensitive-species list applied, by list.",
+            "anyOf": [
+              {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "code": {
+            "description": "The commit of the code that produced the file.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "run": {
+            "description": "The run that produced the file.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "data": {
+        "description": "The content, as the format sets out.",
+        "type": "object",
+        "required": [
+          "type",
+          "features"
+        ],
+        "properties": {
+          "type": {
+            "description": "Always `FeatureCollection`.",
+            "const": "FeatureCollection"
+          },
+          "features": {
+            "description": "One feature per county.",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "type",
+                "properties",
+                "geometry"
+              ],
+              "properties": {
+                "type": {
+                  "description": "Always `Feature`.",
+                  "const": "Feature"
+                },
+                "properties": {
+                  "description": "The county.",
+                  "type": "object",
+                  "required": [
+                    "area",
+                    "name",
+                    "slug"
+                  ],
+                  "properties": {
+                    "area": {
+                      "description": "The county's 5-digit Census code.",
+                      "type": "string",
+                      "pattern": "^\\d{5}$"
+                    },
+                    "name": {
+                      "description": "Its name.",
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "slug": {
+                      "description": "Its page slug.",
+                      "type": "string",
+                      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+                    }
+                  }
+                },
+                "geometry": {
+                  "description": "Its outline, WGS 84 longitude and latitude.",
+                  "type": "object",
+                  "required": [
+                    "type",
+                    "coordinates"
+                  ],
+                  "properties": {
+                    "type": {
+                      "description": "Always `MultiPolygon`.",
+                      "const": "MultiPolygon"
+                    },
+                    "coordinates": {
+                      "description": "Polygons of rings of `[longitude, latitude]` positions.",
+                      "type": "array",
+                      "items": {
+                        "type": "array",
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "type": "array",
+                            "prefixItems": [
+                              {
+                                "type": "number",
+                                "minimum": -180,
+                                "maximum": 180
+                              },
+                              {
+                                "type": "number",
+                                "minimum": -90,
+                                "maximum": 90
+                              }
+                            ],
+                            "items": false,
+                            "minItems": 2
+                          },
+                          "minItems": 4
+                        },
+                        "minItems": 1
+                      },
+                      "minItems": 1
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "postal": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "OpenPhenology postal/1",
+    "description": "US ZIP codes sharing a 3-digit prefix, and the counties each falls in.",
+    "type": "object",
+    "required": [
+      "id",
+      "kind",
+      "format",
+      "provenance",
+      "data"
+    ],
+    "properties": {
+      "id": {
+        "description": "The file's path from the API root.",
+        "type": "string",
+        "pattern": "^releases/\\d{4}-\\d{2}-\\d{2}/postal/us/\\d{3}(/\\d+)?\\.json$"
+      },
+      "kind": {
+        "description": "The format's name, such as `county-weekly`.",
+        "const": "postal"
+      },
+      "format": {
+        "description": "Format name and version, for example `county-weekly/1.0`.",
+        "type": "string",
+        "pattern": "^postal/1\\.\\d+$"
+      },
+      "provenance": {
+        "description": "Where the content came from.",
+        "type": "object",
+        "required": [
+          "release",
+          "sources",
+          "licences",
+          "gbif_download_dois",
+          "method",
+          "taxonomy",
+          "boundaries",
+          "ranges",
+          "protection",
+          "code",
+          "run"
+        ],
+        "properties": {
+          "release": {
+            "description": "The release the file belongs to, such as `2026-10-19`.",
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          },
+          "sources": {
+            "description": "Source IDs, as listed in `sources.json`.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "licences": {
+            "description": "The licences of those sources.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "gbif_download_dois": {
+            "description": "The GBIF downloads the records came from, as DOIs.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "method": {
+            "description": "The method version, such as `seasonal-3`.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "taxonomy": {
+            "description": "The taxonomy version species keys come from.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "boundaries": {
+            "description": "The boundary version areas come from.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "ranges": {
+            "description": "Each mapped range edition used.",
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "protection": {
+            "description": "The version of each sensitive-species list applied, by list.",
+            "anyOf": [
+              {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "code": {
+            "description": "The commit of the code that produced the file.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "run": {
+            "description": "The run that produced the file.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "data": {
+        "description": "The content, as the format sets out.",
+        "type": "object",
+        "required": [
+          "zips"
+        ],
+        "properties": {
+          "zips": {
+            "description": "ZIP code to its counties, each with the share of its land.",
+            "type": "object",
+            "propertyNames": {
+              "type": "string",
+              "pattern": "^\\d{5}$"
+            },
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "array",
+                "prefixItems": [
+                  {
+                    "type": "string",
+                    "pattern": "^\\d{5}$"
+                  },
+                  {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  }
+                ],
+                "items": false,
+                "minItems": 2
+              },
+              "minItems": 1
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -11,6 +11,7 @@ All notable changes to this package are recorded here. The format follows
 - `weekOf`, `WEEKS`, `BACKYARD_LABELS` and `backyardLabel`: weeks and Backyard
   labels as the data rules define them, so every reader counts weeks the way
   the data was made.
+- `schemas/all-1.json`: every format's JSON Schema in one file, by kind.
 - `release.postal(prefix)`: every ZIP code with a 3-digit prefix, for ZIP code
   lists and suggestions.
 - `catalogue/1.1`: each catalogue species has `seasons`, its season weeks in

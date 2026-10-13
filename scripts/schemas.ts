@@ -1,5 +1,6 @@
 // Writes each JSON Schema to schemas/<kind>-<major>.json, with its fields
-// described from src/types.ts, and one made-up example file per format to
+// described from src/types.ts, all of them by kind to schemas/all-<major>.json,
+// and one made-up example file per format to
 // schemas/examples/<kind>-<major>.json. With --check, fails instead when a
 // file is missing, out of date or no longer has a source.
 import { mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
@@ -37,6 +38,17 @@ for (const [kind, schema] of Object.entries(schemas))
     `schemas/${name(kind)}`,
     `${JSON.stringify(describe(kind, schema), null, 2)}\n`,
   );
+
+// Every schema in one file, by kind, for readers that list the formats.
+const all: Record<string, unknown> = {};
+for (const kind of Object.keys(schemas)) {
+  const body = wanted.get(`schemas/${name(kind)}`);
+  if (body !== undefined) all[kind] = JSON.parse(body);
+}
+wanted.set(
+  `schemas/all-${String(MAJOR)}.json`,
+  `${JSON.stringify(all, null, 2)}\n`,
+);
 
 // The first made-up file of each kind in the test release.
 const server = await fakeServer();

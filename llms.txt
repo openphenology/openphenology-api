@@ -62,6 +62,7 @@ Branch on `error.code`; messages may change.
 
 - `dist/index.d.ts`: every type and method, with doc comments.
 - `schemas/<kind>-1.json`: JSON Schema 2020-12 for each format, every field described.
+- `schemas/all-1.json`: every schema in one file, by kind.
 - `schemas/examples/<kind>-1.json`: one made-up example file per format.
 - Kinds: current, releases, terms, manifest, notes, catalogue, species, slugs, groups, search, region, state-weekly, county-weekly, attribution, backyard, methods, sources, boundaries, postal.
 - `README.md`: the same, with more examples.
