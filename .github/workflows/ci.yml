@@ -28,6 +28,8 @@ jobs:
         run: corepack enable
       - name: Install
         run: pnpm install --frozen-lockfile
+      - name: Install test browsers
+        run: pnpm exec playwright install --with-deps chromium firefox webkit
       - name: Check
         run: pnpm check
       - name: Pack
@@ -61,7 +63,7 @@ jobs:
           mkdir consumer && cd consumer
           npm init -y
           npm install --no-audit --no-fund ../package.tgz
-          node --input-type=module -e 'await import("openphenology-api")'
+          node --input-type=module -e 'await import("@openphenology/api")'
       - name: Install and import with Yarn
         if: matrix.manager == 'yarn'
         env:
@@ -70,8 +72,8 @@ jobs:
           npm install --global corepack@0.36.0
           mkdir consumer && cd consumer
           echo '{"name":"consumer","private":true,"packageManager":"yarn@4.18.1"}' > package.json
-          corepack yarn add openphenology-api@file:../package.tgz
-          corepack yarn node --input-type=module -e 'await import("openphenology-api")'
+          corepack yarn add @openphenology/api@file:../package.tgz
+          corepack yarn node --input-type=module -e 'await import("@openphenology/api")'
 
   ci:
     name: CI

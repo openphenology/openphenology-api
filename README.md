@@ -1,12 +1,54 @@
-# openphenology-api
+# @openphenology/api
 
 Read OpenPhenology data.
 
-Not yet released. The reading API is under development.
+Not yet released, and the data is not yet published. The interface may change
+before 1.0.0.
+
+## Usage
+
+```ts
+import { createClient } from "@openphenology/api";
+
+const client = createClient();
+const release = await client.release(); // the current release, read once
+
+const result = await release.countyResult("us-oh", "39049", speciesKey);
+if (result) {
+  // season is [early, middle, late] weeks, or [] with season_withheld saying why
+  console.log(result.data.season, result.data.weekly.records);
+}
+```
+
+- `client.release()` reads `current.json` once, so every later read comes from
+  the same release. Pass `{ release: "2026-10-19" }` to pin one.
+- A release reads its files by name. A file that is not published is `null`.
+  - Species: `catalogue()`, `species(key)`, `speciesBySlug(slug)`, `groups()`
+    and `searchNames()`.
+  - Places: `region(state)`, `boundaries(state)` (county outlines for maps)
+    and `zipCounties(zip)`.
+  - Results: `stateResult(state, species)`, `countyResult(state, county,
+species)`, `attribution(state, species, county?)` and `backyard(state,
+county)`.
+  - About the release: `manifest()`, `notes()`, `methods()` and `sources()`.
+- `client.releases()` lists every release; `client.terms()` gives the licence
+  and how to cite and credit the data.
+- Release files never change, so each is fetched at most once per client.
+- `{ verify: true }` checks every file against its SHA-256 in the release
+  manifest.
+- Requests time out after 10 seconds and are retried twice after a network
+  error or a 429 or 5xx response. Errors are `ApiError` (requests) or
+  `FormatError` (content).
+- Results show when people recorded a species, not when or where it occurs.
+  Each result carries this note in `data.limits`.
 
 ## Requirements
 
-Node.js 22 or later. Works with npm, pnpm and Yarn.
+Works on servers and in browsers:
+
+- Node.js 22 or later, with npm, pnpm or Yarn
+- the last two versions of Chrome, Edge, Firefox and Safari, including Safari
+  on iOS
 
 ## Versioning
 
@@ -21,7 +63,8 @@ Needs Node.js 24 and pnpm (`corepack enable`).
 
 ```sh
 pnpm install
-pnpm check    # formatting, lint, typecheck, tests with coverage, build
+pnpm exec playwright install chromium firefox webkit   # test browsers
+pnpm check    # formatting, lint, typecheck, tests in Node.js and browsers, build, size
 pnpm format   # fix formatting
 ```
 
