@@ -25,7 +25,7 @@
   },
   "packageManager": "pnpm@12.11.2",
   "scripts": {
-    "build": "tsc -p tsconfig.build.json",
+    "build": "tsc -p tsconfig.build.json --removeComments && tsc -p tsconfig.build.json --emitDeclarationOnly",
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
