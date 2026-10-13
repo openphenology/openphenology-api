@@ -1,3 +1,11 @@
+/**
+ * Read OpenPhenology's published data.
+ *
+ * @packageDocumentation
+ * @document ../CHANGELOG.md
+ * @document ../CONTRIBUTING.md
+ * @document ../SECURITY.md
+ */
 export {
   Client,
   createClient,

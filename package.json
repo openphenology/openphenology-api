@@ -40,9 +40,11 @@
     "format:check": "prettier --check .",
     "typecheck": "tsc --noEmit && tsc --noEmit -p src",
     "test": "vitest run --project node --coverage && vitest run --project 'browser*'",
+    "docs": "typedoc",
+    "docs:check": "typedoc --emit none",
     "schemas": "node scripts/schemas.ts",
     "schemas:check": "node scripts/schemas.ts --check",
-    "check": "pnpm format:check && pnpm schemas:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build && pnpm size",
+    "check": "pnpm format:check && pnpm schemas:check && pnpm lint && pnpm typecheck && pnpm docs:check && pnpm test && pnpm build && pnpm size",
     "size": "node scripts/size.mjs"
   },
   "devDependencies": {
@@ -55,6 +57,7 @@
     "eslint-plugin-jsdoc": "65.1.0",
     "playwright": "1.64.0",
     "prettier": "3.9.10",
+    "typedoc": "0.28.20",
     "typescript": "6.0.3",
     "typescript-eslint": "8.71.1",
     "vitest": "5.0.3"
