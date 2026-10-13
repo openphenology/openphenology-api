@@ -539,8 +539,86 @@
               }
             ]
           }
+        },
+        "statuses": {
+          "description": "The species' listings on government lists: the federal Endangered\nSpecies Act list and Ohio's lists. Empty when it is on none. Added in\n`species/1.1`, so absent from `species/1.0` files.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "list",
+              "place",
+              "listed_name",
+              "status",
+              "where"
+            ],
+            "properties": {
+              "list": {
+                "description": "The list: `usfws` (US Fish & Wildlife Service, Endangered Species Act) or `ohio`.",
+                "enum": [
+                  "usfws",
+                  "ohio"
+                ]
+              },
+              "place": {
+                "description": "Where the list applies: `us` for the federal list, a state code for a state list.",
+                "type": "string",
+                "pattern": "^(us|[a-z]{2}-[a-z0-9]{1,3})$"
+              },
+              "listed_name": {
+                "description": "The scientific name the list gives; it shows when only a subspecies or variety is listed.",
+                "type": "string",
+                "minLength": 1
+              },
+              "status": {
+                "description": "The status, as the list writes it, such as `Endangered`.",
+                "type": "string",
+                "minLength": 1
+              },
+              "where": {
+                "description": "The federal list's own description of where the listing applies, such as `Wherever found`; `null` for a state list.",
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            }
+          }
         }
       }
     }
-  }
+  },
+  "allOf": [
+    {
+      "if": {
+        "type": "object",
+        "properties": {
+          "format": {
+            "enum": [
+              "species/1.0"
+            ]
+          }
+        }
+      },
+      "else": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "object",
+            "properties": {
+              "statuses": true
+            },
+            "required": [
+              "statuses"
+            ]
+          }
+        }
+      }
+    }
+  ]
 }

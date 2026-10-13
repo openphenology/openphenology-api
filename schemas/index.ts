@@ -234,6 +234,38 @@ const sinceMinor = (
   },
 });
 
+/**
+ * From minor version `minor` on, `data` requires the given fields, which
+ * `withOptional` added. Earlier minors are exempt.
+ */
+const sinceMinorData = (
+  kind: Kind,
+  minor: number,
+  fields: readonly string[],
+): Schema => ({
+  if: {
+    type: "object",
+    properties: {
+      format: {
+        enum: Array.from(
+          { length: minor },
+          (_, earlier) => `${kind}/${String(MAJOR)}.${String(earlier)}`,
+        ),
+      },
+    },
+  },
+  else: {
+    type: "object",
+    properties: {
+      data: {
+        type: "object",
+        properties: Object.fromEntries(fields.map((f) => [f, true])),
+        required: fields,
+      },
+    },
+  },
+});
+
 /** Each file's path from the API root, without `.json`. */
 const RELEASE = "releases/\\d{4}-\\d{2}-\\d{2}/";
 const paths: Record<Kind, string> = {
@@ -386,44 +418,60 @@ export const schemas = {
     sinceMinor("catalogue", 1, { species: ["seasons"] }),
   ),
 
-  species: file(
-    "species",
-    "One species and every area with a result or within its mapped range.",
-    object({
-      species_key: speciesKey,
-      scientific_name: text,
-      authorship: nullable(text),
-      common_name: nullable(text),
-      synonyms: list(text),
-      rank: text,
-      classification: object(classification),
-      group: nullable(group),
-      slug: nullable(slug),
-      areas: list(
-        object(
-          {
-            area,
-            level: { enum: ["state", "county"] },
-            records: count,
-            season,
-            season_withheld: seasonWithheld,
-          },
-          areaMatchesLevel,
-          seasonMatchesWithheld,
-        ),
+  species: withRules(
+    file(
+      "species",
+      "One species and every area with a result or within its mapped range.",
+      withOptional(
+        object({
+          species_key: speciesKey,
+          scientific_name: text,
+          authorship: nullable(text),
+          common_name: nullable(text),
+          synonyms: list(text),
+          rank: text,
+          classification: object(classification),
+          group: nullable(group),
+          slug: nullable(slug),
+          areas: list(
+            object(
+              {
+                area,
+                level: { enum: ["state", "county"] },
+                records: count,
+                season,
+                season_withheld: seasonWithheld,
+              },
+              areaMatchesLevel,
+              seasonMatchesWithheld,
+            ),
+          ),
+          ranges: list(
+            object(
+              {
+                area,
+                level: { enum: ["state", "county"] },
+                source: nullable(string),
+                seasons: rangeSeasons,
+              },
+              areaMatchesLevel,
+            ),
+          ),
+        }),
+        {
+          statuses: list(
+            object({
+              list: { enum: ["usfws", "ohio"] },
+              place: pattern(`^(us|${STATE})$`),
+              listed_name: text,
+              status: text,
+              where: nullable(text),
+            }),
+          ),
+        },
       ),
-      ranges: list(
-        object(
-          {
-            area,
-            level: { enum: ["state", "county"] },
-            source: nullable(string),
-            seasons: rangeSeasons,
-          },
-          areaMatchesLevel,
-        ),
-      ),
-    }),
+    ),
+    sinceMinorData("species", 1, ["statuses"]),
   ),
 
   slugs: file(

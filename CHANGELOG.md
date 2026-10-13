@@ -8,6 +8,9 @@ All notable changes to this package are recorded here. The format follows
 
 ### Added
 
+- `species/1.1`: each species has `statuses`, its listings on the federal
+  Endangered Species Act list and Ohio's lists (data rules 1.21), as
+  `SpeciesListing`. `species/1.0` files, which lack it, still read.
 - A Postman collection in `postman/` (not in the npm package): a request for
   every published file kind, with descriptions, examples and tests that check
   each file against its JSON Schema.
