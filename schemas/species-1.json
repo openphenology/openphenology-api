@@ -1,0 +1,504 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "OpenPhenology species/1",
+  "description": "One species and every area with a result or within its mapped range.",
+  "type": "object",
+  "required": [
+    "id",
+    "kind",
+    "format",
+    "provenance",
+    "data"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^releases/\\d{4}-\\d{2}-\\d{2}/species/[A-Za-z0-9._-]+(/\\d+)?\\.json$"
+    },
+    "kind": {
+      "const": "species"
+    },
+    "format": {
+      "type": "string",
+      "pattern": "^species/1\\.\\d+$"
+    },
+    "provenance": {
+      "type": "object",
+      "required": [
+        "release",
+        "sources",
+        "licences",
+        "gbif_download_dois",
+        "method",
+        "taxonomy",
+        "boundaries",
+        "ranges",
+        "protection",
+        "code",
+        "run"
+      ],
+      "properties": {
+        "release": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "licences": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "gbif_download_dois": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "method": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "taxonomy": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "boundaries": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "ranges": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "protection": {
+          "anyOf": [
+            {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "code": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "run": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "data": {
+      "type": "object",
+      "required": [
+        "species_key",
+        "scientific_name",
+        "authorship",
+        "common_name",
+        "synonyms",
+        "rank",
+        "classification",
+        "group",
+        "slug",
+        "areas",
+        "ranges"
+      ],
+      "properties": {
+        "species_key": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._-]+$"
+        },
+        "scientific_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "authorship": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "common_name": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "synonyms": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "rank": {
+          "type": "string",
+          "minLength": 1
+        },
+        "classification": {
+          "type": "object",
+          "required": [
+            "kingdom",
+            "phylum",
+            "class",
+            "order",
+            "family",
+            "genus"
+          ],
+          "properties": {
+            "kingdom": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "phylum": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "class": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "order": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "family": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "genus": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          }
+        },
+        "group": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[a-z]+(-[a-z]+)*$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "slug": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "areas": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "area",
+              "level",
+              "records",
+              "season",
+              "season_withheld"
+            ],
+            "properties": {
+              "area": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^[a-z]{2}-[a-z0-9]{1,3}$"
+                  },
+                  {
+                    "type": "string",
+                    "pattern": "^\\d{5}$"
+                  }
+                ]
+              },
+              "level": {
+                "enum": [
+                  "state",
+                  "county"
+                ]
+              },
+              "records": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "season": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 53
+                },
+                "maxItems": 3
+              },
+              "season_withheld": {
+                "anyOf": [
+                  {
+                    "enum": [
+                      "year-round",
+                      "two-seasons",
+                      "one-year",
+                      "precision"
+                    ]
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "allOf": [
+              {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "level": {
+                        "const": "state"
+                      },
+                      "area": {
+                        "type": "string",
+                        "pattern": "^[a-z]{2}-[a-z0-9]{1,3}$"
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "level": {
+                        "const": "county"
+                      },
+                      "area": {
+                        "type": "string",
+                        "pattern": "^\\d{5}$"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "season": {
+                        "type": "array",
+                        "minItems": 3
+                      },
+                      "season_withheld": {
+                        "type": "null"
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "season": {
+                        "type": "array",
+                        "maxItems": 0
+                      },
+                      "season_withheld": {
+                        "enum": [
+                          "year-round",
+                          "two-seasons",
+                          "one-year",
+                          "precision"
+                        ]
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "ranges": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "area",
+              "level",
+              "source",
+              "seasons"
+            ],
+            "properties": {
+              "area": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^[a-z]{2}-[a-z0-9]{1,3}$"
+                  },
+                  {
+                    "type": "string",
+                    "pattern": "^\\d{5}$"
+                  }
+                ]
+              },
+              "level": {
+                "enum": [
+                  "state",
+                  "county"
+                ]
+              },
+              "source": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "seasons": {
+                "type": "array",
+                "items": {
+                  "enum": [
+                    "year-round",
+                    "summer",
+                    "winter",
+                    "migratory",
+                    "passage"
+                  ]
+                }
+              }
+            },
+            "allOf": [
+              {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "level": {
+                        "const": "state"
+                      },
+                      "area": {
+                        "type": "string",
+                        "pattern": "^[a-z]{2}-[a-z0-9]{1,3}$"
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "level": {
+                        "const": "county"
+                      },
+                      "area": {
+                        "type": "string",
+                        "pattern": "^\\d{5}$"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,5 +1,5 @@
 // A made-up release served by a fake fetch. Species, places and counts are invented.
-const provenance = {
+export const provenance = {
   release: "2026-01-05",
   sources: ["example"],
   licences: ["CC-BY-4.0"],
@@ -18,7 +18,8 @@ const weeks = (value: number): number[] =>
 
 export const RELEASE = "2026-01-05";
 
-const wrap = (path: string, kind: string, data: unknown) => ({
+/** Wraps data as the release file at `path`. */
+export const wrap = (path: string, kind: string, data: unknown) => ({
   id: `releases/${RELEASE}/${path}`,
   kind,
   format: `${kind}/1.0`,
@@ -299,6 +300,8 @@ async function sha256(text: string): Promise<string> {
 export interface FakeServer {
   readonly fetch: typeof fetch;
   readonly requests: string[];
+  /** Every file served, by path from the API root. */
+  readonly files: ReadonlyMap<string, string>;
   /** Replace a file's body as served, without changing the manifest. */
   readonly tamper: (path: string, body: string) => void;
   /** Answer the next requests for a path with these statuses first. */
@@ -322,7 +325,7 @@ export async function fakeServer(): Promise<FakeServer> {
   bodies.set(
     `releases/${RELEASE}/manifest.json`,
     JSON.stringify({
-      id: `${RELEASE}/manifest`,
+      id: `releases/${RELEASE}/manifest.json`,
       kind: "manifest",
       format: "manifest/1.0",
       provenance,
@@ -342,7 +345,7 @@ export async function fakeServer(): Promise<FakeServer> {
   bodies.set(
     "current.json",
     JSON.stringify({
-      id: "current",
+      id: "current.json",
       kind: "current",
       format: "current/1.0",
       provenance,
@@ -407,6 +410,7 @@ export async function fakeServer(): Promise<FakeServer> {
   return {
     fetch: fakeFetch,
     requests,
+    files: bodies,
     tamper: (path, body) => bodies.set(path, body),
     failNext: (path, ...statuses) => failures.set(path, statuses),
   };

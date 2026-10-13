@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 import { ApiError, createClient, FormatError } from "../src/index.ts";
-import { fakeServer, RELEASE } from "./fixture.ts";
+import { fakeServer, RELEASE, provenance, wrap } from "./fixture.ts";
 
 const BASE = "https://example.test/";
 
@@ -14,6 +14,48 @@ describe("release", () => {
     expect(server.requests.filter((p) => p === "current.json")).toHaveLength(1);
   });
 
+  test("refresh reads current.json again", async () => {
+    const server = await fakeServer();
+    const client = createClient({ baseUrl: BASE, fetch: server.fetch });
+    const before = await client.release();
+    await before.stateResult("us-zz", "EX1");
+    expect(await client.release({ refresh: true })).toBe(before);
+
+    server.tamper(
+      "current.json",
+      JSON.stringify({
+        id: "current.json",
+        kind: "current",
+        format: "current/1.0",
+        provenance,
+        data: { release: "2026-01-12", published_at: "2026-01-12T06:00:00Z" },
+      }),
+    );
+    expect(await client.release()).toBe(before);
+    const after = await client.release({ refresh: true });
+    expect(after.id).toBe("2026-01-12");
+    expect(await client.release()).toBe(after);
+
+    // The earlier release still reads its own files, from its cache.
+    expect(await before.stateResult("us-zz", "EX1")).not.toBeNull();
+    expect(server.requests.filter((p) => p === "current.json")).toHaveLength(3);
+    expect(
+      server.requests.filter((p) => p.endsWith("results/us-zz/EX1.json")),
+    ).toEqual([`releases/${RELEASE}/results/us-zz/EX1.json`]);
+  });
+
+  test("refresh does nothing to a pinned release", async () => {
+    const server = await fakeServer();
+    const client = createClient({
+      baseUrl: BASE,
+      fetch: server.fetch,
+      release: RELEASE,
+    });
+    const release = await client.release();
+    expect(await client.release({ refresh: true })).toBe(release);
+    expect(server.requests).toEqual([`releases/${RELEASE}/methods.json`]);
+  });
+
   test("a pinned release skips current.json", async () => {
     const server = await fakeServer();
     const release = await createClient({
@@ -23,6 +65,56 @@ describe("release", () => {
     }).release();
     expect(release.id).toBe(RELEASE);
     expect(server.requests).not.toContain("current.json");
+  });
+
+  test("a pinned release that is not published is an ApiError", async () => {
+    const server = await fakeServer();
+    server.failNext(`releases/${RELEASE}/methods.json`, 404);
+    const client = createClient({
+      baseUrl: BASE,
+      fetch: server.fetch,
+      release: RELEASE,
+    });
+    await expect(client.release()).rejects.toMatchObject({
+      name: "ApiError",
+      status: 404,
+      url: `${BASE}releases/${RELEASE}/methods.json`,
+      message: `Release ${RELEASE} is not available`,
+    });
+    // The failure is not kept: the next call tries again.
+    const release = await client.release();
+    expect(release.id).toBe(RELEASE);
+    expect(
+      server.requests.filter((p) => p.endsWith("methods.json")),
+    ).toHaveLength(2);
+  });
+
+  test("a pinned release's check is reused by methods()", async () => {
+    const server = await fakeServer();
+    const release = await createClient({
+      baseUrl: BASE,
+      fetch: server.fetch,
+      release: RELEASE,
+    }).release();
+    expect((await release.methods())?.data.method).toBe("test-1");
+    expect(server.requests).toEqual([`releases/${RELEASE}/methods.json`]);
+  });
+
+  test("with verify, a pinned release is checked through its manifest", async () => {
+    const server = await fakeServer();
+    server.failNext(`releases/${RELEASE}/manifest.json`, 404);
+    const client = createClient({
+      baseUrl: BASE,
+      fetch: server.fetch,
+      release: RELEASE,
+      verify: true,
+    });
+    await expect(client.release()).rejects.toMatchObject({
+      name: "ApiError",
+      status: 404,
+      message: `Release ${RELEASE} is not available`,
+    });
+    expect(server.requests).toEqual([`releases/${RELEASE}/manifest.json`]);
   });
 
   test("rejects a malformed pinned release", async () => {
@@ -147,8 +239,10 @@ describe("files", () => {
   });
 
   test("rejects codes that could change the path", async () => {
+    const server = await fakeServer();
     const release = await createClient({
       baseUrl: BASE,
+      fetch: server.fetch,
       release: RELEASE,
     }).release();
     expect(() => release.countyResult("us-zz", "../x", "EX1")).toThrow(
@@ -156,6 +250,164 @@ describe("files", () => {
     );
     expect(() => release.stateResult("US-ZZ", "EX1")).toThrow(RangeError);
     expect(() => release.stateResult("us-zz", "a/b")).toThrow(RangeError);
+  });
+});
+
+describe("shards", () => {
+  const at = (path: string) => `releases/${RELEASE}/${path}`;
+  const shard = (path: string, kind: string, data: unknown) =>
+    JSON.stringify(wrap(path, kind, data));
+
+  test("joins a split file's lists in shard order", async () => {
+    const server = await fakeServer();
+    const area = { area: "us-zz", species_key: "EX9", gbif_download_dois: [] };
+    const dataset = (key: string) => ({
+      dataset_key: key,
+      title: null,
+      publisher: null,
+      citation: null,
+      url: null,
+      records: 1,
+    });
+    for (const [n, key, link] of [
+      [0, "d1", "https://example.test/1"],
+      [1, "d2", "https://example.test/2"],
+    ] as const) {
+      const path = `attribution/us-zz/EX9/${String(n)}.json`;
+      server.tamper(
+        at(path),
+        shard(path, "attribution", {
+          ...area,
+          datasets: [dataset(key)],
+          record_links: [link],
+        }),
+      );
+    }
+    const release = await createClient({
+      baseUrl: BASE,
+      fetch: server.fetch,
+    }).release();
+    const file = await release.attribution("us-zz", "EX9");
+    expect(file?.data.datasets.map((d) => d.dataset_key)).toEqual(["d1", "d2"]);
+    expect(file?.data.record_links).toEqual([
+      "https://example.test/1",
+      "https://example.test/2",
+    ]);
+    expect(file?.data.area).toBe("us-zz");
+    expect(server.requests.filter((p) => p.includes("EX9"))).toEqual([
+      at("attribution/us-zz/EX9.json"),
+      at("attribution/us-zz/EX9/0.json"),
+      at("attribution/us-zz/EX9/1.json"),
+      at("attribution/us-zz/EX9/2.json"),
+    ]);
+  });
+
+  test("merges a split file's maps and keeps a list that is null", async () => {
+    const server = await fakeServer();
+    server.failNext(at("slugs.json"), 404);
+    for (const [n, slug, key] of [
+      [0, "first", "EX1"],
+      [1, "second", "EX2"],
+    ] as const) {
+      const path = `slugs/${String(n)}.json`;
+      server.tamper(
+        at(path),
+        shard(path, "slugs", { species: { [slug]: key }, redirects: {} }),
+      );
+    }
+    const path = "attribution/us-zz/EX8/0.json";
+    server.tamper(
+      at(path),
+      shard(path, "attribution", {
+        area: "us-zz",
+        species_key: "EX8",
+        datasets: [],
+        gbif_download_dois: [],
+        record_links: null,
+      }),
+    );
+    const release = await createClient({
+      baseUrl: BASE,
+      fetch: server.fetch,
+    }).release();
+    expect(await release.speciesBySlug("second")).toBe("EX2");
+    expect(await release.speciesBySlug("first")).toBe("EX1");
+    expect(
+      (await release.attribution("us-zz", "EX8"))?.data.record_links,
+    ).toBeNull();
+  });
+
+  test("reads releases.json from its shards", async () => {
+    const server = await fakeServer();
+    server.failNext("releases.json", 404);
+    const entry = (release: string) => ({
+      release,
+      status: "available",
+      published_at: `${release}T06:00:00Z`,
+      doi: null,
+      builds_on: null,
+      reason: null,
+    });
+    for (const [n, release] of [
+      [0, "2026-01-05"],
+      [1, "2026-01-12"],
+    ] as const) {
+      server.tamper(
+        `releases/${String(n)}.json`,
+        JSON.stringify({
+          id: `releases/${String(n)}.json`,
+          kind: "releases",
+          format: "releases/1.0",
+          provenance,
+          data: { releases: [entry(release)] },
+        }),
+      );
+    }
+    const file = await createClient({
+      baseUrl: BASE,
+      fetch: server.fetch,
+    }).releases();
+    expect(file.data.releases.map((r) => r.release)).toEqual([
+      "2026-01-05",
+      "2026-01-12",
+    ]);
+  });
+
+  test("a missing releases.json with no shards is an ApiError", async () => {
+    const server = await fakeServer();
+    server.failNext("releases.json", 404);
+    await expect(
+      createClient({ baseUrl: BASE, fetch: server.fetch }).releases(),
+    ).rejects.toMatchObject({ name: "ApiError", status: 404 });
+  });
+
+  test("a kind that is never split is not looked for in shards", async () => {
+    const server = await fakeServer();
+    const release = await createClient({
+      baseUrl: BASE,
+      fetch: server.fetch,
+    }).release();
+    expect(await release.stateResult("us-zz", "NOPE")).toBeNull();
+    expect(server.requests.filter((p) => p.includes("NOPE"))).toEqual([
+      at("results/us-zz/NOPE.json"),
+    ]);
+  });
+
+  test("with verify, only shards the manifest lists are requested", async () => {
+    const server = await fakeServer();
+    const release = await createClient({
+      baseUrl: BASE,
+      fetch: server.fetch,
+      verify: true,
+    }).release();
+    expect((await release.catalogue()).map((s) => s.species_key)).toEqual([
+      "EX1",
+      "EX2",
+    ]);
+    expect(server.requests.filter((p) => p.includes("catalogue"))).toEqual([
+      at("catalogue/0.json"),
+      at("catalogue/1.json"),
+    ]);
   });
 });
 
@@ -333,15 +585,18 @@ describe("malformed files", () => {
     ).rejects.toThrow(/not valid JSON/);
   });
 
-  test("a release without a manifest is an error", async () => {
+  test("a release without a manifest is not available", async () => {
     const server = await fakeServer();
-    server.tamper(`releases/${RELEASE}/manifest.json`, "");
     server.failNext(`releases/${RELEASE}/manifest.json`, 404);
     const release = await createClient({
       baseUrl: BASE,
       fetch: server.fetch,
     }).release();
-    await expect(release.manifest()).rejects.toThrow(/no manifest/);
+    await expect(release.manifest()).rejects.toMatchObject({
+      name: "ApiError",
+      status: 404,
+      message: `Release ${RELEASE} is not available`,
+    });
   });
 
   test("a missing current.json is an ApiError", async () => {

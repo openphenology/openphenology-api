@@ -13,7 +13,12 @@ All notable changes to this package are recorded here. The format follows
   ZIP code counties; state and county results, attribution and Backyard
   labels; the manifest, notes, methods and sources; and the release list and
   terms.
+- Files split into shards are read as one file.
+- A pinned release that is not available is an `ApiError` when it opens.
+- `client.release({ refresh: true })` picks up a new current release.
 - Optional SHA-256 checks against the release manifest.
 - Timeouts, retries, and `ApiError` and `FormatError` errors.
 - TypeScript types for the published files.
 - Installs from a Git commit: a `prepare` script builds the package.
+- A JSON Schema for each file format, at
+  `@openphenology/api/schemas/<kind>-1.json`.

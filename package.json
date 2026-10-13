@@ -13,10 +13,12 @@
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
-    }
+    },
+    "./schemas/*": "./schemas/*"
   },
   "files": [
-    "dist"
+    "dist",
+    "schemas/*.json"
   ],
   "engines": {
     "node": ">=22"
@@ -30,7 +32,9 @@
     "format:check": "prettier --check .",
     "typecheck": "tsc --noEmit && tsc --noEmit -p src",
     "test": "vitest run --project node --coverage && vitest run --project 'browser*'",
-    "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build && pnpm size",
+    "schemas": "node scripts/schemas.ts",
+    "schemas:check": "node scripts/schemas.ts --check",
+    "check": "pnpm format:check && pnpm schemas:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build && pnpm size",
     "size": "node scripts/size.mjs"
   },
   "devDependencies": {
@@ -38,6 +42,7 @@
     "@types/node": "22.20.5",
     "@vitest/browser-playwright": "5.0.3",
     "@vitest/coverage-v8": "5.0.3",
+    "ajv": "8.20.0",
     "eslint": "10.12.0",
     "playwright": "1.64.0",
     "prettier": "3.9.10",
