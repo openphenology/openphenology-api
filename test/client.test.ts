@@ -211,8 +211,8 @@ describe("files", () => {
       (await release.boundaries("us-zz"))?.data.features[0]?.properties.area,
     ).toBe("99001");
     expect(await release.zipCounties("99901")).toEqual([
-      { area: "99001", share: 0.75 },
-      { area: "99002", share: 0.25 },
+      { area: "99001", state: null, share: 0.75 },
+      { area: "99002", state: null, share: 0.25 },
     ]);
     expect(await release.zipCounties("99999")).toEqual([]);
     expect(await release.zipCounties("12345")).toEqual([]);
