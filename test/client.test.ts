@@ -11,6 +11,18 @@ import {
 const BASE = "https://example.test/";
 
 describe("release", () => {
+  test("current() reads current.json fresh", async () => {
+    const server = await fakeServer();
+    const client = createClient({ baseUrl: BASE, fetch: server.fetch });
+    const current = await client.current();
+    expect(current.kind).toBe("current");
+    expect(current.data.release).toBe(RELEASE);
+    await client.current();
+    expect(
+      server.requests.filter((p) => p.endsWith("current.json")).length,
+    ).toBe(2);
+  });
+
   test("reads current.json once and keeps that release", async () => {
     const server = await fakeServer();
     const client = createClient({ baseUrl: BASE, fetch: server.fetch });
@@ -217,6 +229,11 @@ describe("files", () => {
     expect(await release.zipCounties("99999")).toEqual([]);
     expect(await release.zipCounties("12345")).toEqual([]);
     await expect(release.zipCounties("9990")).rejects.toThrow(RangeError);
+    expect(
+      Object.keys((await release.postal("999"))?.data.zips ?? {}),
+    ).toContain("99901");
+    expect(await release.postal("123")).toBeNull();
+    expect(() => release.postal("99")).toThrow(RangeError);
   });
 
   test("a result that is not published is null", async () => {

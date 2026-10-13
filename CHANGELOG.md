@@ -8,6 +8,17 @@ All notable changes to this package are recorded here. The format follows
 
 ### Added
 
+- `weekOf`, `BACKYARD_LABELS` and `backyardLabel`: weeks and Backyard
+  labels as the data rules define them, so every reader counts weeks the way
+  the data was made.
+- `@openphenology/api/format`: weeks, Backyard labels, `countyState` and the
+  data's addresses without the reader, for pages that need only those.
+- `client.current()`: `current.json` itself, with when the release was
+  published.
+- `countyState(county)`: the state a county's Census code is in.
+- `schemas/all-1.json`: every format's JSON Schema in one file, by kind.
+- `release.postal(prefix)`: every ZIP code with a 3-digit prefix, for ZIP code
+  lists and suggestions.
 - `catalogue/1.1`: each catalogue species has `seasons`, its season weeks in
   each state with a result (data rules 1.20). `catalogue/1.0` files, which lack
   it, still read.

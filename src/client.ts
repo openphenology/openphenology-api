@@ -2,6 +2,7 @@
 // reading each published file by name.
 import { sha256 } from "./digest.ts";
 import { countyState } from "./states.ts";
+import { PRODUCTION_URL } from "./urls.ts";
 import { ApiError, FormatError } from "./errors.ts";
 import { checkLabels, checkWeeks, parseFile } from "./parse.ts";
 import {
@@ -36,11 +37,6 @@ import type {
   StateResultFile,
   TermsFile,
 } from "./types.ts";
-
-/** Where the published data is served. The default `baseUrl`. */
-export const PRODUCTION_URL = "https://api.openphenology.com/";
-/** Where staging data is served, behind access control. Not public. */
-export const STAGING_URL = "https://api-staging.openphenology.com/";
 
 /** How a client reads the published data. Every option has a default. */
 export interface ClientOptions {
@@ -205,14 +201,26 @@ export class Client {
       if (!(await release.methods())) throw release.unavailable("methods.json");
       return release;
     }
-    const current = parseFile<CurrentFile>(
+    const current = await this.current();
+    const id = releaseId(current.data.release);
+    // An unchanged release keeps the files it has already read.
+    return this.#opened?.id === id ? this.#opened : new Release(this, id);
+  }
+
+  /**
+   * Which release is current and when it was published, from `current.json`.
+   * Read fresh each time; {@link Client.release} opens that release.
+   *
+   * @returns The file.
+   * @throws {ApiError} Rejects when it cannot be read or does not exist.
+   * @throws {FormatError} Rejects when it is malformed.
+   */
+  async current(): Promise<CurrentFile> {
+    return parseFile<CurrentFile>(
       "current.json",
       await this.getJson("current.json"),
       "current",
     );
-    const id = releaseId(current.data.release);
-    // An unchanged release keeps the files it has already read.
-    return this.#opened?.id === id ? this.#opened : new Release(this, id);
   }
 
   /**
@@ -627,6 +635,21 @@ export class Release {
   }
 
   /**
+   * Every ZIP code that starts with a 3-digit prefix, with its counties and
+   * their shares of its land; for lists such as ZIP code suggestions. To look
+   * up one ZIP code, use {@link Release.zipCounties}.
+   *
+   * @param prefix The first three digits, such as `432`.
+   * @returns The ZIP codes, or `null` when none is published for the prefix.
+   * @throws {RangeError} When the prefix is not three digits.
+   */
+  postal(prefix: string): Promise<PostalFile | null> {
+    if (!/^\d{3}$/.test(prefix))
+      throw new RangeError(`Invalid ZIP prefix: ${JSON.stringify(prefix)}`);
+    return this.#file<PostalFile>(`postal/us/${prefix}.json`, "postal");
+  }
+
+  /**
    * The counties a US ZIP code falls in, largest share of its land first.
    * Only the file for its first three digits is requested.
    *
@@ -640,10 +663,7 @@ export class Release {
    */
   async zipCounties(zip: string): Promise<ZipCounty[]> {
     const code = zipCode(zip);
-    const file = await this.#file<PostalFile>(
-      `postal/us/${code.slice(0, 3)}.json`,
-      "postal",
-    );
+    const file = await this.postal(code.slice(0, 3));
     return (file?.data.zips[code] ?? []).map(([area, share]) => ({
       area,
       state: countyState(area),

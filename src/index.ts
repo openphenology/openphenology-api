@@ -9,9 +9,7 @@
 export {
   Client,
   createClient,
-  PRODUCTION_URL,
   Release,
-  STAGING_URL,
   type ClientOptions,
   type ReleaseOptions,
   type ZipCounty,
@@ -23,3 +21,11 @@ export {
   type FormatErrorCode,
 } from "./errors.ts";
 export * from "./types.ts";
+export {
+  BACKYARD_LABELS,
+  PRODUCTION_URL,
+  STAGING_URL,
+  backyardLabel,
+  countyState,
+  weekOf,
+} from "./format.ts";

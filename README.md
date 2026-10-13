@@ -83,16 +83,15 @@ These continue from the quick start, with `release` already open.
 ### This week's Backyard labels for a ZIP code
 
 ```ts
-const week = (date: Date) => {
-  const start = Date.UTC(date.getUTCFullYear(), 0, 1);
-  return Math.floor((date.getTime() - start) / 86_400_000 / 7) + 1;
-};
+import { BACKYARD_LABELS, backyardLabel, weekOf } from "@openphenology/api";
 
+const week = weekOf(new Date()); // weeks as the data rules count them
 const [county] = await release.zipCounties("43215"); // largest share first
 if (county?.state) {
   const backyard = await release.backyard(county.state, county.area);
   for (const species of backyard?.data.species ?? []) {
-    console.log(species.species_key, species.labels[week(new Date()) - 1]);
+    const label = backyardLabel(species.labels, week);
+    console.log(species.species_key, BACKYARD_LABELS[label]);
   }
 }
 ```
@@ -185,7 +184,8 @@ The data is licensed CC BY 4.0. `client.terms()` says how to cite it, and
 
 A JSON Schema for each file format is included, with every field described,
 and a made-up example file for each one. Use them to check files with any
-validator, or to see what a file looks like:
+validator, or to see what a file looks like. `schemas/all-1.json` holds every
+schema in one file, by kind:
 
 ```ts
 import schema from "@openphenology/api/schemas/county-weekly-1.json" with { type: "json" };
