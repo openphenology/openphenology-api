@@ -1,0 +1,67 @@
+# @openphenology/api
+
+> TypeScript client for OpenPhenology's published data: when each species is recorded, week by week, in US counties and states. ESM only, no dependencies, Node.js 22+ and current browsers. Read-only; no keys or accounts. Data is published in dated releases that never change.
+
+Not live yet: until the first data release is published, `client.release()` rejects with `ApiError` code `not-found`, because `current.json` does not exist yet.
+
+## Start
+
+```js
+import { createClient } from "@openphenology/api";
+
+const release = await createClient().release(); // current release, read once
+const key = await release.speciesBySlug("northern-cardinal"); // string | null
+if (key) {
+  const result = await release.countyResult("us-oh", "39049", key); // null if none
+  console.log(result?.data.season); // [early, middle, late] weeks, or []
+}
+```
+
+## Codes every read takes
+
+- State: `us-` + postal abbreviation, e.g. `us-oh`.
+- County: 5-digit Census code (GEOID), e.g. `39049`. List a state's counties with `release.region("us-oh")`; from a ZIP code use `release.zipCounties("43215")`, which returns `{ area, state, share }[]`, largest share first.
+- Species key: from `release.speciesBySlug(slug)`, `release.searchNames()` (`[name, kind, key]` triples) or `release.catalogue()`.
+- Release ID: its date, e.g. `2026-10-19`.
+
+A malformed code is a `RangeError` before any request is made.
+
+## Client
+
+- `createClient(options?)` → `Client`. Options: `baseUrl`, `release` (pin an ID), `verify` (check SHA-256 against the manifest), `timeoutMs` (default 10000), `retries` (default 2; after network errors, 429 and 5xx), `signal`, `fetch`.
+- `client.release({ refresh? })` → `Release`. Without `refresh`, the same release every call. `refresh: true` re-reads `current.json`; existing `Release` objects keep their own files.
+- `client.releases()` → every release and its status. `client.terms()` → licence (CC BY 4.0), how to cite and credit.
+
+## Release (each returns the parsed file, or `null` when not published; lists are empty instead)
+
+- Species: `catalogue()` → `CatalogueEntry[]`; `species(key)`; `speciesBySlug(slug)` → key or `null`; `groups()`; `searchNames()` → `SearchName[]`.
+- Places: `region(state)`; `boundaries(state)` (GeoJSON county outlines, display only); `zipCounties(zip)` → `ZipCounty[]`.
+- Results: `stateResult(state, species)`; `countyResult(state, county, species)`; `backyard(state, county)`; `attribution(state, species, county?)`.
+- The release: `manifest()`; `notes()`; `methods()`; `sources()`.
+
+Every file is `{ id, kind, format, provenance, data }`; read `file.data`.
+
+## Reading results
+
+- Results show when people recorded a species, not when or where it occurs. Low or zero counts do not mean absence.
+- Weeks 1–53: week 1 is 1–7 January, week 53 the last one or two days. Every weekly list has 53 values.
+- `data.weekly.records`: the species' records per week. `data.weekly.years`: years contributing per week. `data.effort`: records of all species in the same place and week.
+- `data.season`: `[early, middle, late]` weeks (5th, 50th, 95th percentiles), or `[]` with `data.season_withheld` set to `year-round`, `two-seasons`, `one-year` or `precision`.
+- Backyard `labels`: a 53-letter string, one per week: `c` commonly reported, `s` seasonally reported, `r` reported in your area, `m` within its mapped range, `n` not enough evidence.
+- A withheld result (sensitive species, or too little evidence) is not published, so it reads as `null`, the same as no result.
+
+## Errors
+
+Branch on `error.code`; messages may change.
+
+- `ApiError` (has `url`, `status`): `network`, `timeout`, `aborted`, `status`, `not-found`, `release-unavailable`.
+- `FormatError` (has `path`): `not-json`, `wrong-kind`, `unsupported-version`, `malformed`, `checksum`.
+- `RangeError`: a malformed code.
+
+## Files in this package
+
+- `dist/index.d.ts`: every type and method, with doc comments.
+- `schemas/<kind>-1.json`: JSON Schema 2020-12 for each format, every field described.
+- `schemas/examples/<kind>-1.json`: one made-up example file per format.
+- Kinds: current, releases, terms, manifest, notes, catalogue, species, slugs, groups, search, region, state-weekly, county-weekly, attribution, backyard, methods, sources, boundaries, postal.
+- `README.md`: the same, with more examples.

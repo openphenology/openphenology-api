@@ -2,7 +2,6 @@
   "$schema": "https://typedoc.org/schema.json",
   "entryPoints": ["src/index.ts"],
   "tsconfig": "tsconfig.build.json",
-  "out": "docs",
   "name": "@openphenology/api",
   "readme": "README.md",
   "excludeInternal": true,
@@ -13,5 +12,15 @@
     "notExported": true,
     "invalidLink": true,
     "notDocumented": true
-  }
+  },
+  "outputs": [
+    {
+      "name": "html",
+      "path": "./docs"
+    },
+    {
+      "name": "json",
+      "path": "./docs/api.json"
+    }
+  ]
 }

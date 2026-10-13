@@ -29,6 +29,7 @@ First release.
 - TypeScript types with documentation, and a JSON Schema for each file format
   with every field described and a made-up example file.
 - Works in Node.js and browsers, and installs from npm or a Git commit.
+- `llms.txt`: the whole package on one page, for AI coding agents.
 
 [Unreleased]: https://github.com/openphenology/openphenology-api/compare/v0.1.0...HEAD
 [0.1.0]: https://github.com/openphenology/openphenology-api/releases/tag/v0.1.0

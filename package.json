@@ -27,7 +27,8 @@
   "files": [
     "dist",
     "schemas/*.json",
-    "schemas/examples/*.json"
+    "schemas/examples/*.json",
+    "llms.txt"
   ],
   "engines": {
     "node": ">=22"
@@ -42,7 +43,7 @@
     "typecheck": "tsc --noEmit && tsc --noEmit -p src",
     "test": "vitest run --project node --coverage && vitest run --project 'browser*'",
     "docs:build": "typedoc",
-    "docs:check": "typedoc --emit none",
+    "docs:check": "typedoc --emit none && node scripts/llms.ts",
     "schemas": "node scripts/schemas.ts",
     "schemas:check": "node scripts/schemas.ts --check",
     "check": "pnpm format:check && pnpm schemas:check && pnpm lint && pnpm typecheck && pnpm docs:check && pnpm test && pnpm build && pnpm size",
