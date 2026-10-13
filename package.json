@@ -26,7 +26,8 @@
   },
   "files": [
     "dist",
-    "schemas/*.json"
+    "schemas/*.json",
+    "schemas/examples/*.json"
   ],
   "engines": {
     "node": ">=22"

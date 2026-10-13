@@ -1,0 +1,34 @@
+{
+  "id": "releases/2026-01-05/regions/us-zz.json",
+  "kind": "region",
+  "format": "region/1.0",
+  "provenance": {
+    "release": "2026-01-05",
+    "sources": ["example"],
+    "licences": ["CC-BY-4.0"],
+    "gbif_download_dois": ["10.0000/example"],
+    "method": "test-1",
+    "taxonomy": "test-taxonomy",
+    "boundaries": "test-boundaries",
+    "ranges": null,
+    "protection": null,
+    "code": "0.0.0",
+    "run": "run-1"
+  },
+  "data": {
+    "state": "us-zz",
+    "name": "Zed",
+    "slug": "zed",
+    "areas": [
+      {
+        "area": "99001",
+        "level": "county",
+        "name": "Example",
+        "slug": "example",
+        "species_keys": ["EX1"],
+        "range_species_keys": [],
+        "effort": [40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40]
+      }
+    ]
+  }
+}

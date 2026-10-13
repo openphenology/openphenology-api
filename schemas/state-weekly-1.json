@@ -12,17 +12,21 @@
   ],
   "properties": {
     "id": {
+      "description": "The file's path from the API root.",
       "type": "string",
       "pattern": "^releases/\\d{4}-\\d{2}-\\d{2}/results/[a-z]{2}-[a-z0-9]{1,3}/[A-Za-z0-9._-]+(/\\d+)?\\.json$"
     },
     "kind": {
+      "description": "The format's name, such as `county-weekly`.",
       "const": "state-weekly"
     },
     "format": {
+      "description": "Format name and version, for example `county-weekly/1.0`.",
       "type": "string",
       "pattern": "^state-weekly/1\\.\\d+$"
     },
     "provenance": {
+      "description": "Where the content came from.",
       "type": "object",
       "required": [
         "release",
@@ -39,28 +43,33 @@
       ],
       "properties": {
         "release": {
+          "description": "The release the file belongs to, such as `2026-10-19`.",
           "type": "string",
           "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
         },
         "sources": {
+          "description": "Source IDs, as listed in `sources.json`.",
           "type": "array",
           "items": {
             "type": "string"
           }
         },
         "licences": {
+          "description": "The licences of those sources.",
           "type": "array",
           "items": {
             "type": "string"
           }
         },
         "gbif_download_dois": {
+          "description": "The GBIF downloads the records came from, as DOIs.",
           "type": "array",
           "items": {
             "type": "string"
           }
         },
         "method": {
+          "description": "The method version, such as `seasonal-3`.",
           "anyOf": [
             {
               "type": "string"
@@ -71,6 +80,7 @@
           ]
         },
         "taxonomy": {
+          "description": "The taxonomy version species keys come from.",
           "anyOf": [
             {
               "type": "string"
@@ -81,6 +91,7 @@
           ]
         },
         "boundaries": {
+          "description": "The boundary version areas come from.",
           "anyOf": [
             {
               "type": "string"
@@ -91,6 +102,7 @@
           ]
         },
         "ranges": {
+          "description": "Each mapped range edition used.",
           "anyOf": [
             {
               "type": "array",
@@ -104,6 +116,7 @@
           ]
         },
         "protection": {
+          "description": "The version of each sensitive-species list applied, by list.",
           "anyOf": [
             {
               "type": "object",
@@ -117,6 +130,7 @@
           ]
         },
         "code": {
+          "description": "The commit of the code that produced the file.",
           "anyOf": [
             {
               "type": "string"
@@ -127,6 +141,7 @@
           ]
         },
         "run": {
+          "description": "The run that produced the file.",
           "anyOf": [
             {
               "type": "string"
@@ -139,6 +154,7 @@
       }
     },
     "data": {
+      "description": "The content, as the format sets out.",
       "type": "object",
       "required": [
         "area",
@@ -154,22 +170,27 @@
       ],
       "properties": {
         "area": {
+          "description": "The area code.",
           "type": "string",
           "pattern": "^[a-z]{2}-[a-z0-9]{1,3}$"
         },
         "species_key": {
+          "description": "The species key.",
           "type": "string",
           "pattern": "^[A-Za-z0-9._-]+$"
         },
         "included_records": {
+          "description": "Records counted, over all weeks.",
           "type": "integer",
           "minimum": 0
         },
         "contributing_years": {
+          "description": "Calendar years with at least one counted record.",
           "type": "integer",
           "minimum": 0
         },
         "thresholds": {
+          "description": "The minimum records and years the method requires.",
           "type": "object",
           "required": [
             "records",
@@ -177,16 +198,19 @@
           ],
           "properties": {
             "records": {
+              "description": "Minimum records.",
               "type": "integer",
               "minimum": 0
             },
             "years": {
+              "description": "Minimum years.",
               "type": "integer",
               "minimum": 0
             }
           }
         },
         "weekly": {
+          "description": "Records counted and years contributing, each for weeks 1 to 53.",
           "type": "object",
           "required": [
             "records",
@@ -194,6 +218,7 @@
           ],
           "properties": {
             "records": {
+              "description": "Records counted, weeks 1 to 53.",
               "type": "array",
               "items": {
                 "type": "integer",
@@ -203,6 +228,7 @@
               "maxItems": 53
             },
             "years": {
+              "description": "Years contributing, weeks 1 to 53.",
               "type": "array",
               "items": {
                 "type": "integer",
@@ -214,6 +240,7 @@
           }
         },
         "season": {
+          "description": "Early, middle and late weeks, or empty when withheld.",
           "type": "array",
           "items": {
             "type": "integer",
@@ -223,6 +250,7 @@
           "maxItems": 3
         },
         "season_withheld": {
+          "description": "Why `season` is empty, or `null`.",
           "anyOf": [
             {
               "enum": [
@@ -238,6 +266,7 @@
           ]
         },
         "effort": {
+          "description": "Records of all species counted in the area, weeks 1 to 53.",
           "type": "array",
           "items": {
             "type": "integer",
@@ -247,6 +276,7 @@
           "maxItems": 53
         },
         "limits": {
+          "description": "What the result does not show.",
           "type": "string",
           "minLength": 1
         }

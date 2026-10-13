@@ -1,0 +1,126 @@
+{
+  "id": "releases/2026-01-05/manifest.json",
+  "kind": "manifest",
+  "format": "manifest/1.0",
+  "provenance": {
+    "release": "2026-01-05",
+    "sources": ["example"],
+    "licences": ["CC-BY-4.0"],
+    "gbif_download_dois": ["10.0000/example"],
+    "method": "test-1",
+    "taxonomy": "test-taxonomy",
+    "boundaries": "test-boundaries",
+    "ranges": null,
+    "protection": null,
+    "code": "0.0.0",
+    "run": "run-1"
+  },
+  "data": {
+    "release": "2026-01-05",
+    "published_at": "2026-01-05T06:00:00Z",
+    "files": [
+      {
+        "path": "notes.json",
+        "sha256": "d72198a45d5d50d85ad358a96ec1bced2fe4b962d457637b53b06ccd7c02c645",
+        "format": "notes/1.0",
+        "bytes": 479
+      },
+      {
+        "path": "catalogue/0.json",
+        "sha256": "6547f2fdd26622a02771458336ad156682fcb825f183d7c21d5ba1089ed9259a",
+        "format": "catalogue/1.0",
+        "bytes": 621
+      },
+      {
+        "path": "catalogue/1.json",
+        "sha256": "093496f1a7622ed0e81a54629cccb3f64ad0b0f7a5c3601c1801a626a315b990",
+        "format": "catalogue/1.0",
+        "bytes": 623
+      },
+      {
+        "path": "species/EX1.json",
+        "sha256": "2214057596b3f6b0db91d9deb2bc8de2b7ed6113a36fa47ad9fa1b2d9ed8705a",
+        "format": "species/1.0",
+        "bytes": 747
+      },
+      {
+        "path": "slugs.json",
+        "sha256": "95ec15fbafe5fc4154e4058e0e04a1e9a267aa82d24acd3212292bb35532338e",
+        "format": "slugs/1.0",
+        "bytes": 426
+      },
+      {
+        "path": "groups.json",
+        "sha256": "c44aad6138d2f9e7b1ac7a8165c03ec476ad767f5a34b306479175adb8cee7f2",
+        "format": "groups/1.0",
+        "bytes": 420
+      },
+      {
+        "path": "search/index.json",
+        "sha256": "ddbe194ae1497fb9e07926eae984192e9c1c6e7fc932c450cc3530fd7b0b050a",
+        "format": "search/1.0",
+        "bytes": 437
+      },
+      {
+        "path": "regions/us-zz.json",
+        "sha256": "8f89f044321a6c03812eac6793fcfe7a3d67cb402235c2b73a9c7e17a6b8ec47",
+        "format": "region/1.0",
+        "bytes": 694
+      },
+      {
+        "path": "attribution/us-zz/EX1.json",
+        "sha256": "807fc40d386fcf0fdefb2ff4db5e3e1fe6e8c3a74b2ec45cf79d26e316115fce",
+        "format": "attribution/1.0",
+        "bytes": 589
+      },
+      {
+        "path": "backyard/us-zz/99001.json",
+        "sha256": "e1cb8c48fd358e4a70790c820b354a78ca0a07e9ee8b59a3a4fc5c68c81a89f8",
+        "format": "backyard/1.0",
+        "bytes": 731
+      },
+      {
+        "path": "methods.json",
+        "sha256": "c124c4547068eaf3d4d7263bbb53318e76a8f378e4cfaa33849179e0d4f4a88d",
+        "format": "methods/1.0",
+        "bytes": 594
+      },
+      {
+        "path": "sources.json",
+        "sha256": "f1dfbe65e9a45842fed146232f65d39088e992ee38ddca4ca5025761835c9017",
+        "format": "sources/1.0",
+        "bytes": 558
+      },
+      {
+        "path": "places/us-zz/boundaries.json",
+        "sha256": "d1393bd33951a3a35c594c03f3c1633521d0e9605d6d21695a3a9521ff5cea85",
+        "format": "boundaries/1.0",
+        "bytes": 577
+      },
+      {
+        "path": "postal/us/999.json",
+        "sha256": "2e991fb572d688ad665760fd1d9ad61f181e94c73d45cc40aa81d2541ea6f73a",
+        "format": "postal/1.0",
+        "bytes": 406
+      },
+      {
+        "path": "results/us-zz/EX1.json",
+        "sha256": "5320f5ff4050bea70111e2f731116797ad7fb2fde9f5ab955140ef7bd3427e1d",
+        "format": "state-weekly/1.0",
+        "bytes": 1047
+      },
+      {
+        "path": "results/us-zz/99001/EX1.json",
+        "sha256": "6502115386a34b5e9b7046a0d5f4633aa6ed1bba729a8df90e8b62de634d5293",
+        "format": "county-weekly/1.0",
+        "bytes": 1055
+      }
+    ],
+    "counts": {
+      "species": 2,
+      "state_results": 1,
+      "county_results": 1,
+      "records": 120
+    }
+  }
+}

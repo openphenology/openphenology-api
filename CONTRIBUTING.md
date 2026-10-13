@@ -36,7 +36,7 @@ If that passes, you're ready to make changes.
 | `pnpm check`      | Everything CI runs. A pull request needs it to pass           |
 | `pnpm test`       | Tests in Node.js, then in Chromium, Firefox and WebKit        |
 | `pnpm format`     | Fixes formatting                                              |
-| `pnpm schemas`    | Rewrites `schemas/*.json` from `schemas/index.ts`             |
+| `pnpm schemas`    | Rewrites the schemas and their examples                       |
 | `pnpm docs:build` | Builds the API reference into `docs/`; open `docs/index.html` |
 
 ## Where things are
@@ -57,7 +57,9 @@ If that passes, you're ready to make changes.
   `@param`, `@returns` (including when the result is `null`) and `@throws`.
   Lint checks that the tags match the code, and `pnpm check` fails when
   TypeDoc finds an undocumented export or a broken link.
-- **Schemas** are written in `schemas/index.ts`. After changing one, run
+- **Schemas** are written in `schemas/index.ts`. Their field descriptions
+  come from the doc comments in `src/types.ts`, and their examples from the
+  made-up release in `test/fixture.ts`. After changing any of these, run
   `pnpm schemas` and commit the JSON files it writes.
 - **Tests** use made-up data served by a fake `fetch`, and never touch the
   network. Keep line coverage at 90% or more.

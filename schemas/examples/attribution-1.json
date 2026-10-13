@@ -1,0 +1,34 @@
+{
+  "id": "releases/2026-01-05/attribution/us-zz/EX1.json",
+  "kind": "attribution",
+  "format": "attribution/1.0",
+  "provenance": {
+    "release": "2026-01-05",
+    "sources": ["example"],
+    "licences": ["CC-BY-4.0"],
+    "gbif_download_dois": ["10.0000/example"],
+    "method": "test-1",
+    "taxonomy": "test-taxonomy",
+    "boundaries": "test-boundaries",
+    "ranges": null,
+    "protection": null,
+    "code": "0.0.0",
+    "run": "run-1"
+  },
+  "data": {
+    "area": "us-zz",
+    "species_key": "EX1",
+    "datasets": [
+      {
+        "dataset_key": "d1",
+        "title": "Example dataset",
+        "publisher": null,
+        "citation": null,
+        "url": null,
+        "records": 120
+      }
+    ],
+    "gbif_download_dois": ["10.0000/example"],
+    "record_links": null
+  }
+}

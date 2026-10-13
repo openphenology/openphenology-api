@@ -1,0 +1,37 @@
+{
+  "id": "releases/2026-01-05/catalogue/0.json",
+  "kind": "catalogue",
+  "format": "catalogue/1.0",
+  "provenance": {
+    "release": "2026-01-05",
+    "sources": ["example"],
+    "licences": ["CC-BY-4.0"],
+    "gbif_download_dois": ["10.0000/example"],
+    "method": "test-1",
+    "taxonomy": "test-taxonomy",
+    "boundaries": "test-boundaries",
+    "ranges": null,
+    "protection": null,
+    "code": "0.0.0",
+    "run": "run-1"
+  },
+  "data": {
+    "species": [
+      {
+        "species_key": "EX1",
+        "scientific_name": "Exemplum primum",
+        "common_name": null,
+        "rank": "species",
+        "kingdom": "Animalia",
+        "phylum": null,
+        "class": null,
+        "order": null,
+        "family": null,
+        "genus": "Exemplum",
+        "group": "birds",
+        "slug": "exemplum-primum",
+        "states": ["us-zz"]
+      }
+    ]
+  }
+}

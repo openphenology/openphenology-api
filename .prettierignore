@@ -3,4 +3,5 @@ coverage
 dist
 # Written by pnpm schemas
 schemas/*.json
+schemas/examples/*.json
 docs
