@@ -100,6 +100,14 @@ describe("schemas", () => {
     expect(errors(file)).toEqual([]);
   });
 
+  test("a terms/1.0 file needs no scope", async () => {
+    const file = structuredClone((await published()).get("terms.json"));
+    if (!file) throw new Error("missing fixture");
+    file.format = "terms/1.0";
+    delete file.data.scope;
+    expect(errors(file)).toEqual([]);
+  });
+
   test("fields a later minor version adds are allowed", async () => {
     const file = structuredClone(
       (await published()).get("releases/2026-01-05/methods.json"),
@@ -210,6 +218,13 @@ describe("schemas reject", () => {
       "releases/2026-01-05/species/EX1.json",
       (f) => {
         first(f.data.statuses).place = "99001";
+      },
+    ],
+    [
+      "a terms/1.1 file without scope",
+      "terms.json",
+      (f) => {
+        delete f.data.scope;
       },
     ],
     [

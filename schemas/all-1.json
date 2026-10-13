@@ -413,7 +413,7 @@
   "terms": {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "title": "OpenPhenology terms/1",
-    "description": "The licence, how to cite and credit, and the contact.",
+    "description": "The licence, what it covers, how to cite and credit, and the contact.",
     "type": "object",
     "required": [
       "id",
@@ -606,10 +606,43 @@
             "description": "The contact address.",
             "type": "string",
             "minLength": 1
+          },
+          "scope": {
+            "description": "What the licence covers, as the data rules give it word for word. Added\nin `terms/1.1`, so absent from `terms/1.0` files.",
+            "type": "string",
+            "minLength": 1
           }
         }
       }
-    }
+    },
+    "allOf": [
+      {
+        "if": {
+          "type": "object",
+          "properties": {
+            "format": {
+              "enum": [
+                "terms/1.0"
+              ]
+            }
+          }
+        },
+        "else": {
+          "type": "object",
+          "properties": {
+            "data": {
+              "type": "object",
+              "properties": {
+                "scope": true
+              },
+              "required": [
+                "scope"
+              ]
+            }
+          }
+        }
+      }
+    ]
   },
   "manifest": {
     "$schema": "https://json-schema.org/draft/2020-12/schema",

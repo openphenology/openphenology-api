@@ -111,6 +111,11 @@ export type TermsFile = PublishedFile<
     readonly licence: string;
     /** Where the licence is published. */
     readonly licence_url: string;
+    /**
+     * What the licence covers, as the data rules give it word for word. Added
+     * in `terms/1.1`, so absent from `terms/1.0` files.
+     */
+    readonly scope?: string;
     /** How to cite OpenPhenology. */
     readonly cite: string;
     /** How to credit the sources. */
