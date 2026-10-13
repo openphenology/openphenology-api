@@ -30,7 +30,7 @@ A malformed code is a `RangeError` before any request is made.
 
 - `createClient(options?)` → `Client`. Options: `baseUrl`, `release` (pin an ID), `verify` (check SHA-256 against the manifest), `timeoutMs` (default 10000), `retries` (default 2; after network errors, 429 and 5xx), `signal`, `fetch`.
 - `client.release({ refresh? })` → `Release`. Without `refresh`, the same release every call. `refresh: true` re-reads `current.json`; existing `Release` objects keep their own files.
-- `client.releases()` → every release and its status. `client.terms()` → licence (CC BY 4.0), how to cite and credit.
+- `client.current()` → `current.json`: the current release and when it was published. `client.releases()` → every release and its status. `client.terms()` → licence (CC BY 4.0), how to cite and credit.
 
 ## Release (each returns the parsed file, or `null` when not published; lists are empty instead)
 

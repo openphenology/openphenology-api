@@ -205,14 +205,26 @@ export class Client {
       if (!(await release.methods())) throw release.unavailable("methods.json");
       return release;
     }
-    const current = parseFile<CurrentFile>(
+    const current = await this.current();
+    const id = releaseId(current.data.release);
+    // An unchanged release keeps the files it has already read.
+    return this.#opened?.id === id ? this.#opened : new Release(this, id);
+  }
+
+  /**
+   * Which release is current and when it was published, from `current.json`.
+   * Read fresh each time; {@link Client.release} opens that release.
+   *
+   * @returns The file.
+   * @throws {ApiError} Rejects when it cannot be read or does not exist.
+   * @throws {FormatError} Rejects when it is malformed.
+   */
+  async current(): Promise<CurrentFile> {
+    return parseFile<CurrentFile>(
       "current.json",
       await this.getJson("current.json"),
       "current",
     );
-    const id = releaseId(current.data.release);
-    // An unchanged release keeps the files it has already read.
-    return this.#opened?.id === id ? this.#opened : new Release(this, id);
   }
 
   /**
