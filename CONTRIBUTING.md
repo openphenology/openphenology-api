@@ -23,9 +23,9 @@ pnpm schemas  # write schemas/*.json from schemas/index.ts
 
 ## Guidelines
 
-- **Runtime code** in `src` uses only web-standard APIs, so it runs in Node.js
-  and browsers, and it has no dependencies. The built `.js` must stay within
-  the size budget that `pnpm size` checks; comments do not count.
+- **Runtime code** in `src` uses only web-standard APIs and no dependencies,
+  so it runs in Node.js and browsers. `pnpm size` keeps the built code under
+  5 KB gzipped; comments don't count.
 - **Every export needs JSDoc.** Describe what it does, and use `@param`,
   `@returns` (including when the result is `null`) and `@throws`. Lint checks
   that the tags match the code.
@@ -39,11 +39,9 @@ pnpm schemas  # write schemas/*.json from schemas/index.ts
 
 ## Releases
 
-A maintainer releases a version by updating `version` in `package.json`,
-moving its CHANGELOG entries under a heading for that version, and pushing a
-tag such as `v0.1.0` on `main`. The Release workflow checks the tag, runs
-`pnpm check`, and publishes to npm with provenance, using trusted publishing
-rather than a stored token.
+A maintainer sets `version` in `package.json`, moves the CHANGELOG's
+Unreleased entries under that version, and pushes a tag such as `v0.1.0` on
+`main`. The Release workflow then checks and publishes the package to npm.
 
 ## Reporting a security problem
 

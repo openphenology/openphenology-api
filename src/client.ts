@@ -1,4 +1,5 @@
 import { sha256 } from "./digest.ts";
+import { countyState } from "./states.ts";
 import { ApiError, FormatError } from "./errors.ts";
 import { checkLabels, checkWeeks, parseFile } from "./parse.ts";
 import {
@@ -55,6 +56,16 @@ export interface ClientOptions {
   readonly signal?: AbortSignal;
   /** The fetch implementation. Defaults to the global one. */
   readonly fetch?: typeof fetch;
+}
+
+/** One county a ZIP code falls in, from {@link Release.zipCounties}. */
+export interface ZipCounty {
+  /** The county's GEOID, such as `39049`. */
+  readonly area: string;
+  /** The county's state code, such as `us-oh`; `null` when its Census code is unknown. */
+  readonly state: string | null;
+  /** The share of the ZIP code's land in the county, from 0 to 1. */
+  readonly share: number;
 }
 
 /** Options for {@link Client.release}. */
@@ -602,14 +613,14 @@ export class Release {
    * Only the file for its first three digits is requested.
    *
    * @param zip A 5-digit ZIP code.
-   * @returns Each county's GEOID and its share of the ZIP code's land, from 0
-   *   to 1; empty when the ZIP code has no Census area.
+   * @returns Each county's GEOID, its state code and its share of the ZIP
+   *   code's land; empty when the ZIP code has no Census area.
    * @throws {RangeError} When the ZIP code is malformed.
    * @example
    * const [first] = await release.zipCounties("43215");
-   * if (first) await release.backyard("us-oh", first.area);
+   * if (first?.state) await release.backyard(first.state, first.area);
    */
-  async zipCounties(zip: string): Promise<{ area: string; share: number }[]> {
+  async zipCounties(zip: string): Promise<ZipCounty[]> {
     const code = zipCode(zip);
     const file = await this.#file<PostalFile>(
       `postal/us/${code.slice(0, 3)}.json`,
@@ -617,6 +628,7 @@ export class Release {
     );
     return (file?.data.zips[code] ?? []).map(([area, share]) => ({
       area,
+      state: countyState(area),
       share,
     }));
   }

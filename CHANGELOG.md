@@ -8,25 +8,25 @@ All notable changes to this package are recorded here. The format follows
 
 ## [0.1.0] - 2026-10-13
 
+First release.
+
 ### Added
 
-- Client that reads the current or a pinned release: the species catalogue,
-  species pages, slugs, groups and search names; regions, county outlines and
-  ZIP code counties; state and county results, attribution and Backyard
-  labels; the manifest, notes, methods and sources; and the release list and
-  terms.
+- Read the current release, pin one by date, or refresh to pick up a new one.
+  A pinned release that has been withdrawn is an error.
+- Species: the catalogue, species pages, slugs, browse groups and search
+  names.
+- Places: regions, county outlines, and the counties and states a ZIP code
+  falls in.
+- Results: state and county weekly results, Backyard labels and attribution.
+- About the data: the release list, terms, manifest, notes, methods and
+  sources.
 - Files split into shards are read as one file.
-- A pinned release that is not available is an `ApiError` when it opens.
-- `client.release({ refresh: true })` picks up a new current release.
-- Optional SHA-256 checks against the release manifest.
+- Checks on every file's format version and 53-week lists, and optional
+  SHA-256 checks against the manifest.
 - Timeouts, retries, and `ApiError` and `FormatError` errors.
-- Checks that weekly lists hold 53 weeks in results, regions and Backyard
-  files, and that Backyard labels are valid letters.
-- TypeScript types for the published files, with JSDoc on every export and
-  field.
-- Installs from a Git commit: a `prepare` script builds the package.
-- A JSON Schema for each file format, at
-  `@openphenology/api/schemas/<kind>-1.json`.
+- TypeScript types with documentation, and a JSON Schema for each file format.
+- Works in Node.js and browsers, and installs from npm or a Git commit.
 
 [Unreleased]: https://github.com/openphenology/openphenology-api/compare/v0.1.0...HEAD
 [0.1.0]: https://github.com/openphenology/openphenology-api/releases/tag/v0.1.0
