@@ -21,7 +21,9 @@ if (result) {
 ```
 
 - `client.release()` reads `current.json` once, so every later read comes from
-  the same release. Pass `{ release: "2026-10-19" }` to pin one.
+  the same release. Pass `{ release: "2026-10-19" }` to pin one. A pinned
+  release that is not published, or has been withdrawn, is an `ApiError`
+  (status 404).
 - A release reads its files by name. A file that is not published is `null`.
   - Species: `catalogue()`, `species(key)`, `speciesBySlug(slug)`, `groups()`
     and `searchNames()`.

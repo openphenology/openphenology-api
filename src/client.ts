@@ -138,7 +138,12 @@ export class Client {
 
   async #openRelease(): Promise<Release> {
     const pinned = this.#options.release;
-    if (pinned !== undefined) return new Release(this, releaseId(pinned));
+    if (pinned !== undefined) {
+      const release = new Release(this, releaseId(pinned));
+      // Every release has methods.json, and a withdrawn release's files are deleted.
+      if (!(await release.methods())) throw release.unavailable("methods.json");
+      return release;
+    }
     const current = parseFile<CurrentFile>(
       "current.json",
       await this.getJson("current.json"),
@@ -159,7 +164,7 @@ export class Client {
           : parseFile<ReleasesFile>(path, decode(path, bytes), "releases");
       },
     );
-    if (!file) throw this.#notFound("releases.json");
+    if (!file) throw this.notFound("releases.json");
     return file;
   }
 
@@ -218,16 +223,13 @@ export class Client {
   /** Fetches and parses a JSON file, throwing when it does not exist. */
   async getJson(path: string): Promise<unknown> {
     const bytes = await this.getBytes(path);
-    if (bytes === undefined) throw this.#notFound(path);
+    if (bytes === undefined) throw this.notFound(path);
     return decode(path, bytes);
   }
 
-  #notFound(path: string): ApiError {
-    return new ApiError(
-      `Not found: ${path}`,
-      new URL(path, this.#base).href,
-      404,
-    );
+  /** The error for a file that does not exist. @internal */
+  notFound(path: string, message = `Not found: ${path}`): ApiError {
+    return new ApiError(message, new URL(path, this.#base).href, 404);
   }
 }
 
@@ -253,13 +255,17 @@ export class Release {
   /** The release manifest: every file, with its SHA-256, counts and format versions. */
   manifest(): Promise<ManifestFile> {
     return this.#read("manifest.json", false).then((value) => {
-      if (value === undefined)
-        throw new FormatError(
-          `${this.id}: release has no manifest`,
-          "manifest.json",
-        );
+      if (value === undefined) throw this.unavailable("manifest.json");
       return parseFile<ManifestFile>("manifest.json", value, "manifest");
     });
+  }
+
+  /** The error for a release that is not published, or has been withdrawn. @internal */
+  unavailable(path: string): ApiError {
+    return this.#client.notFound(
+      `releases/${this.id}/${path}`,
+      `Release ${this.id} is not available`,
+    );
   }
 
   /** What changed since the previous release. */
