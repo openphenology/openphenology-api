@@ -80,6 +80,16 @@ describe("schemas", () => {
     expect(errors(file)).toEqual([]);
   });
 
+  test("a species/1.0 file needs no statuses", async () => {
+    const file = structuredClone(
+      (await published()).get("releases/2026-01-05/species/EX1.json"),
+    );
+    if (!file) throw new Error("missing fixture");
+    file.format = "species/1.0";
+    delete file.data.statuses;
+    expect(errors(file)).toEqual([]);
+  });
+
   test("fields a later minor version adds are allowed", async () => {
     const file = structuredClone(
       (await published()).get("releases/2026-01-05/methods.json"),
@@ -169,6 +179,27 @@ describe("schemas reject", () => {
       "releases/2026-01-05/species/EX1.json",
       (f) => {
         f.data.scientific_name = null;
+      },
+    ],
+    [
+      "a species/1.1 file without statuses",
+      "releases/2026-01-05/species/EX1.json",
+      (f) => {
+        delete f.data.statuses;
+      },
+    ],
+    [
+      "a status from a list other than the government lists",
+      "releases/2026-01-05/species/EX1.json",
+      (f) => {
+        first(f.data.statuses).list = "natureserve";
+      },
+    ],
+    [
+      "a status placed in a county",
+      "releases/2026-01-05/species/EX1.json",
+      (f) => {
+        first(f.data.statuses).place = "99001";
       },
     ],
     [

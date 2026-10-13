@@ -292,8 +292,28 @@ export type SpeciesFile = PublishedFile<
       /** The range's seasons there. */
       readonly seasons: readonly RangeSeason[];
     }[];
+    /**
+     * The species' listings on government lists: the federal Endangered
+     * Species Act list and Ohio's lists. Empty when it is on none. Added in
+     * `species/1.1`, so absent from `species/1.0` files.
+     */
+    readonly statuses?: readonly SpeciesListing[];
   }
 >;
+
+/** One listing of a species, or of a subspecies or variety of it, on a government list. */
+export interface SpeciesListing {
+  /** The list: `usfws` (US Fish & Wildlife Service, Endangered Species Act) or `ohio`. */
+  readonly list: "usfws" | "ohio";
+  /** Where the list applies: `us` for the federal list, a state code for a state list. */
+  readonly place: string;
+  /** The scientific name the list gives; it shows when only a subspecies or variety is listed. */
+  readonly listed_name: string;
+  /** The status, as the list writes it, such as `Endangered`. */
+  readonly status: string;
+  /** The federal list's own description of where the listing applies, such as `Wherever found`; `null` for a state list. */
+  readonly where: string | null;
+}
 
 /** `slugs.json`: species page slugs and redirects. */
 export type SlugsFile = PublishedFile<
