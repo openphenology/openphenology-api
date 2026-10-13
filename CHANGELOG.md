@@ -18,6 +18,8 @@ All notable changes to this package are recorded here. The format follows
 - `client.release({ refresh: true })` picks up a new current release.
 - Optional SHA-256 checks against the release manifest.
 - Timeouts, retries, and `ApiError` and `FormatError` errors.
+- Checks that weekly lists hold 53 weeks in results, regions and Backyard
+  files, and that Backyard labels are valid letters.
 - TypeScript types for the published files.
 - Installs from a Git commit: a `prepare` script builds the package.
 - A JSON Schema for each file format, at
