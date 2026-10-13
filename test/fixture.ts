@@ -47,13 +47,20 @@ const entry = (key: string, name: string) => ({
   states: ["us-zz"],
 });
 
+/** Made-up records each week, rising from week 12 to a peak and falling by week 37. */
+const curve = Array.from({ length: 53 }, (_, i) =>
+  i + 1 >= 12 && i + 1 <= 37
+    ? Math.round(10 * Math.sin((Math.PI * (i + 1 - 11)) / 27))
+    : 0,
+);
+
 const result = (area: string) => ({
   area,
   species_key: "EX1",
-  included_records: 120,
+  included_records: curve.reduce((sum, n) => sum + n, 0),
   contributing_years: 4,
   thresholds: { records: 20, years: 5 },
-  weekly: { records: weeks(2), years: weeks(1) },
+  weekly: { records: curve, years: curve.map((n) => Math.min(n, 4)) },
   season: [14, 22, 35],
   season_withheld: null,
   effort: weeks(40),

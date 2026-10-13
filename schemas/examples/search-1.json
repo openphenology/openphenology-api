@@ -1,0 +1,24 @@
+{
+  "id": "releases/2026-01-05/search/index.json",
+  "kind": "search",
+  "format": "search/1.0",
+  "provenance": {
+    "release": "2026-01-05",
+    "sources": ["example"],
+    "licences": ["CC-BY-4.0"],
+    "gbif_download_dois": ["10.0000/example"],
+    "method": "test-1",
+    "taxonomy": "test-taxonomy",
+    "boundaries": "test-boundaries",
+    "ranges": null,
+    "protection": null,
+    "code": "0.0.0",
+    "run": "run-1"
+  },
+  "data": {
+    "names": [
+      ["Exemplum primum", "scientific", "EX1"],
+      ["Example bird", "common", "EX1"]
+    ]
+  }
+}

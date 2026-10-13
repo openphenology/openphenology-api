@@ -1,0 +1,28 @@
+{
+  "id": "releases/2026-01-05/groups.json",
+  "kind": "groups",
+  "format": "groups/1.0",
+  "provenance": {
+    "release": "2026-01-05",
+    "sources": ["example"],
+    "licences": ["CC-BY-4.0"],
+    "gbif_download_dois": ["10.0000/example"],
+    "method": "test-1",
+    "taxonomy": "test-taxonomy",
+    "boundaries": "test-boundaries",
+    "ranges": null,
+    "protection": null,
+    "code": "0.0.0",
+    "run": "run-1"
+  },
+  "data": {
+    "groups": [
+      {
+        "group": "birds",
+        "name": "Birds",
+        "taxa": ["V2"],
+        "species": 2
+      }
+    ]
+  }
+}
