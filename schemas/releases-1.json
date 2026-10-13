@@ -13,7 +13,7 @@
   "properties": {
     "id": {
       "type": "string",
-      "minLength": 1
+      "pattern": "^releases(/\\d+)?\\.json$"
     },
     "kind": {
       "const": "releases"

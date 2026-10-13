@@ -57,6 +57,19 @@ describe("schemas", () => {
     }
   });
 
+  test("a shard's id is its own path", async () => {
+    const files = await published();
+    expect(files.get("releases/2026-01-05/catalogue/1.json")?.id).toBe(
+      "releases/2026-01-05/catalogue/1.json",
+    );
+    const attribution = structuredClone(
+      files.get("releases/2026-01-05/attribution/us-zz/EX1.json"),
+    );
+    if (!attribution) throw new Error("missing fixture");
+    attribution.id = "releases/2026-01-05/attribution/us-zz/99001/EX1/2.json";
+    expect(errors(attribution)).toEqual([]);
+  });
+
   test("fields a later minor version adds are allowed", async () => {
     const file = structuredClone(
       (await published()).get("releases/2026-01-05/methods.json"),
@@ -183,6 +196,20 @@ describe("schemas reject", () => {
       (f) => {
         const entry = first(f.data.files);
         entry.sha256 = String(entry.sha256).toUpperCase();
+      },
+    ],
+    [
+      "an id that is not the file's path",
+      county,
+      (f) => {
+        f.id = "releases/2026-01-05/results/us-zz/EX1.json";
+      },
+    ],
+    [
+      "an id outside a release",
+      "releases/2026-01-05/species/EX1.json",
+      (f) => {
+        f.id = "species/EX1.json";
       },
     ],
     [

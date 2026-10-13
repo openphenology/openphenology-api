@@ -13,7 +13,7 @@
   "properties": {
     "id": {
       "type": "string",
-      "minLength": 1
+      "pattern": "^current(/\\d+)?\\.json$"
     },
     "kind": {
       "const": "current"

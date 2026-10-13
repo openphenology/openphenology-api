@@ -77,10 +77,13 @@ const object = (properties: Record<string, Schema>, ...rules: Schema[]) => ({
 
 const date = pattern("^\\d{4}-\\d{2}-\\d{2}$");
 const time = pattern("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$");
-const state = pattern("^[a-z]{2}-[a-z0-9]{1,3}$");
-const county = pattern("^\\d{5}$");
+const STATE = "[a-z]{2}-[a-z0-9]{1,3}";
+const COUNTY = "\\d{5}";
+const KEY = "[A-Za-z0-9._-]+";
+const state = pattern(`^${STATE}$`);
+const county = pattern(`^${COUNTY}$`);
 const area: Schema = { anyOf: [state, county] };
-const speciesKey = pattern("^[A-Za-z0-9._-]+$");
+const speciesKey = pattern(`^${KEY}$`);
 const slug = pattern("^[a-z0-9]+(-[a-z0-9]+)*$");
 const group = pattern("^[a-z]+(-[a-z]+)*$");
 const count: Schema = { type: "integer", minimum: 0 };
@@ -170,13 +173,38 @@ const weeklyResult = (where: Schema) =>
     seasonMatchesWithheld,
   );
 
+/** Each file's path from the API root, without `.json`. */
+const RELEASE = "releases/\\d{4}-\\d{2}-\\d{2}/";
+const paths: Record<Kind, string> = {
+  current: "current",
+  releases: "releases",
+  terms: "terms",
+  manifest: `${RELEASE}manifest`,
+  notes: `${RELEASE}notes`,
+  catalogue: `${RELEASE}catalogue`,
+  species: `${RELEASE}species/${KEY}`,
+  slugs: `${RELEASE}slugs`,
+  groups: `${RELEASE}groups`,
+  search: `${RELEASE}search/index`,
+  region: `${RELEASE}regions/${STATE}`,
+  "state-weekly": `${RELEASE}results/${STATE}/${KEY}`,
+  "county-weekly": `${RELEASE}results/${STATE}/${COUNTY}/${KEY}`,
+  attribution: `${RELEASE}attribution/${STATE}(/${COUNTY})?/${KEY}`,
+  backyard: `${RELEASE}backyard/${STATE}/${COUNTY}`,
+  methods: `${RELEASE}methods`,
+  sources: `${RELEASE}sources`,
+  boundaries: `${RELEASE}places/${STATE}/boundaries`,
+  postal: `${RELEASE}postal/us/\\d{3}`,
+};
+
 /** Wraps a format's `data` in the fields every published file shares. */
 const file = (kind: Kind, description: string, data: Schema): Schema => ({
   $schema: "https://json-schema.org/draft/2020-12/schema",
   title: `OpenPhenology ${kind}/${String(MAJOR)}`,
   description,
   ...object({
-    id: text,
+    // The file's path; a shard of `<name>.json` is `<name>/<n>.json`.
+    id: pattern(`^${paths[kind]}(/\\d+)?\\.json$`),
     kind: { const: kind },
     format: pattern(`^${kind}/${String(MAJOR)}\\.\\d+$`),
     provenance,

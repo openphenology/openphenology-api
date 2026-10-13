@@ -324,7 +324,7 @@ export async function fakeServer(): Promise<FakeServer> {
   bodies.set(
     `releases/${RELEASE}/manifest.json`,
     JSON.stringify({
-      id: `${RELEASE}/manifest`,
+      id: `releases/${RELEASE}/manifest.json`,
       kind: "manifest",
       format: "manifest/1.0",
       provenance,
@@ -344,7 +344,7 @@ export async function fakeServer(): Promise<FakeServer> {
   bodies.set(
     "current.json",
     JSON.stringify({
-      id: "current",
+      id: "current.json",
       kind: "current",
       format: "current/1.0",
       provenance,

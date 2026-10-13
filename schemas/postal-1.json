@@ -13,7 +13,7 @@
   "properties": {
     "id": {
       "type": "string",
-      "minLength": 1
+      "pattern": "^releases/\\d{4}-\\d{2}-\\d{2}/postal/us/\\d{3}(/\\d+)?\\.json$"
     },
     "kind": {
       "const": "postal"
