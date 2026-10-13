@@ -1,3 +1,5 @@
+// SHA-256 for checking files against the release manifest.
+
 /**
  * Lowercase hex SHA-256 of some bytes, using the Web Crypto API.
  *

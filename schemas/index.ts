@@ -93,7 +93,7 @@ const rangeSeasons = list({
   enum: ["year-round", "summer", "winter", "migratory", "passage"],
 });
 
-/** `area` is a state code when `level` is `state`, and a county GEOID when it is `county`. */
+/** `area` is a state code when `level` is `state`, and a county's 5-digit Census code when it is `county`. */
 const areaMatchesLevel: Schema = {
   anyOf: [
     {

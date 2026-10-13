@@ -1,3 +1,6 @@
+// Light checks on each file before it is used: the shared wrapper, the
+// format's major version, and the lists that must hold 53 weeks. The full
+// JSON Schemas live in schemas/.
 import { FormatError } from "./errors.ts";
 import { WEEKS, type PublishedFile } from "./types.ts";
 
@@ -6,10 +9,18 @@ const SUPPORTED_MAJOR = 1;
 
 type Json = Record<string, unknown>;
 
+/**
+ * Whether a value is a plain JSON object, not an array or `null`.
+ *
+ * @param value Parsed JSON.
+ * @returns `true` for an object.
+ */
 const isObject = (value: unknown): value is Json =>
   typeof value === "object" && value !== null && !Array.isArray(value);
 
 /**
+ * Stops reading a file that does not match its format.
+ *
  * @param path The file's path.
  * @param message What is wrong.
  * @throws {FormatError} Always.

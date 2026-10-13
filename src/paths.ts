@@ -1,3 +1,5 @@
+// Checks for the codes that go into file paths, so a caller's input can never
+// point a request at another path.
 const RELEASE = /^\d{4}-\d{2}-\d{2}$/;
 const STATE = /^[a-z]{2}-[a-z0-9]{1,3}$/;
 const COUNTY = /^\d{5}$/;
@@ -38,7 +40,7 @@ export const releaseId = (value: string): string =>
 export const stateCode = (value: string): string =>
   check("state", value, STATE);
 /**
- * Checks a county GEOID, such as `39049`.
+ * Checks a county's 5-digit Census code, such as `39049`.
  *
  * @param value The code.
  * @returns The code, unchanged.
