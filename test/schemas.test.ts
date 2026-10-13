@@ -70,6 +70,16 @@ describe("schemas", () => {
     expect(errors(attribution)).toEqual([]);
   });
 
+  test("a catalogue/1.0 file needs no seasons", async () => {
+    const file = structuredClone(
+      (await published()).get("releases/2026-01-05/catalogue/0.json"),
+    );
+    if (!file) throw new Error("missing fixture");
+    file.format = "catalogue/1.0";
+    delete first(file.data.species).seasons;
+    expect(errors(file)).toEqual([]);
+  });
+
   test("fields a later minor version adds are allowed", async () => {
     const file = structuredClone(
       (await published()).get("releases/2026-01-05/methods.json"),
@@ -159,6 +169,34 @@ describe("schemas reject", () => {
       "releases/2026-01-05/species/EX1.json",
       (f) => {
         f.data.scientific_name = null;
+      },
+    ],
+    [
+      "a catalogue/1.1 species without seasons",
+      "releases/2026-01-05/catalogue/0.json",
+      (f) => {
+        delete first(f.data.species).seasons;
+      },
+    ],
+    [
+      "catalogue seasons keyed by a county",
+      "releases/2026-01-05/catalogue/0.json",
+      (f) => {
+        first(f.data.species).seasons = { "99001": [14, 22, 35] };
+      },
+    ],
+    [
+      "a catalogue season of two weeks",
+      "releases/2026-01-05/catalogue/0.json",
+      (f) => {
+        first(f.data.species).seasons = { "us-zz": [14, 22] };
+      },
+    ],
+    [
+      "a catalogue season of four weeks",
+      "releases/2026-01-05/catalogue/0.json",
+      (f) => {
+        first(f.data.species).seasons = { "us-zz": [14, 22, 35, 40] };
       },
     ],
     [

@@ -27,15 +27,15 @@
       },
       {
         "path": "catalogue/0.json",
-        "sha256": "6547f2fdd26622a02771458336ad156682fcb825f183d7c21d5ba1089ed9259a",
-        "format": "catalogue/1.0",
-        "bytes": 621
+        "sha256": "29f9b218f02b6388580da7e10392ce54b42416609910cd9271a863d5cacb3f0a",
+        "format": "catalogue/1.1",
+        "bytes": 652
       },
       {
         "path": "catalogue/1.json",
-        "sha256": "093496f1a7622ed0e81a54629cccb3f64ad0b0f7a5c3601c1801a626a315b990",
-        "format": "catalogue/1.0",
-        "bytes": 623
+        "sha256": "2da2a833b9bdb9e7c0fb3f765e93a8737273d4d742caafae93dbfe9ea0ceaf82",
+        "format": "catalogue/1.1",
+        "bytes": 646
       },
       {
         "path": "species/EX1.json",
