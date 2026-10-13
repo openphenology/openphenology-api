@@ -374,7 +374,7 @@
                 "terms.json"
               ]
             },
-            "description": "The licence, how to cite and credit, and the contact.\n\nPath: `terms.json`. Format: `terms/1`, schema `schemas/terms-1.json`."
+            "description": "The licence, what it covers, how to cite and credit, and the contact.\n\nPath: `terms.json`. Format: `terms/1`, schema `schemas/terms-1.json`."
           },
           "response": [
             {
@@ -401,7 +401,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"id\": \"terms.json\",\n  \"kind\": \"terms\",\n  \"format\": \"terms/1.0\",\n  \"provenance\": {\n    \"release\": \"2026-01-05\",\n    \"sources\": [\"example\"],\n    \"licences\": [\"CC-BY-4.0\"],\n    \"gbif_download_dois\": [\"10.0000/example\"],\n    \"method\": \"test-1\",\n    \"taxonomy\": \"test-taxonomy\",\n    \"boundaries\": \"test-boundaries\",\n    \"ranges\": null,\n    \"protection\": null,\n    \"code\": \"0.0.0\",\n    \"run\": \"run-1\"\n  },\n  \"data\": {\n    \"licence\": \"CC-BY-4.0\",\n    \"licence_url\": \"https://creativecommons.org/licenses/by/4.0/\",\n    \"cite\": \"Made up.\",\n    \"credit\": \"Made up.\",\n    \"warranty\": \"Made up.\",\n    \"contact\": \"nobody@example.test\"\n  }\n}"
+              "body": "{\n  \"id\": \"terms.json\",\n  \"kind\": \"terms\",\n  \"format\": \"terms/1.1\",\n  \"provenance\": {\n    \"release\": \"2026-01-05\",\n    \"sources\": [\"example\"],\n    \"licences\": [\"CC-BY-4.0\"],\n    \"gbif_download_dois\": [\"10.0000/example\"],\n    \"method\": \"test-1\",\n    \"taxonomy\": \"test-taxonomy\",\n    \"boundaries\": \"test-boundaries\",\n    \"ranges\": null,\n    \"protection\": null,\n    \"code\": \"0.0.0\",\n    \"run\": \"run-1\"\n  },\n  \"data\": {\n    \"licence\": \"CC-BY-4.0\",\n    \"licence_url\": \"https://creativecommons.org/licenses/by/4.0/\",\n    \"scope\": \"Made up.\",\n    \"cite\": \"Made up.\",\n    \"credit\": \"Made up.\",\n    \"warranty\": \"Made up.\",\n    \"contact\": \"nobody@example.test\"\n  }\n}"
             }
           ]
         }

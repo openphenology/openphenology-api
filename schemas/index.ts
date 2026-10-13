@@ -330,17 +330,23 @@ export const schemas = {
     }),
   ),
 
-  terms: file(
-    "terms",
-    "The licence, how to cite and credit, and the contact.",
-    object({
-      licence: text,
-      licence_url: text,
-      cite: text,
-      credit: text,
-      warranty: text,
-      contact: text,
-    }),
+  terms: withRules(
+    file(
+      "terms",
+      "The licence, what it covers, how to cite and credit, and the contact.",
+      withOptional(
+        object({
+          licence: text,
+          licence_url: text,
+          cite: text,
+          credit: text,
+          warranty: text,
+          contact: text,
+        }),
+        { scope: text },
+      ),
+    ),
+    sinceMinorData("terms", 1, ["scope"]),
   ),
 
   manifest: file(

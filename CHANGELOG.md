@@ -8,6 +8,9 @@ All notable changes to this package are recorded here. The format follows
 
 ### Added
 
+- `terms/1.1`: `scope`, what the CC BY 4.0 licence covers, word for word as
+  the data rules give it (data rules 1.23). `terms/1.0` files, which lack it,
+  still read.
 - `species/1.2`: each species has `introductions`, its US-RIIS listings in
   the lower 48 states as introduced or invasive (data rules 1.22), as
   `SpeciesIntroduction`. Earlier species files, which lack it, still read.

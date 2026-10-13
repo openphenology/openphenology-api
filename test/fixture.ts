@@ -406,11 +406,12 @@ export async function fakeServer(): Promise<FakeServer> {
     JSON.stringify({
       id: "terms.json",
       kind: "terms",
-      format: "terms/1.0",
+      format: "terms/1.1",
       provenance,
       data: {
         licence: "CC-BY-4.0",
         licence_url: "https://creativecommons.org/licenses/by/4.0/",
+        scope: "Made up.",
         cite: "Made up.",
         credit: "Made up.",
         warranty: "Made up.",
