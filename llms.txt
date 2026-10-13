@@ -50,6 +50,7 @@ Every file is `{ id, kind, format, provenance, data }`; read `file.data`.
 - Backyard `labels`: a 53-letter string, one per week: `c` commonly reported, `s` seasonally reported, `r` reported in your area, `m` within its mapped range, `n` not enough evidence. `backyardLabel(labels, week)` reads one week's letter; `BACKYARD_LABELS[letter]` names it.
 - A withheld result (sensitive species, or too little evidence) is not published, so it reads as `null`, the same as no result.
 - Species `data.statuses` (from `species/1.1`): the species' listings on the federal Endangered Species Act list and Ohio's lists, each with `list`, `place`, `listed_name`, `status` and `where`. Only government lists are published.
+- Species `data.introductions` (from `species/1.2`): the species' US-RIIS listings in the lower 48 states, each with `source`, `region`, `listed_name` and `status` (`introduced` or `invasive`). An empty list never means native.
 
 ## Errors
 
