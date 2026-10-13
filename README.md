@@ -46,7 +46,9 @@ county)`.
   manifest.
 - Requests time out after 10 seconds and are retried twice after a network
   error or a 429 or 5xx response. Errors are `ApiError` (requests) or
-  `FormatError` (content).
+  `FormatError` (content). Every file's format version is checked, and every
+  weekly list must hold 53 weeks: result counts and effort, region effort,
+  and Backyard effort and labels.
 - Results show when people recorded a species, not when or where it occurs.
   Each result carries this note in `data.limits`.
 
