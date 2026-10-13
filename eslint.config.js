@@ -3,7 +3,7 @@ import jsdoc from "eslint-plugin-jsdoc";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
-  { ignores: ["coverage", "dist", "scripts/*.mjs"] },
+  { ignores: ["coverage", "dist", "docs", "scripts/*.mjs"] },
   js.configs.recommended,
   ...tseslint.configs.strictTypeChecked,
   {
@@ -66,7 +66,10 @@ export default tseslint.config(
       ],
       "jsdoc/require-throws": "error",
       "jsdoc/tag-lines": ["error", "any", { startLines: 1 }],
-      "jsdoc/check-tag-names": ["error", { definedTags: ["internal"] }],
+      "jsdoc/check-tag-names": [
+        "error",
+        { definedTags: ["internal", "packageDocumentation", "document"] },
+      ],
     },
   },
   { files: ["eslint.config.js"], ...tseslint.configs.disableTypeChecked },

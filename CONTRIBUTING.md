@@ -17,6 +17,7 @@ pnpm exec playwright install chromium firefox webkit   # test browsers
 pnpm check    # formatting, schemas, lint, typecheck, tests in Node.js and browsers, build, size
 pnpm format   # fix formatting
 pnpm schemas  # write schemas/*.json from schemas/index.ts
+pnpm docs     # build the API reference into docs/ with TypeDoc
 ```
 
 `pnpm check` is what CI runs, and a pull request needs it to pass.
@@ -26,9 +27,10 @@ pnpm schemas  # write schemas/*.json from schemas/index.ts
 - **Runtime code** in `src` uses only web-standard APIs and no dependencies,
   so it runs in Node.js and browsers. `pnpm size` keeps the built code under
   5 KB gzipped; comments don't count.
-- **Every export needs JSDoc.** Describe what it does, and use `@param`,
-  `@returns` (including when the result is `null`) and `@throws`. Lint checks
-  that the tags match the code.
+- **Every export needs a doc comment.** Describe what it does, and use
+  `@param`, `@returns` (including when the result is `null`) and `@throws`.
+  Lint checks that the tags match the code, and `pnpm check` fails when
+  TypeDoc finds an undocumented export or a broken link.
 - **Schemas** are written in `schemas/index.ts`. After changing one, run
   `pnpm schemas` and commit the JSON files it writes.
 - **Tests** use made-up data served by a fake `fetch`, and never touch the

@@ -3,6 +3,7 @@
  * status, or a file or release that does not exist where one is required.
  */
 export class ApiError extends Error {
+  /** Always `ApiError`. */
   override readonly name = "ApiError";
   /** The address that was requested. */
   readonly url: string;
@@ -33,6 +34,7 @@ export class ApiError extends Error {
  * weeks, or a SHA-256 that does not match the manifest.
  */
 export class FormatError extends Error {
+  /** Always `FormatError`. */
   override readonly name = "FormatError";
   /** The file's path inside its release, or from the API root. */
   readonly path: string;
