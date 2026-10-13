@@ -54,8 +54,60 @@ export interface ClientOptions {
   readonly fetch?: typeof fetch;
 }
 
-const CATALOGUE = /^catalogue(\/\d+)?\.json$/;
-const SEARCH = /^search\/index(\/\d+)?\.json$/;
+/**
+ * The fields a file split into shards divides between them, by kind. Lists
+ * are joined in shard order and maps are merged; every other field is the
+ * same in each shard. Other kinds are never split.
+ */
+const SPLIT: Readonly<Record<string, readonly string[]>> = {
+  catalogue: ["species"],
+  search: ["names"],
+  species: ["areas", "ranges"],
+  slugs: ["species", "redirects"],
+  groups: ["groups"],
+  region: ["areas"],
+  attribution: ["datasets", "record_links"],
+  backyard: ["species"],
+  sources: ["sources"],
+  boundaries: ["features"],
+  postal: ["zips"],
+  releases: ["releases"],
+  notes: ["corrections", "key_changes"],
+};
+
+/**
+ * Reads `<name>.json`, or when it is not published and its kind can be split,
+ * its shards `<name>/0.json`, `<name>/1.json` and so on, joined into one file.
+ */
+async function readSplit<File extends PublishedFile<string, unknown>>(
+  path: string,
+  kind: File["kind"],
+  read: (path: string) => Promise<File | null>,
+): Promise<File | null> {
+  const whole = await read(path);
+  const fields = SPLIT[kind];
+  if (whole || !fields) return whole;
+  const shards: File[] = [];
+  for (;;) {
+    const shard = await read(
+      `${path.slice(0, -".json".length)}/${String(shards.length)}.json`,
+    );
+    if (!shard) break;
+    shards.push(shard);
+  }
+  const [first] = shards;
+  if (!first) return null;
+  const data = { ...(first.data as Record<string, unknown>) };
+  for (const field of fields) {
+    const parts = shards.map(
+      (shard) => (shard.data as Record<string, unknown>)[field],
+    );
+    if (parts.every(Array.isArray)) data[field] = parts.flat();
+    else if (parts.every((part) => part !== null))
+      data[field] = Object.assign({}, ...parts) as unknown;
+  }
+  return { ...first, data };
+}
 
 const wait = (ms: number): Promise<void> =>
   new Promise((resolve) => setTimeout(resolve, ms));
@@ -97,11 +149,18 @@ export class Client {
 
   /** Every release and its status, from `releases.json`. */
   async releases(): Promise<ReleasesFile> {
-    return parseFile<ReleasesFile>(
+    const file = await readSplit<ReleasesFile>(
       "releases.json",
-      await this.getJson("releases.json"),
       "releases",
+      async (path) => {
+        const bytes = await this.getBytes(path);
+        return bytes === undefined
+          ? null
+          : parseFile<ReleasesFile>(path, decode(path, bytes), "releases");
+      },
     );
+    if (!file) throw this.#notFound("releases.json");
+    return file;
   }
 
   /** The licence, how to cite and credit, and the contact, from `terms.json`. */
@@ -159,13 +218,16 @@ export class Client {
   /** Fetches and parses a JSON file, throwing when it does not exist. */
   async getJson(path: string): Promise<unknown> {
     const bytes = await this.getBytes(path);
-    if (bytes === undefined)
-      throw new ApiError(
-        `Not found: ${path}`,
-        new URL(path, this.#base).href,
-        404,
-      );
+    if (bytes === undefined) throw this.#notFound(path);
     return decode(path, bytes);
+  }
+
+  #notFound(path: string): ApiError {
+    return new ApiError(
+      `Not found: ${path}`,
+      new URL(path, this.#base).href,
+      404,
+    );
   }
 }
 
@@ -205,10 +267,10 @@ export class Release {
     return this.#file<NotesFile>("notes.json", "notes");
   }
 
-  /** Every species with a result or a mapped range, from all catalogue shards. */
+  /** Every species with a result or a mapped range, from the catalogue or all its shards. */
   async catalogue(): Promise<CatalogueEntry[]> {
-    const files = await this.#shards<CatalogueFile>(CATALOGUE, "catalogue");
-    return files.flatMap((file) => [...file.data.species]);
+    const file = await this.#file<CatalogueFile>("catalogue.json", "catalogue");
+    return [...(file?.data.species ?? [])];
   }
 
   /** One species: names, classification, and every area with a result or mapped range. */
@@ -232,10 +294,10 @@ export class Release {
     return this.#file<GroupsFile>("groups.json", "groups");
   }
 
-  /** Every searchable name, from all search index shards. */
+  /** Every searchable name, from the search index or all its shards. */
   async searchNames(): Promise<SearchName[]> {
-    const files = await this.#shards<SearchFile>(SEARCH, "search");
-    return files.flatMap((file) => [...file.data.names]);
+    const file = await this.#file<SearchFile>("search/index.json", "search");
+    return [...(file?.data.names ?? [])];
   }
 
   /** A state, its counties, their species and effort. */
@@ -318,21 +380,6 @@ export class Release {
     }));
   }
 
-  /** Files listed in the manifest whose path matches, read together. */
-  async #shards<File extends PublishedFile<string, unknown>>(
-    pattern: RegExp,
-    kind: File["kind"],
-  ): Promise<File[]> {
-    const manifest = await this.manifest();
-    const files: (File | null)[] = await Promise.all(
-      manifest.data.files
-        .map((entry) => entry.path)
-        .filter((path) => pattern.test(path))
-        .map((path) => this.#file<File>(path, kind)),
-    );
-    return files.flatMap((file) => (file === null ? [] : [file]));
-  }
-
   async #result<File extends CountyResultFile | StateResultFile>(
     path: string,
     kind: File["kind"],
@@ -350,12 +397,15 @@ export class Release {
     return file;
   }
 
-  async #file<File extends PublishedFile<string, unknown>>(
+  /** A release file, joined from its shards when it is split. */
+  #file<File extends PublishedFile<string, unknown>>(
     path: string,
     kind: File["kind"],
   ): Promise<File | null> {
-    const value = await this.#read(path, this.#client.verify);
-    return value === undefined ? null : parseFile<File>(path, value, kind);
+    return readSplit<File>(path, kind, async (part) => {
+      const value = await this.#read(part, this.#client.verify);
+      return value === undefined ? null : parseFile<File>(part, value, kind);
+    });
   }
 
   /** Reads a release file once; later calls share the same result. */

@@ -1,5 +1,5 @@
 // A made-up release served by a fake fetch. Species, places and counts are invented.
-const provenance = {
+export const provenance = {
   release: "2026-01-05",
   sources: ["example"],
   licences: ["CC-BY-4.0"],
@@ -18,7 +18,8 @@ const weeks = (value: number): number[] =>
 
 export const RELEASE = "2026-01-05";
 
-const wrap = (path: string, kind: string, data: unknown) => ({
+/** Wraps data as the release file at `path`. */
+export const wrap = (path: string, kind: string, data: unknown) => ({
   id: `releases/${RELEASE}/${path}`,
   kind,
   format: `${kind}/1.0`,

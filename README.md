@@ -33,6 +33,8 @@ county)`.
   - About the release: `manifest()`, `notes()`, `methods()` and `sources()`.
 - `client.releases()` lists every release; `client.terms()` gives the licence
   and how to cite and credit the data.
+- A file split into numbered shards (`catalogue/0.json`, `catalogue/1.json`,
+  …) is read as one file, its lists joined in order.
 - Release files never change, so each is fetched at most once per client.
 - `{ verify: true }` checks every file against its SHA-256 in the release
   manifest.
