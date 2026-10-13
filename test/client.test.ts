@@ -1,6 +1,12 @@
 import { describe, expect, test } from "vitest";
 import { ApiError, createClient, FormatError } from "../src/index.ts";
-import { fakeServer, RELEASE, provenance, wrap } from "./fixture.ts";
+import {
+  fakeServer,
+  RELEASE,
+  provenance,
+  releaseFiles,
+  wrap,
+} from "./fixture.ts";
 
 const BASE = "https://example.test/";
 
@@ -539,6 +545,64 @@ describe("errors", () => {
     await expect(release.stateResult("us-zz", "EX1")).rejects.toThrow(
       /53 numbers/,
     );
+  });
+});
+
+describe("weekly lists in Backyard and region files", () => {
+  interface Data {
+    effort: number[];
+    species: [{ labels: string }];
+    areas: [{ effort: number[] }];
+  }
+  const cases: [string, string, (data: Data) => void, RegExp][] = [
+    [
+      "Backyard effort for 52 weeks",
+      "backyard/us-zz/99001.json",
+      (d) => {
+        d.effort.pop();
+      },
+      /effort must be 53 numbers/,
+    ],
+    [
+      "Backyard labels for 52 weeks",
+      "backyard/us-zz/99001.json",
+      (d) => {
+        d.species[0].labels = "n".repeat(52);
+      },
+      /species\[0\]\.labels must be 53 Backyard labels/,
+    ],
+    [
+      "an unknown Backyard label",
+      "backyard/us-zz/99001.json",
+      (d) => {
+        d.species[0].labels = `x${"n".repeat(52)}`;
+      },
+      /species\[0\]\.labels must be 53 Backyard labels/,
+    ],
+    [
+      "region effort for 52 weeks",
+      "regions/us-zz.json",
+      (d) => {
+        d.areas[0].effort.pop();
+      },
+      /areas\[0\]\.effort must be 53 numbers/,
+    ],
+  ];
+
+  test.each(cases)("rejects %s", async (_, path, change, message) => {
+    const server = await fakeServer();
+    const file = structuredClone(releaseFiles[path]) as { data: Data };
+    change(file.data);
+    server.tamper(`releases/${RELEASE}/${path}`, JSON.stringify(file));
+    const release = await createClient({
+      baseUrl: BASE,
+      fetch: server.fetch,
+    }).release();
+    const read = path.startsWith("backyard")
+      ? release.backyard("us-zz", "99001")
+      : release.region("us-zz");
+    await expect(read).rejects.toThrow(message);
+    await expect(read).rejects.toBeInstanceOf(FormatError);
   });
 });
 

@@ -1,6 +1,6 @@
 import { sha256 } from "./digest.ts";
 import { ApiError, FormatError } from "./errors.ts";
-import { checkWeeks, parseFile } from "./parse.ts";
+import { checkLabels, checkWeeks, parseFile } from "./parse.ts";
 import {
   countyCode,
   releaseId,
@@ -319,8 +319,13 @@ export class Release {
   }
 
   /** A state, its counties, their species and effort. */
-  region(state: string): Promise<RegionFile | null> {
-    return this.#file<RegionFile>(`regions/${stateCode(state)}.json`, "region");
+  async region(state: string): Promise<RegionFile | null> {
+    const path = `regions/${stateCode(state)}.json`;
+    const file = await this.#file<RegionFile>(path, "region");
+    file?.data.areas.forEach((area, i) => {
+      checkWeeks(path, `areas[${String(i)}].effort`, area.effort);
+    });
+    return file;
   }
 
   /** A species' result for a whole state, or `null` when none is published. */
@@ -356,11 +361,16 @@ export class Release {
   }
 
   /** A county's Backyard labels for every week. */
-  backyard(state: string, county: string): Promise<BackyardFile | null> {
-    return this.#file<BackyardFile>(
-      `backyard/${stateCode(state)}/${countyCode(county)}.json`,
-      "backyard",
-    );
+  async backyard(state: string, county: string): Promise<BackyardFile | null> {
+    const path = `backyard/${stateCode(state)}/${countyCode(county)}.json`;
+    const file = await this.#file<BackyardFile>(path, "backyard");
+    if (file) {
+      checkWeeks(path, "effort", file.data.effort);
+      file.data.species.forEach((species, i) => {
+        checkLabels(path, `species[${String(i)}].labels`, species.labels);
+      });
+    }
+    return file;
   }
 
   /** How results are made: the method and its numbers. */
