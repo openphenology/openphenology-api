@@ -2,6 +2,8 @@
 
 > TypeScript client for OpenPhenology's published data: when each species is recorded, week by week, in US counties and states. ESM only, no dependencies, Node.js 22+ and current browsers. Read-only; no keys or accounts. Data is published in dated releases that never change.
 
+Beta: OpenPhenology and this package are in beta; the interface may change before 1.0.0, while published file formats change only by version.
+
 Not live yet: until the first data release is published, `client.release()` rejects with `ApiError` code `not-found`, because `current.json` does not exist yet.
 
 ## Start

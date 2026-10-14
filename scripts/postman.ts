@@ -171,7 +171,9 @@ const WHOLE = new Set([
   "county-weekly",
 ]);
 
-const NOTES = `Every file OpenPhenology publishes: when each species is recorded, week by week, in US counties and states. Generated from [openphenology-api](https://github.com/openphenology/openphenology-api); see \`postman/README.md\` there.
+const NOTES = `**Beta.** OpenPhenology is in beta: requests may change before 1.0.0, while published file formats change only by version.
+
+Every file OpenPhenology publishes: when each species is recorded, week by week, in US counties and states. Generated from [openphenology-api](https://github.com/openphenology/openphenology-api); see \`postman/README.md\` there.
 
 - **No keys or accounts.** Every request is a plain \`GET\`.
 - **Releases never change.** Files under \`releases/<date>/\` stay the same for good. \`current.json\` names the current release.

@@ -1,5 +1,8 @@
 # OpenPhenology in Postman
 
+**Beta.** OpenPhenology is in beta: requests may change before 1.0.0, while
+published file formats change only by version.
+
 `openphenology.postman_collection.json` has one request for every kind of file
 OpenPhenology publishes. Each request has a description of the file, a made-up
 example response, and tests. No keys or accounts are needed. The collection is
