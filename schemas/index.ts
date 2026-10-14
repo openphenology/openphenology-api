@@ -531,15 +531,26 @@ export const schemas = {
           ),
         }),
         {
-          statuses: list(
-            object({
+          statuses: list({
+            ...object({
               list: { enum: ["usfws", "ohio"] },
               place: pattern(`^(us|${STATE})$`),
               listed_name: text,
               status: text,
               where: nullable(text),
             }),
-          ),
+            // Optional: added in species/1.6, so absent from earlier files.
+            properties: {
+              list: { enum: ["usfws", "ohio"] },
+              place: pattern(`^(us|${STATE})$`),
+              listed_name: text,
+              status: text,
+              where: nullable(text),
+              list_name: text,
+              keeper: text,
+              edition: text,
+            },
+          }),
           introductions: list(
             object({
               source: { const: "us-riis-l48-v2" },

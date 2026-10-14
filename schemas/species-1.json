@@ -586,6 +586,21 @@
                     "type": "null"
                   }
                 ]
+              },
+              "list_name": {
+                "description": "The list as the site names it, such as `Ohio's list of endangered and\nthreatened wild animals`. Added in `species/1.6`, so absent from earlier\nfiles.",
+                "type": "string",
+                "minLength": 1
+              },
+              "keeper": {
+                "description": "Who keeps the list, such as `Ohio Division of Wildlife`. Added in `species/1.6`.",
+                "type": "string",
+                "minLength": 1
+              },
+              "edition": {
+                "description": "The edition used: the month the federal list was read, such as\n`October 2026`, or the state list's own edition, such as `June 2026`.\nAdded in `species/1.6`.",
+                "type": "string",
+                "minLength": 1
               }
             }
           }
