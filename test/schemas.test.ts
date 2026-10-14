@@ -149,6 +149,30 @@ describe("schemas", () => {
     expect(errors(file)).not.toEqual([]);
   });
 
+  test("a catalogue/1.2 file needs no per-state sensitive, listed or introduced", async () => {
+    const file = structuredClone(
+      (await published()).get("releases/2026-01-05/catalogue/0.json"),
+    );
+    if (!file) throw new Error("missing fixture");
+    file.format = "catalogue/1.2";
+    const species = first(file.data.species);
+    delete species.sensitive_in;
+    delete species.listed_in;
+    delete species.introduced_in;
+    expect(errors(file)).toEqual([]);
+    file.format = "catalogue/1.3";
+    expect(errors(file)).not.toEqual([]);
+  });
+
+  test("a catalogue/1.3 file lists only state codes in its per-state fields", async () => {
+    const file = structuredClone(
+      (await published()).get("releases/2026-01-05/catalogue/0.json"),
+    );
+    if (!file) throw new Error("missing fixture");
+    first(file.data.species).listed_in = ["99001"];
+    expect(errors(file)).not.toEqual([]);
+  });
+
   test("a species/1.2 file needs no iNaturalist taxon ID", async () => {
     const file = structuredClone(
       (await published()).get("releases/2026-01-05/species/EX1.json"),
