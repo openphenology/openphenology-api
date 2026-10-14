@@ -1,7 +1,7 @@
 {
   "name": "@openphenology/api",
   "version": "0.1.0",
-  "description": "Read OpenPhenology data",
+  "description": "Read OpenPhenology data (beta)",
   "keywords": [
     "openphenology",
     "phenology",

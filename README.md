@@ -3,7 +3,8 @@
 Find out when each species is recorded, week by week, in US counties and
 states, from OpenPhenology's published data.
 
-The interface may change before 1.0.0.
+> **Beta.** OpenPhenology and this package are in beta: the interface may
+> change before 1.0.0, and published file formats change only by version.
 
 > **Not live yet.** The first data release hasn't been published, so until it
 > is, `release()` fails with an `ApiError` (status 404). Everything below works

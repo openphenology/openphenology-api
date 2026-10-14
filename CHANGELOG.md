@@ -8,6 +8,8 @@ All notable changes to this package are recorded here. The format follows
 
 ### Added
 
+- The README, `llms.txt`, the package description and the Postman
+  collection say OpenPhenology and this package are in beta.
 - Data rules `formats.md` 1.9, each readable alongside the earlier files:
   - `species/1.4` and `catalogue/1.2`: `photo`, the species' photo
     (`SpeciesPhoto`: `id`, `source`, `sizes` per Brand Guide role, `credit`,
