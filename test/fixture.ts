@@ -20,7 +20,7 @@ export const RELEASE = "2026-01-05";
 
 /** Formats the made-up release publishes at a later minor version than 1.0. */
 const MINOR: Readonly<Record<string, number>> = {
-  catalogue: 2,
+  catalogue: 3,
   species: 5,
   search: 1,
   backyard: 1,
@@ -66,6 +66,10 @@ const entry = (key: string, name: string, season: number[] = []) => ({
   states: ["us-zz"],
   seasons: { "us-zz": season },
   photo: key === "EX1" ? photo : null,
+  // Made up: no real listing is implied.
+  sensitive_in: [],
+  listed_in: key === "EX2" ? ["us-zz"] : [],
+  introduced_in: [],
 });
 
 /** Made-up records each week, rising from week 12 to a peak and falling by week 37. */

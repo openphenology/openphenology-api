@@ -246,6 +246,25 @@ export interface CatalogueEntry extends Classification {
    * Added in `catalogue/1.2`, so absent from earlier files.
    */
   readonly photo?: SpeciesPhoto | null;
+  /**
+   * The states in `states` where the species' records are sensitive because
+   * of the species itself (a government list or iNaturalist's location
+   * protection). Describes the species, never a location. Added in
+   * `catalogue/1.3`, so absent from earlier files.
+   */
+  readonly sensitive_in?: readonly Area[];
+  /**
+   * The states in `states` where one of the species' `statuses` listings
+   * applies: every state for a federal listing, its own state for a state
+   * listing. Added in `catalogue/1.3`, so absent from earlier files.
+   */
+  readonly listed_in?: readonly Area[];
+  /**
+   * The states in `states` where one of the species' `introductions`
+   * listings applies (the lower 48). Not being listed never means native.
+   * Added in `catalogue/1.3`, so absent from earlier files.
+   */
+  readonly introduced_in?: readonly Area[];
 }
 /** `catalogue.json` or one of its shards: the species with results. */
 export type CatalogueFile = PublishedFile<

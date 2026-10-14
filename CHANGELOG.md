@@ -8,6 +8,12 @@ All notable changes to this package are recorded here. The format follows
 
 ### Added
 
+- Data rules `formats.md` 1.11 (data rules 1.26): `catalogue/1.3` adds,
+  per species, `sensitive_in`, `listed_in` and `introduced_in`, the states
+  in `states` where its records are sensitive because of the species, where
+  a listing in its `statuses` applies, and where a US-RIIS listing applies.
+  They describe the species, never a location, and are absent from
+  `catalogue/1.2` and earlier files.
 - The README, `llms.txt`, the package description and the Postman
   collection say OpenPhenology and this package are in beta.
 - Data rules `formats.md` 1.9, each readable alongside the earlier files:

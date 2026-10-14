@@ -464,6 +464,9 @@ export const schemas = {
             }),
             {
               photo,
+              sensitive_in: list(state),
+              listed_in: list(state),
+              introduced_in: list(state),
               seasons: {
                 type: "object",
                 propertyNames: state,
@@ -482,6 +485,9 @@ export const schemas = {
     ),
     sinceMinor("catalogue", 1, { species: ["seasons"] }),
     sinceMinor("catalogue", 2, { species: ["photo"] }),
+    sinceMinor("catalogue", 3, {
+      species: ["sensitive_in", "listed_in", "introduced_in"],
+    }),
   ),
 
   species: withRules(

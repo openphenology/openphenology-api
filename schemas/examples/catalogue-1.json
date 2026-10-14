@@ -1,7 +1,7 @@
 {
   "id": "releases/2026-01-05/catalogue/0.json",
   "kind": "catalogue",
-  "format": "catalogue/1.2",
+  "format": "catalogue/1.3",
   "provenance": {
     "release": "2026-01-05",
     "sources": ["example"],
@@ -46,7 +46,10 @@
           "licence": "CC-BY-NC-4.0",
           "licence_url": "https://creativecommons.org/licenses/by-nc/4.0/",
           "url": "https://www.inaturalist.org/photos/900001"
-        }
+        },
+        "sensitive_in": [],
+        "listed_in": [],
+        "introduced_in": []
       }
     ]
   }
