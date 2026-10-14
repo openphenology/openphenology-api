@@ -1,4 +1,4 @@
-# @openphenology/api
+# @openphenology/api (beta)
 
 Find out when each species is recorded, week by week, in US counties and
 states, from OpenPhenology's published data.
