@@ -241,6 +241,11 @@ export interface CatalogueEntry extends Classification {
    * Added in `catalogue/1.1`, so absent from `catalogue/1.0` files.
    */
   readonly seasons?: Readonly<Record<Area, SeasonWeeks>>;
+  /**
+   * The species' photo, exactly as its species file gives it, or `null`.
+   * Added in `catalogue/1.2`, so absent from earlier files.
+   */
+  readonly photo?: SpeciesPhoto | null;
 }
 /** `catalogue.json` or one of its shards: the species with results. */
 export type CatalogueFile = PublishedFile<
@@ -317,8 +322,65 @@ export type SpeciesFile = PublishedFile<
      * `species/1.3`, so absent from earlier files.
      */
     readonly inaturalist_taxon_id?: number | null;
+    /**
+     * The species' photo, or `null` when it has none. Added in `species/1.4`,
+     * so absent from earlier files.
+     */
+    readonly photo?: SpeciesPhoto | null;
+    /**
+     * Per state with a result, the taxa below species that its records were
+     * identified to: names only, never counts, never per county. Empty when
+     * none of a state's records go below species. Added in `species/1.5`, so
+     * absent from earlier files.
+     */
+    readonly below_species?: readonly BelowSpecies[];
   }
 >;
+
+/** A Brand Guide image role that a photo is cut to. */
+export type PhotoRole =
+  "hero" | "feature" | "species" | "card" | "thumb" | "social";
+
+/**
+ * A species photo from iNaturalist, copied to OpenPhenology's own storage.
+ * Its files are at `photos/<role>/<id>-<width>.<format>` from the API root.
+ * It keeps its own licence and credit, not the release's.
+ */
+export interface SpeciesPhoto {
+  /** `inat-` and the iNaturalist photo ID. */
+  readonly id: string;
+  /** Where it was chosen from: the default photo, a taxon photo, or an observation photo. */
+  readonly source: "default" | "taxon" | "observation";
+  /** Per role the photo was cut to, the widths made, smallest first. */
+  readonly sizes: Readonly<Partial<Record<PhotoRole, readonly number[]>>>;
+  /** The credit iNaturalist gives, word for word; show it with the photo. */
+  readonly credit: string;
+  /** The licence's SPDX identifier, such as `CC-BY-NC-4.0`, or `CC0-1.0` or `PDM`. */
+  readonly licence: string;
+  /** The licence's address. */
+  readonly licence_url: string;
+  /** The photo's page on iNaturalist. */
+  readonly url: string;
+}
+
+/** The taxa below species that one state's records of a species were identified to. */
+export interface BelowSpecies {
+  /** The state's code. */
+  readonly area: Area;
+  /** Each subspecies, variety or form with at least 5 of the state's records, by scientific name. */
+  readonly taxa: readonly {
+    /** The taxon key in the shared taxonomy. */
+    readonly taxon_key: string;
+    /** The scientific name, with its rank marker, such as `subsp.`. */
+    readonly scientific_name: string;
+    /** The rank. */
+    readonly rank: "subspecies" | "variety" | "form";
+    /** The display name, or `null`. */
+    readonly common_name: string | null;
+  }[];
+  /** True when other records went below species but their taxon is not listed. */
+  readonly other_below_species: boolean;
+}
 
 /** One listing of a species, or of a subspecies or variety of it, on a government list. */
 export interface SpeciesListing {

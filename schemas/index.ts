@@ -92,6 +92,42 @@ const weekly = list(count, { minItems: 53, maxItems: 53 });
 const rangeSeasons = list({
   enum: ["year-round", "summer", "winter", "migratory", "passage"],
 });
+/** A species photo (formats.md 1.8): its sizes per Brand Guide role, credit and licence. */
+const photo: Schema = nullable(
+  object({
+    id: pattern("^inat-\\d+$"),
+    source: { enum: ["default", "taxon", "observation"] },
+    sizes: {
+      type: "object",
+      propertyNames: {
+        enum: ["hero", "feature", "species", "card", "thumb", "social"],
+      },
+      additionalProperties: list(
+        { type: "integer", minimum: 1 },
+        { minItems: 1 },
+      ),
+    },
+    credit: text,
+    licence: text,
+    licence_url: text,
+    url: text,
+  }),
+);
+/** The taxa below species that a state's records were identified to (formats.md 1.9). */
+const belowSpecies = list(
+  object({
+    area: state,
+    taxa: list(
+      object({
+        taxon_key: speciesKey,
+        scientific_name: text,
+        rank: { enum: ["subspecies", "variety", "form"] },
+        common_name: nullable(text),
+      }),
+    ),
+    other_below_species: { type: "boolean" },
+  }),
+);
 
 /** `area` is a state code when `level` is `state`, and a county's 5-digit Census code when it is `county`. */
 const areaMatchesLevel: Schema = {
@@ -427,6 +463,7 @@ export const schemas = {
               states: list(state),
             }),
             {
+              photo,
               seasons: {
                 type: "object",
                 propertyNames: state,
@@ -444,6 +481,7 @@ export const schemas = {
       }),
     ),
     sinceMinor("catalogue", 1, { species: ["seasons"] }),
+    sinceMinor("catalogue", 2, { species: ["photo"] }),
   ),
 
   species: withRules(
@@ -505,12 +543,16 @@ export const schemas = {
             }),
           ),
           inaturalist_taxon_id: nullable({ type: "integer", minimum: 1 }),
+          photo,
+          below_species: belowSpecies,
         },
       ),
     ),
     sinceMinorData("species", 1, ["statuses"]),
     sinceMinorData("species", 2, ["introductions"]),
     sinceMinorData("species", 3, ["inaturalist_taxon_id"]),
+    sinceMinorData("species", 4, ["photo"]),
+    sinceMinorData("species", 5, ["below_species"]),
   ),
 
   slugs: file(

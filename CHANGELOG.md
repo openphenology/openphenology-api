@@ -8,6 +8,13 @@ All notable changes to this package are recorded here. The format follows
 
 ### Added
 
+- Data rules `formats.md` 1.9, each readable alongside the earlier files:
+  - `species/1.4` and `catalogue/1.2`: `photo`, the species' photo
+    (`SpeciesPhoto`: `id`, `source`, `sizes` per Brand Guide role, `credit`,
+    `licence`, `licence_url`, `url`) or `null`. Photos keep their own licence.
+  - `species/1.5`: `below_species`, per state the subspecies, varieties and
+    forms its records were identified to (`BelowSpecies`), names only, and
+    `other_below_species`.
 - Data rules 1.24, each readable alongside the earlier files:
   - `species/1.3`: `inaturalist_taxon_id`, the species' iNaturalist taxon
     ID or `null`.

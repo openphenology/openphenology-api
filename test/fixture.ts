@@ -20,8 +20,8 @@ export const RELEASE = "2026-01-05";
 
 /** Formats the made-up release publishes at a later minor version than 1.0. */
 const MINOR: Readonly<Record<string, number>> = {
-  catalogue: 1,
-  species: 3,
+  catalogue: 2,
+  species: 5,
   search: 1,
   backyard: 1,
 };
@@ -44,6 +44,17 @@ const classification = {
   genus: "Exemplum",
 };
 
+/** A made-up photo: its ID, credit and page are invented. */
+const photo = {
+  id: "inat-900001",
+  source: "default",
+  sizes: { species: [480, 768], card: [320, 480, 640], thumb: [64, 96, 128] },
+  credit: "(c) Example Photographer, some rights reserved (CC BY-NC)",
+  licence: "CC-BY-NC-4.0",
+  licence_url: "https://creativecommons.org/licenses/by-nc/4.0/",
+  url: "https://www.inaturalist.org/photos/900001",
+};
+
 const entry = (key: string, name: string, season: number[] = []) => ({
   species_key: key,
   scientific_name: name,
@@ -54,6 +65,7 @@ const entry = (key: string, name: string, season: number[] = []) => ({
   slug: name.toLowerCase().replace(" ", "-"),
   states: ["us-zz"],
   seasons: { "us-zz": season },
+  photo: key === "EX1" ? photo : null,
 });
 
 /** Made-up records each week, rising from week 12 to a peak and falling by week 37. */
@@ -145,6 +157,21 @@ const files: [string, string, unknown][] = [
         },
       ],
       inaturalist_taxon_id: 900001,
+      photo,
+      below_species: [
+        {
+          area: "us-zz",
+          taxa: [
+            {
+              taxon_key: "EX1A",
+              scientific_name: "Exemplum primum subsp. alpha",
+              rank: "subspecies",
+              common_name: null,
+            },
+          ],
+          other_below_species: true,
+        },
+      ],
     },
   ],
   [

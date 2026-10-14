@@ -1,7 +1,7 @@
 {
   "id": "releases/2026-01-05/catalogue/0.json",
   "kind": "catalogue",
-  "format": "catalogue/1.1",
+  "format": "catalogue/1.2",
   "provenance": {
     "release": "2026-01-05",
     "sources": ["example"],
@@ -33,6 +33,19 @@
         "states": ["us-zz"],
         "seasons": {
           "us-zz": [14, 22, 35]
+        },
+        "photo": {
+          "id": "inat-900001",
+          "source": "default",
+          "sizes": {
+            "species": [480, 768],
+            "card": [320, 480, 640],
+            "thumb": [64, 96, 128]
+          },
+          "credit": "(c) Example Photographer, some rights reserved (CC BY-NC)",
+          "licence": "CC-BY-NC-4.0",
+          "licence_url": "https://creativecommons.org/licenses/by-nc/4.0/",
+          "url": "https://www.inaturalist.org/photos/900001"
         }
       }
     ]
