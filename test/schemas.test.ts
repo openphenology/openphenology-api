@@ -108,6 +108,47 @@ describe("schemas", () => {
     expect(errors(file)).toEqual([]);
   });
 
+  test("a species/1.4 file needs no finer identifications, and 1.3 no photo", async () => {
+    const file = structuredClone(
+      (await published()).get("releases/2026-01-05/species/EX1.json"),
+    );
+    if (!file) throw new Error("missing fixture");
+    file.format = "species/1.4";
+    delete file.data.below_species;
+    expect(errors(file)).toEqual([]);
+    file.format = "species/1.3";
+    delete file.data.photo;
+    expect(errors(file)).toEqual([]);
+    file.format = "species/1.5";
+    expect(errors(file)).not.toEqual([]);
+  });
+
+  test("a species photo and finer identification must be well formed", async () => {
+    const file = structuredClone(
+      (await published()).get("releases/2026-01-05/species/EX1.json"),
+    );
+    if (!file) throw new Error("missing fixture");
+    file.data.photo = null;
+    expect(errors(file)).toEqual([]);
+    file.data.photo = { id: "not-a-photo" };
+    expect(errors(file)).not.toEqual([]);
+    file.data.photo = null;
+    first(first(file.data.below_species).taxa).rank = "species";
+    expect(errors(file)).not.toEqual([]);
+  });
+
+  test("a catalogue/1.1 file needs no photo", async () => {
+    const file = structuredClone(
+      (await published()).get("releases/2026-01-05/catalogue/0.json"),
+    );
+    if (!file) throw new Error("missing fixture");
+    file.format = "catalogue/1.1";
+    delete first(file.data.species).photo;
+    expect(errors(file)).toEqual([]);
+    file.format = "catalogue/1.2";
+    expect(errors(file)).not.toEqual([]);
+  });
+
   test("a species/1.2 file needs no iNaturalist taxon ID", async () => {
     const file = structuredClone(
       (await published()).get("releases/2026-01-05/species/EX1.json"),

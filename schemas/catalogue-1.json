@@ -306,6 +306,83 @@
                   "pattern": "^[a-z]{2}-[a-z0-9]{1,3}$"
                 }
               },
+              "photo": {
+                "description": "The species' photo, exactly as its species file gives it, or `null`.\nAdded in `catalogue/1.2`, so absent from earlier files.",
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "required": [
+                      "id",
+                      "source",
+                      "sizes",
+                      "credit",
+                      "licence",
+                      "licence_url",
+                      "url"
+                    ],
+                    "properties": {
+                      "id": {
+                        "description": "`inat-` and the iNaturalist photo ID.",
+                        "type": "string",
+                        "pattern": "^inat-\\d+$"
+                      },
+                      "source": {
+                        "description": "Where it was chosen from: the default photo, a taxon photo, or an observation photo.",
+                        "enum": [
+                          "default",
+                          "taxon",
+                          "observation"
+                        ]
+                      },
+                      "sizes": {
+                        "description": "Per role the photo was cut to, the widths made, smallest first.",
+                        "type": "object",
+                        "propertyNames": {
+                          "enum": [
+                            "hero",
+                            "feature",
+                            "species",
+                            "card",
+                            "thumb",
+                            "social"
+                          ]
+                        },
+                        "additionalProperties": {
+                          "type": "array",
+                          "items": {
+                            "type": "integer",
+                            "minimum": 1
+                          },
+                          "minItems": 1
+                        }
+                      },
+                      "credit": {
+                        "description": "The credit iNaturalist gives, word for word; show it with the photo.",
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "licence": {
+                        "description": "The licence's SPDX identifier, such as `CC-BY-NC-4.0`, or `CC0-1.0` or `PDM`.",
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "licence_url": {
+                        "description": "The licence's address.",
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "url": {
+                        "description": "The photo's page on iNaturalist.",
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    }
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
               "seasons": {
                 "description": "Each state in `states` with its season weeks, exactly as the species file\ngives them; empty when the species file has none or withholds them.\nAdded in `catalogue/1.1`, so absent from `catalogue/1.0` files.",
                 "type": "object",
@@ -366,6 +443,41 @@
                   },
                   "required": [
                     "seasons"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "type": "object",
+        "properties": {
+          "format": {
+            "enum": [
+              "catalogue/1.0",
+              "catalogue/1.1"
+            ]
+          }
+        }
+      },
+      "else": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "object",
+            "properties": {
+              "species": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "photo": true
+                  },
+                  "required": [
+                    "photo"
                   ]
                 }
               }
