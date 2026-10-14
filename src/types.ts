@@ -413,6 +413,20 @@ export interface SpeciesListing {
   readonly status: string;
   /** The federal list's own description of where the listing applies, such as `Wherever found`; `null` for a state list. */
   readonly where: string | null;
+  /**
+   * The list as the site names it, such as `Ohio's list of endangered and
+   * threatened wild animals`. Added in `species/1.6`, so absent from earlier
+   * files.
+   */
+  readonly list_name?: string;
+  /** Who keeps the list, such as `Ohio Division of Wildlife`. Added in `species/1.6`. */
+  readonly keeper?: string;
+  /**
+   * The edition used: the month the federal list was read, such as
+   * `October 2026`, or the state list's own edition, such as `June 2026`.
+   * Added in `species/1.6`.
+   */
+  readonly edition?: string;
 }
 
 /** One US-RIIS listing of a species, or of a subspecies or variety of it. */
