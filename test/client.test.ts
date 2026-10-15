@@ -192,7 +192,7 @@ describe("files", () => {
     expect((await release.methods())?.data.method).toBe("test-1");
     expect((await release.sources())?.data.sources[0]?.source).toBe("example");
     expect((await client.releases()).data.releases[0]?.status).toBe("current");
-    expect((await client.terms()).data.licence).toBe("CC-BY-4.0");
+    expect((await client.terms()).data.licence).toBe("CC-BY-NC-4.0");
   });
 
   test("reads attribution and Backyard labels", async () => {

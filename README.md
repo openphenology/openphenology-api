@@ -178,7 +178,7 @@ try {
 
 ## Citing the data
 
-The data is licensed CC BY 4.0. `client.terms()` says how to cite it, and
+The data is licensed CC BY-NC 4.0, for noncommercial use. `client.terms()` says how to cite it, and
 `release.attribution(...)` lists the sources behind each result.
 
 ## JSON Schemas

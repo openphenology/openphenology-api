@@ -54,4 +54,4 @@ such file in this release.
 npx newman run https://raw.githubusercontent.com/openphenology/openphenology-api/main/postman/openphenology.postman_collection.json
 ```
 
-The data is licensed CC BY 4.0. **1. Start here › Terms** says how to cite it.
+The data is licensed CC BY-NC 4.0, for noncommercial use. **1. Start here › Terms** says how to cite it.

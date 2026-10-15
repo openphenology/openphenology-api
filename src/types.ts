@@ -107,7 +107,7 @@ export type ReleasesFile = PublishedFile<
 export type TermsFile = PublishedFile<
   "terms",
   {
-    /** The licence of the outputs: `CC-BY-4.0`. */
+    /** The licence of the outputs: `CC-BY-NC-4.0` (ODR-2026-021). */
     readonly licence: string;
     /** Where the licence is published. */
     readonly licence_url: string;
