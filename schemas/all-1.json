@@ -578,7 +578,7 @@
         ],
         "properties": {
           "licence": {
-            "description": "The licence of the outputs: `CC-BY-4.0`.",
+            "description": "The licence of the outputs: `CC-BY-NC-4.0` (ODR-2026-021).",
             "type": "string",
             "minLength": 1
           },

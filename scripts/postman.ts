@@ -179,7 +179,7 @@ Every file OpenPhenology publishes: when each species is recorded, week by week,
 - **Releases never change.** Files under \`releases/<date>/\` stay the same for good. \`current.json\` names the current release.
 - **A 404 means the file isn't published**: the species, county or state has no such file in this release.
 - **Large files are split into shards.** When a file is too large, it is published as \`<name>/0.json\`, \`<name>/1.json\` and so on, and the unsplit file is not published. The Catalogue's saved example is shard 0. Each request's test checks shard 0 when the unsplit file isn't there.
-- **Licence:** CC BY 4.0. \`terms.json\` says how to cite the data and credit its sources.
+- **Licence:** CC BY-NC 4.0, for noncommercial use. \`terms.json\` says how to cite the data and credit its sources.
 
 **Variables.** \`baseUrl\` is the API. \`release\`, \`state\`, \`county\`, \`species\` and \`zip\` start with made-up but valid values. Run the collection from the top and it fills in \`release\` and \`species\` itself.
 

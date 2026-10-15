@@ -460,8 +460,8 @@ export async function fakeServer(): Promise<FakeServer> {
       format: "terms/1.1",
       provenance,
       data: {
-        licence: "CC-BY-4.0",
-        licence_url: "https://creativecommons.org/licenses/by/4.0/",
+        licence: "CC-BY-NC-4.0",
+        licence_url: "https://creativecommons.org/licenses/by-nc/4.0/",
         scope: "Made up.",
         cite: "Made up.",
         credit: "Made up.",
