@@ -4,8 +4,15 @@
 import { FormatError, type FormatErrorCode } from "./errors.ts";
 import { WEEKS, type PublishedFile } from "./types.ts";
 
-/** Format major versions this package reads. */
-const SUPPORTED_MAJOR = 1;
+/**
+ * Format major versions this package reads, by kind: 1, and for `manifest`
+ * also 2, which may be split into parts (data rules 1.30).
+ *
+ * @param kind The file's kind.
+ * @returns The major versions read.
+ */
+const supported = (kind: string): readonly number[] =>
+  kind === "manifest" ? [1, 2] : [1];
 
 type Json = Record<string, unknown>;
 
@@ -42,7 +49,7 @@ function fail(
  * @param kind The kind the file must be.
  * @returns The file, typed as its format.
  * @throws {FormatError} When the wrapper is incomplete, the kind differs or
- *   the major version is not 1.
+ *   the major version is not one this package reads.
  */
 export function parseFile<File extends PublishedFile<string, unknown>>(
   path: string,
@@ -59,7 +66,7 @@ export function parseFile<File extends PublishedFile<string, unknown>>(
       ? /^[a-z-]+\/(\d+)\.\d+$/.exec(value.format)
       : null;
   if (!format) fail(path, "missing or malformed format");
-  if (Number(format[1]) !== SUPPORTED_MAJOR) {
+  if (!supported(kind).includes(Number(format[1]))) {
     fail(
       path,
       `format ${String(value.format)} is not supported by this version of @openphenology/api`,

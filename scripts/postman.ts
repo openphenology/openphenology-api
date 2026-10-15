@@ -7,7 +7,7 @@
 // Apache-2.0, kept in scripts/ so the check needs no network).
 import { readFileSync, writeFileSync } from "node:fs";
 import ajvDraft04 from "ajv-draft-04";
-import { MAJOR, schemas } from "../schemas/index.ts";
+import { majorOf, schemas } from "../schemas/index.ts";
 
 const COLLECTION = "postman/openphenology.postman_collection.json";
 
@@ -190,7 +190,10 @@ const SANDBOX = readFileSync("scripts/postman-sandbox.js", "utf8");
 const lines = (text: string): string[] => text.split("\n");
 
 const example = (kind: string): string =>
-  readFileSync(`schemas/examples/${kind}-${String(MAJOR)}.json`, "utf8");
+  readFileSync(
+    `schemas/examples/${kind}-${String(majorOf(kind))}.json`,
+    "utf8",
+  );
 
 function item(request: Request) {
   const description = schemas[request.kind].description as string;
@@ -202,12 +205,13 @@ function item(request: Request) {
   const docs = [
     description,
     "",
-    `Path: \`${request.path}\`. Format: \`${request.kind}/${String(MAJOR)}\`, schema \`schemas/${request.kind}-${String(MAJOR)}.json\`.`,
+    `Path: \`${request.path}\`. Format: \`${request.kind}/${String(majorOf(request.kind))}\`, schema \`schemas/${request.kind}-${String(majorOf(request.kind))}.json\`.`,
     ...(request.codes ?? []).map((code) => `- ${code}`),
     ...(request.savesNote === undefined ? [] : ["", request.savesNote]),
   ];
   const test = [
     `const KIND = ${JSON.stringify(request.kind)};`,
+    `const MAJOR = ${String(majorOf(request.kind))};`,
     `const SPLIT = ${String(!WHOLE.has(request.kind))};`,
     "function saved(file) {",
     ...(request.saves === undefined
@@ -267,7 +271,7 @@ function collection() {
       {
         name: "6. Schemas",
         description:
-          "The JSON Schema for each format, as each release copies it from this package. Set `file` in Params to another `<kind>-1.json`.",
+          "The JSON Schema for each format, as each release copies it from this package. Set `file` in Params to another `<kind>-<major>.json`.",
         item: [
           {
             name: "Schema",
@@ -297,7 +301,7 @@ function collection() {
                 variable: [
                   {
                     key: "file",
-                    value: `catalogue-${String(MAJOR)}.json`,
+                    value: `catalogue-${String(majorOf("catalogue"))}.json`,
                     description: "`<kind>-<major>.json`",
                   },
                 ],

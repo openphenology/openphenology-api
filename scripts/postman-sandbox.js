@@ -1,11 +1,9 @@
 // The test every request in the Postman collection runs, in Postman's script
-// sandbox. scripts/postman.ts puts it after each request's `KIND`, `SPLIT`
+// sandbox. scripts/postman.ts puts it after each request's `KIND`, `MAJOR`, `SPLIT`
 // and `saved(file)`, which saves values for later requests. It checks that
 // the file loads, is the expected kind and major format version, and matches
 // its JSON Schema, which it reads from the release's schemas/ folder. A file
 // split into shards is checked through its first shard.
-
-const MAJOR = 1;
 
 /**
  * Postman's validator reads JSON Schema draft-07, and these schemas are

@@ -1,6 +1,6 @@
 import { Ajv2020 } from "ajv/dist/2020.js";
 import { describe, expect, test } from "vitest";
-import { MAJOR, schemas } from "../schemas/index.ts";
+import { majorOf, schemas } from "../schemas/index.ts";
 import { fakeServer } from "./fixture.ts";
 
 interface Published {
@@ -53,7 +53,9 @@ describe("schemas", () => {
 
   test("each schema names its kind and major version", () => {
     for (const [kind, schema] of Object.entries(schemas)) {
-      expect(schema.title).toBe(`OpenPhenology ${kind}/${String(MAJOR)}`);
+      expect(schema.title).toBe(
+        `OpenPhenology ${kind}/${String(majorOf(kind))}`,
+      );
     }
   });
 

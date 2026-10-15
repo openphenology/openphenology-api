@@ -391,6 +391,8 @@ export class Release {
   readonly id: string;
   readonly #client: Client;
   readonly #files = new Map<string, Promise<unknown>>();
+  /** The joined manifest, read once; a failure is not kept. */
+  #manifest: Promise<ManifestFile> | undefined;
 
   /**
    * @param client The client that reads its files.
@@ -411,10 +413,55 @@ export class Release {
    *   or the request fails.
    */
   manifest(): Promise<ManifestFile> {
-    return this.#read("manifest.json", false).then((value) => {
-      if (value === undefined) throw this.unavailable("manifest.json");
-      return parseFile<ManifestFile>("manifest.json", value, "manifest");
-    });
+    if (!this.#manifest) {
+      const manifest = this.#joinManifest();
+      this.#manifest = manifest;
+      manifest.catch(() => {
+        if (this.#manifest === manifest) this.#manifest = undefined;
+      });
+    }
+    return this.#manifest;
+  }
+
+  /**
+   * Reads the manifest and, from `manifest/2.0`, its other parts,
+   * `manifest/1.json` to `manifest/<parts - 1>.json`, joining their `files`.
+   *
+   * @returns The whole manifest.
+   * @throws {ApiError} When the release is not available.
+   * @throws {FormatError} When a part is missing or malformed.
+   */
+  async #joinManifest(): Promise<ManifestFile> {
+    const value = await this.#read("manifest.json", false);
+    if (value === undefined) throw this.unavailable("manifest.json");
+    const first = parseFile<ManifestFile>("manifest.json", value, "manifest");
+    const parts = first.data.parts ?? 1;
+    if (!Number.isInteger(parts) || parts < 1) {
+      throw new FormatError(
+        "malformed",
+        "manifest.json: parts must be a whole number from 1",
+        "manifest.json",
+      );
+    }
+    if (parts === 1) return first;
+    const rest = await Promise.all(
+      Array.from({ length: parts - 1 }, async (_, i) => {
+        const path = `manifest/${String(i + 1)}.json`;
+        const part = await this.#read(path, false);
+        if (part === undefined) {
+          throw new FormatError(
+            "malformed",
+            `${path}: missing part ${String(i + 2)} of ${String(parts)}`,
+            path,
+          );
+        }
+        return parseFile<ManifestFile>(path, part, "manifest").data.files;
+      }),
+    );
+    return {
+      ...first,
+      data: { ...first.data, files: [...first.data.files, ...rest.flat()] },
+    };
   }
 
   /**

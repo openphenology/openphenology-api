@@ -471,6 +471,118 @@ describe("verification", () => {
   });
 });
 
+describe("manifest parts", () => {
+  const MANIFEST = `releases/${RELEASE}/manifest.json`;
+
+  /** Splits the served manifest into `parts` parts, as manifest/2.0 allows. */
+  async function split(parts: number) {
+    const server = await fakeServer();
+    const manifest = JSON.parse(server.files.get(MANIFEST) ?? "") as {
+      data: { files: { path: string }[] };
+    };
+    const files = manifest.data.files;
+    const size = Math.ceil(files.length / parts);
+    for (let n = 0; n < parts; n++) {
+      const path = n === 0 ? "manifest.json" : `manifest/${String(n)}.json`;
+      server.tamper(
+        `releases/${RELEASE}/${path}`,
+        JSON.stringify({
+          ...manifest,
+          id: `releases/${RELEASE}/${path}`,
+          data: {
+            ...manifest.data,
+            parts,
+            files: files.slice(n * size, (n + 1) * size),
+          },
+        }),
+      );
+    }
+    return { server, files };
+  }
+
+  test("joins every part's files", async () => {
+    const { server, files } = await split(3);
+    const release = await createClient({
+      baseUrl: BASE,
+      fetch: server.fetch,
+    }).release();
+    const manifest = await release.manifest();
+    expect(manifest.data.parts).toBe(3);
+    expect(manifest.data.files.map((f) => f.path)).toEqual(
+      files.map((f) => f.path),
+    );
+    await release.manifest();
+    expect(server.requests.filter((p) => p.includes("/manifest")).length).toBe(
+      3,
+    );
+  });
+
+  test("verifies a file listed in a later part", async () => {
+    const { server, files } = await split(3);
+    const last = files.at(-2)?.path ?? "";
+    expect(last).not.toBe("");
+    const release = await createClient({
+      baseUrl: BASE,
+      fetch: server.fetch,
+      verify: true,
+    }).release();
+    expect(await release.stateResult("us-zz", "EX1")).not.toBeNull();
+    expect(
+      (await release.manifest()).data.files.some((f) => f.path === last),
+    ).toBe(true);
+  });
+
+  test("a missing part is a FormatError", async () => {
+    const { server } = await split(2);
+    server.failNext(`releases/${RELEASE}/manifest/1.json`, 404);
+    const release = await createClient({
+      baseUrl: BASE,
+      fetch: server.fetch,
+    }).release();
+    await expect(release.manifest()).rejects.toMatchObject({
+      name: "FormatError",
+      code: "malformed",
+      path: "manifest/1.json",
+    });
+  });
+
+  test("reads a manifest/1.0, which has no parts", async () => {
+    const server = await fakeServer();
+    const manifest = JSON.parse(server.files.get(MANIFEST) ?? "") as {
+      data: Record<string, unknown>;
+    };
+    const data = { ...manifest.data };
+    delete data.parts;
+    server.tamper(
+      MANIFEST,
+      JSON.stringify({ ...manifest, format: "manifest/1.0", data }),
+    );
+    const release = await createClient({
+      baseUrl: BASE,
+      fetch: server.fetch,
+    }).release();
+    const read = await release.manifest();
+    expect(read.data.parts).toBeUndefined();
+    expect(read.data.files.length).toBeGreaterThan(0);
+  });
+
+  test("refuses a manifest/3.0", async () => {
+    const server = await fakeServer();
+    const manifest = JSON.parse(server.files.get(MANIFEST) ?? "") as object;
+    server.tamper(
+      MANIFEST,
+      JSON.stringify({ ...manifest, format: "manifest/3.0" }),
+    );
+    const release = await createClient({
+      baseUrl: BASE,
+      fetch: server.fetch,
+    }).release();
+    await expect(release.manifest()).rejects.toMatchObject({
+      code: "unsupported-version",
+    });
+  });
+});
+
 describe("errors", () => {
   test("retries a 503, then succeeds", async () => {
     const server = await fakeServer();

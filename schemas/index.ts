@@ -1,5 +1,6 @@
 // The source of the JSON Schemas in this folder. `pnpm schemas` writes them as
-// `<kind>-1.json`; `pnpm schemas:check` fails when the files are out of date.
+// `<kind>-<major>.json`; `pnpm schemas:check` fails when the files are out of
+// date.
 import type {
   AttributionFile,
   BackyardFile,
@@ -22,7 +23,7 @@ import type {
   TermsFile,
 } from "../src/types.ts";
 
-type Kind = (
+export type Kind = (
   | AttributionFile
   | BackyardFile
   | BoundariesFile
@@ -46,8 +47,11 @@ type Kind = (
 
 export type Schema = Readonly<Record<string, unknown>>;
 
-/** The major format version these schemas describe. */
-export const MAJOR = 1;
+/**
+ * The major format version these schemas describe, by kind: 1, except
+ * `manifest/2.0` (data rules 1.30), which may be split into parts.
+ */
+export const majorOf = (kind: string): number => (kind === "manifest" ? 2 : 1);
 
 const string: Schema = { type: "string" };
 const text: Schema = { type: "string", minLength: 1 };
@@ -261,7 +265,7 @@ const sinceMinor = (
       format: {
         enum: Array.from(
           { length: minor },
-          (_, earlier) => `${kind}/${String(MAJOR)}.${String(earlier)}`,
+          (_, earlier) => `${kind}/${String(majorOf(kind))}.${String(earlier)}`,
         ),
       },
     },
@@ -304,7 +308,7 @@ const sinceMinorData = (
       format: {
         enum: Array.from(
           { length: minor },
-          (_, earlier) => `${kind}/${String(MAJOR)}.${String(earlier)}`,
+          (_, earlier) => `${kind}/${String(majorOf(kind))}.${String(earlier)}`,
         ),
       },
     },
@@ -348,13 +352,13 @@ const paths: Record<Kind, string> = {
 /** Wraps a format's `data` in the fields every published file shares. */
 const file = (kind: Kind, description: string, data: Schema): Schema => ({
   $schema: "https://json-schema.org/draft/2020-12/schema",
-  title: `OpenPhenology ${kind}/${String(MAJOR)}`,
+  title: `OpenPhenology ${kind}/${String(majorOf(kind))}`,
   description,
   ...object({
     // The file's path; a shard of `<name>.json` is `<name>/<n>.json`.
     id: pattern(`^${paths[kind]}(/\\d+)?\\.json$`),
     kind: { const: kind },
-    format: pattern(`^${kind}/${String(MAJOR)}\\.\\d+$`),
+    format: pattern(`^${kind}/${String(majorOf(kind))}\\.\\d+$`),
     provenance,
     data,
   }),
@@ -406,10 +410,11 @@ export const schemas = {
 
   manifest: file(
     "manifest",
-    "Every file in a release, with its SHA-256, size and format.",
+    "Every file in a release, with its SHA-256, size and format. A large manifest is split on `files`: its first part is always `manifest.json`, then `manifest/1.json` and so on.",
     object({
       release: date,
       published_at: time,
+      parts: { type: "integer", minimum: 1 },
       files: list(
         object(
           {

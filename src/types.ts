@@ -141,7 +141,12 @@ export interface ManifestEntry {
   /** Its size in bytes, uncompressed. */
   readonly bytes: number;
 }
-/** `manifest.json`: every file in a release, and the release's counts. */
+/**
+ * `manifest.json`: every file in a release, and the release's counts. From
+ * `manifest/2.0` a large manifest is split on `files`: its first part stays at
+ * `manifest.json`, then `manifest/1.json` and so on. `Release.manifest()`
+ * joins the parts, so `files` is always complete.
+ */
 export type ManifestFile = PublishedFile<
   "manifest",
   {
@@ -149,6 +154,11 @@ export type ManifestFile = PublishedFile<
     readonly release: string;
     /** When it was published, `YYYY-MM-DDTHH:MM:SSZ`. */
     readonly published_at: string;
+    /**
+     * How many parts the published manifest has, `1` when it is not split;
+     * absent before `manifest/2.0`.
+     */
+    readonly parts?: number;
     /** Every file in the release. */
     readonly files: readonly ManifestEntry[];
     /** How much the release holds. */

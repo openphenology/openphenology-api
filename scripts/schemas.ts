@@ -1,11 +1,11 @@
 // Writes each JSON Schema to schemas/<kind>-<major>.json, with its fields
-// described from src/types.ts, all of them by kind to schemas/all-<major>.json,
+// described from src/types.ts, all of them by kind to schemas/all-1.json,
 // and one made-up example file per format to
 // schemas/examples/<kind>-<major>.json. With --check, fails instead when a
 // file is missing, out of date or no longer has a source.
 import { mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { Ajv2020 } from "ajv/dist/2020.js";
-import { MAJOR, schemas } from "../schemas/index.ts";
+import { majorOf, schemas } from "../schemas/index.ts";
 import { fakeServer } from "../test/fixture.ts";
 import { describe } from "./describe.ts";
 
@@ -31,7 +31,7 @@ function pretty(value: unknown, indent = ""): string {
   return JSON.stringify(value);
 }
 
-const name = (kind: string) => `${kind}-${String(MAJOR)}.json`;
+const name = (kind: string) => `${kind}-${String(majorOf(kind))}.json`;
 const wanted = new Map<string, string>();
 for (const [kind, schema] of Object.entries(schemas))
   wanted.set(
@@ -45,10 +45,9 @@ for (const kind of Object.keys(schemas)) {
   const body = wanted.get(`schemas/${name(kind)}`);
   if (body !== undefined) all[kind] = JSON.parse(body);
 }
-wanted.set(
-  `schemas/all-${String(MAJOR)}.json`,
-  `${JSON.stringify(all, null, 2)}\n`,
-);
+// Its name stays all-1.json, where readers already find it, although
+// manifest's entry is manifest-2.json.
+wanted.set("schemas/all-1.json", `${JSON.stringify(all, null, 2)}\n`);
 
 // The first made-up file of each kind in the test release.
 const server = await fakeServer();

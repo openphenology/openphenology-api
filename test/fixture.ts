@@ -406,11 +406,12 @@ export async function fakeServer(): Promise<FakeServer> {
     JSON.stringify({
       id: `releases/${RELEASE}/manifest.json`,
       kind: "manifest",
-      format: "manifest/1.0",
+      format: "manifest/2.0",
       provenance,
       data: {
         release: RELEASE,
         published_at: `${RELEASE}T06:00:00Z`,
+        parts: 1,
         files: entries,
         counts: {
           species: 2,
