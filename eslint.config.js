@@ -84,6 +84,7 @@ export default tseslint.config(
         pm: "readonly",
         require: "readonly",
         KIND: "readonly",
+        MAJOR: "readonly",
         SPLIT: "readonly",
         saved: "readonly",
       },

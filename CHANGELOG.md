@@ -8,6 +8,13 @@ All notable changes to this package are recorded here. The format follows
 
 ### Added
 
+- Data rules 1.30 (`formats.md` 1.13): `manifest/2.0`. A manifest larger
+  than 500 KB is split on `files`; its first part stays at `manifest.json`,
+  then `manifest/1.json` and so on, and `parts` says how many there are.
+  `Release.manifest()` reads every part and joins `files`, so verification
+  finds files listed in any part. `manifest/1.0` files, which have no
+  `parts`, are still read. The schema is now `schemas/manifest-2.json`;
+  `manifest-1.json` is gone. Other formats stay at major version 1.
 - Data rules `formats.md` 1.11 (data rules 1.26): `catalogue/1.3` adds,
   per species, `sensitive_in`, `listed_in` and `introduced_in`, the states
   in `states` where its records are sensitive because of the species, where
