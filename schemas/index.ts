@@ -84,6 +84,7 @@ const date = pattern("^\\d{4}-\\d{2}-\\d{2}$");
 const clock = pattern("^([01]\\d|2[0-3]):[0-5]\\d$");
 /** A temperature in °C, to one decimal. */
 const celsius: Schema = { type: "number" };
+const percent: Schema = { type: "number", minimum: 0, maximum: 100 };
 const time = pattern("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$");
 const STATE = "[a-z]{2}-[a-z0-9]{1,3}";
 const COUNTY = "\\d{5}";
@@ -253,6 +254,29 @@ const windows: Schema = nullable(
     { minItems: 2, maxItems: 2 },
   ),
 );
+
+/**
+ * A flowering, fruiting, adult or larva result (data rules `seasonal.md`):
+ * the season method on the records that show the stage, or `null` where the
+ * stage does not apply. `windows` was added in species/1.9.
+ */
+const stageResult: Schema = nullable({
+  ...object(
+    {
+      records: count,
+      season,
+      season_withheld: windowWithheld,
+    },
+    floweringMatchesWithheld,
+    windowsOnlyForTwoSeasons,
+  ),
+  properties: {
+    records: count,
+    season,
+    season_withheld: windowWithheld,
+    windows,
+  },
+});
 
 const classification = {
   kingdom: nullable(string),
@@ -586,8 +610,9 @@ export const schemas = {
               windowsOnlyForTwoSeasons,
             ),
             // Optional: `conditions` added in species/1.7, `flowering` in
-            // species/1.8, `windows` in species/1.9, and `record_dates` and
-            // `latest_month` in species/1.10, so absent from earlier files.
+            // species/1.8, `windows` in species/1.9, `record_dates` and
+            // `latest_month` in species/1.10, and `fruiting`, `adult` and
+            // `larva` in species/1.11, so absent from earlier files.
             properties: {
               area,
               level: { enum: ["state", "county"] },
@@ -604,24 +629,10 @@ export const schemas = {
                 midpoint: nullable(celsius),
               }),
               windows,
-              flowering: nullable({
-                ...object(
-                  {
-                    records: count,
-                    season,
-                    season_withheld: windowWithheld,
-                  },
-                  floweringMatchesWithheld,
-                  windowsOnlyForTwoSeasons,
-                ),
-                // Optional: added in species/1.9.
-                properties: {
-                  records: count,
-                  season,
-                  season_withheld: windowWithheld,
-                  windows,
-                },
-              }),
+              flowering: stageResult,
+              fruiting: stageResult,
+              adult: stageResult,
+              larva: stageResult,
             },
           }),
           ranges: list(
@@ -740,7 +751,8 @@ export const schemas = {
           areaMatchesLevel,
         ),
         // Optional: `ecoregions` added in region/1.1, `daylight` in
-        // region/1.2 and `temperature` in region/1.3, so absent from earlier
+        // region/1.2, `temperature` in region/1.3 and `precipitation`,
+        // `land_cover` and `elevation` in region/1.4, so absent from earlier
         // files.
         properties: {
           area,
@@ -768,6 +780,44 @@ export const schemas = {
             minItems: 53,
             maxItems: 53,
           }),
+          precipitation: list(nullable({ type: "number", minimum: 0 }), {
+            minItems: 53,
+            maxItems: 53,
+          }),
+          land_cover: nullable(
+            object({
+              year: { type: "integer", minimum: 1985 },
+              groups: list(
+                object({
+                  group: {
+                    enum: [
+                      "forest",
+                      "farmland",
+                      "developed",
+                      "wetland",
+                      "grassland-shrub",
+                      "barren",
+                    ],
+                  },
+                  share: percent,
+                }),
+              ),
+              classes: list(
+                object({
+                  class: { type: "integer", minimum: 11, maximum: 95 },
+                  share: percent,
+                }),
+              ),
+              water: percent,
+            }),
+          ),
+          elevation: nullable(
+            object({
+              min: { type: "integer" },
+              median: { type: "integer" },
+              max: { type: "integer" },
+            }),
+          ),
         },
       }),
     }),

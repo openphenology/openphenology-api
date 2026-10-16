@@ -21,7 +21,7 @@ export const RELEASE = "2026-01-05";
 /** Formats the made-up release publishes at a later minor version than 1.0. */
 const MINOR: Readonly<Record<string, number>> = {
   catalogue: 3,
-  species: 5,
+  species: 11,
   search: 1,
   backyard: 1,
 };
@@ -148,6 +148,9 @@ const files: [string, string, unknown][] = [
             midpoint: 20,
           },
           flowering: null,
+          fruiting: null,
+          adult: null,
+          larva: null,
         },
       ],
       ranges: [],

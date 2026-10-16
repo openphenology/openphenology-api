@@ -358,6 +358,25 @@ export type SpeciesFile = PublishedFile<
        * `species/1.8`, so absent from earlier files.
        */
       readonly flowering?: Flowering | null;
+      /**
+       * For a plant, the result from its records that show fruit
+       * (ODR-2026-032); `null` for a species that is not a plant. Added in
+       * `species/1.11`, so absent from earlier files.
+       */
+      readonly fruiting?: Flowering | null;
+      /**
+       * For an insect, the result from its records annotated as an adult
+       * (ODR-2026-032); `null` for a species that is not an insect. Added in
+       * `species/1.11`, so absent from earlier files.
+       */
+      readonly adult?: Flowering | null;
+      /**
+       * For an insect, the result from its records annotated as a larva
+       * (ODR-2026-032); `null` for a species that is not an insect. Pages say
+       * "reported as a caterpillar" for butterflies and moths. Added in
+       * `species/1.11`, so absent from earlier files.
+       */
+      readonly larva?: Flowering | null;
     }[];
     /** Every area within its mapped range. */
     readonly ranges: readonly {
@@ -476,10 +495,13 @@ export interface SpeciesListing {
 }
 
 /**
- * A plant's flowering result in one area (data rules `seasonal.md`, Flowering
- * results): when people recorded it with flowers showing and annotated, not
- * when it flowers. Pages say "reported in flower" and name the middle week,
- * never a peak.
+ * A stage result in one area (data rules `seasonal.md`): a plant's flowering
+ * or fruiting result, or an insect's adult or larva result. It says when
+ * people recorded the species with that stage showing and annotated, not
+ * when the stage happens. Pages say "reported in flower", "reported in
+ * fruit", "reported as an adult" or "reported as a larva" ("as a
+ * caterpillar" for butterflies and moths), and name the middle week, never a
+ * peak.
  */
 export interface Flowering {
   /** Records that show flowers, counted there. */
@@ -619,6 +641,70 @@ export interface RegionArea {
    * files.
    */
   readonly temperature?: readonly (TemperatureWeek | null)[];
+  /**
+   * The typical precipitation each week across the area, weeks 1 to 53, in
+   * millimetres to one decimal: the average over the pooled years of each
+   * year's weekly total (ODR-2026-033); `null` for a week without values.
+   * It describes the place only. Added in `region/1.4`, so absent from
+   * earlier files.
+   */
+  readonly precipitation?: readonly (number | null)[];
+  /**
+   * The area's land cover from USGS Annual NLCD (ODR-2026-033), or `null`
+   * where the map does not cover it. It describes the place only. Added in
+   * `region/1.4`, so absent from earlier files.
+   */
+  readonly land_cover?: LandCover | null;
+  /**
+   * The area's lowest, median and highest elevation over its land, in whole
+   * metres, from USGS 3DEP (ODR-2026-033), or `null` without tiles. Added in
+   * `region/1.4`, so absent from earlier files.
+   */
+  readonly elevation?: Elevation | null;
+}
+
+/** An area's land cover (`region/1.4`). */
+export interface LandCover {
+  /** The NLCD year used, such as `2025`. */
+  readonly year: number;
+  /** Each group's share of the area's land in %, to one decimal, largest first. */
+  readonly groups: readonly LandCoverGroup[];
+  /** Each NLCD class's share of the area's land in %, to one decimal, largest first. */
+  readonly classes: readonly LandCoverClass[];
+  /** Open water as a share of the whole area in %, to one decimal. */
+  readonly water: number;
+}
+
+/** A land cover group and its share of the area's land in %. */
+export interface LandCoverGroup {
+  /** The group: `forest`, `farmland`, `developed`, `wetland`, `grassland-shrub` or `barren`. */
+  readonly group:
+    | "forest"
+    | "farmland"
+    | "developed"
+    | "wetland"
+    | "grassland-shrub"
+    | "barren";
+  /** Its share of the area's land in %, to one decimal. */
+  readonly share: number;
+}
+
+/** An NLCD class code, such as `41`, and its share of the area's land in %. */
+export interface LandCoverClass {
+  /** The NLCD class code, such as `41` for deciduous forest. */
+  readonly class: number;
+  /** Its share of the area's land in %, to one decimal. */
+  readonly share: number;
+}
+
+/** An area's elevation over its land, in whole metres (`region/1.4`). */
+export interface Elevation {
+  /** The lowest elevation over the area's land, in whole metres. */
+  readonly min: number;
+  /** The median elevation over the area's land, in whole metres. */
+  readonly median: number;
+  /** The highest elevation over the area's land, in whole metres. */
+  readonly max: number;
 }
 
 /** A week's typical `[low, high]` in °C. */
