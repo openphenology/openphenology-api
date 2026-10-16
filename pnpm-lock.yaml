@@ -220,6 +220,9 @@ importers:
       '@openphenology/api':
         specifier: workspace:*
         version: link:../..
+      zod:
+        specifier: 4.6.7
+        version: 4.6.7
     devDependencies:
       '@modelcontextprotocol/client':
         specifier: 2.3.1
