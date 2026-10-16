@@ -15,7 +15,7 @@ export const SERVER_INFO = { name: "openphenology", version: "0.0.0" };
 
 /** What the server tells assistants about every tool's answers. */
 const INSTRUCTIONS =
-  "OpenPhenology publishes when people recorded each species, week by week, in US states and counties. Every answer has `limits`: pass it on, and say a species was recorded or reported at a time, never that it occurs, is present or is absent then. A missing result never means absence. Credit the data with `terms.cite` and `terms.credit`; the licence is noncommercial.";
+  "OpenPhenology publishes when people recorded each species, week by week, in US states and counties. Every answer has `limits`: pass it on, and say a species was recorded or reported at a time, never that it occurs, is present or is absent then, or how common it is. A missing result never means absence. Call the 50th-percentile week the middle week, never the peak. Show a range label with its source and seasons. Credit the data with `terms.cite` and `terms.credit`; the licence is noncommercial.";
 
 /** One reader per client, so servers made for each request share its caches. */
 const readers = new WeakMap<Client, Reader>();
@@ -29,6 +29,12 @@ export interface ServerOptions {
    * made with the same client share the clock of the first.
    */
   readonly now?: () => Date;
+  /**
+   * How `find_county` takes a ZIP code: `full`, on the user's own device, or
+   * `prefix`, the first three digits only, for a hosted server, so a whole ZIP
+   * code never reaches it. Defaults to `full`.
+   */
+  readonly zip?: "full" | "prefix";
 }
 
 const state = z
@@ -82,19 +88,38 @@ export function createServer(options: ServerOptions = {}): McpServer {
     async ({ name }) => reply(await reader.findSpecies(name)),
   );
 
-  server.registerTool(
-    "find_county",
-    {
-      title: "Find the county for a ZIP code",
-      description:
-        "The US counties a ZIP code falls in, largest share of its land first, with their codes for the other tools. The ZIP code is used only to read the published postal file and is never stored.",
-      inputSchema: z.object({
-        zip: z.string().describe("A 5-digit ZIP code, such as `43215`."),
-      }),
-      annotations,
-    },
-    async ({ zip }) => reply(await reader.findCounty(zip)),
-  );
+  if (options.zip === "prefix")
+    server.registerTool(
+      "find_county",
+      {
+        title: "Find the county for a ZIP code",
+        description:
+          "Every US ZIP code that starts with three digits, each with the counties it falls in, largest share of its land first. Send only the first three digits of the user's ZIP code, never all five, then pick the user's ZIP code from the list yourself; its counties' codes work in the other tools.",
+        inputSchema: z.object({
+          zip_prefix: z
+            .string()
+            .regex(/^\d{3}$/)
+            .describe("The first three digits of a ZIP code, such as `432`."),
+        }),
+        annotations,
+      },
+      async ({ zip_prefix }) =>
+        reply(await reader.findCountiesByPrefix(zip_prefix)),
+    );
+  else
+    server.registerTool(
+      "find_county",
+      {
+        title: "Find the county for a ZIP code",
+        description:
+          "The US counties a ZIP code falls in, largest share of its land first, with their codes for the other tools. Only the published file for its first three digits is read; the ZIP code is never sent anywhere else or stored.",
+        inputSchema: z.object({
+          zip: z.string().describe("A 5-digit ZIP code, such as `43215`."),
+        }),
+        annotations,
+      },
+      async ({ zip }) => reply(await reader.findCounty(zip)),
+    );
 
   server.registerTool(
     "get_season",

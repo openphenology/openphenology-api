@@ -80,7 +80,7 @@ depend on it with `workspace:*`. Run every command from the root:
 - **Runtime code** in `src` uses only web-standard APIs and no dependencies,
   so it runs in Node.js and browsers. `pnpm size` keeps the built code under
   5 KB gzipped; comments don't count. These two rules are for the client
-  only: `packages/mcp` runs in Node.js and depends on the MCP SDK.
+  only: `packages/mcp` depends on the MCP SDK.
 - **Every export needs a doc comment.** Describe what it does, and use
   `@param`, `@returns` (including when the result is `null`) and `@throws`.
   Lint checks that the tags match the code, and `pnpm check` fails when

@@ -21,11 +21,15 @@ const TERMS = {
 };
 
 /** Connects an MCP client to a server reading the made-up release. */
-async function connect(now = new Date("2026-04-08T12:00:00Z")) {
+async function connect(
+  now = new Date("2026-04-08T12:00:00Z"),
+  zip: "full" | "prefix" = "full",
+) {
   const data = await fakeServer();
   const server = createServer({
     client: createClient({ baseUrl: BASE, fetch: data.fetch }),
     now: () => now,
+    zip,
   });
   const [clientSide, serverSide] = InMemoryTransport.createLinkedPair();
   await server.connect(serverSide);
@@ -148,6 +152,59 @@ describe("find_county", () => {
   });
 });
 
+describe("find_county with only a prefix, for a hosted server", () => {
+  test("lists every ZIP code under the prefix, with its counties", async () => {
+    const { call, requests } = await connect(undefined, "prefix");
+    const answer = (await call("find_county", { zip_prefix: "999" })).answer();
+    expect(answer).toMatchObject({
+      prefix: "999",
+      release: RELEASE,
+      zips: [
+        {
+          zip: "99901",
+          counties: [
+            { county: "99001", state: null, name: null, share: 0.75 },
+            { county: "99002", state: null, name: null, share: 0.25 },
+          ],
+        },
+      ],
+    });
+    expect(requests).toContain(`releases/${RELEASE}/postal/us/999.json`);
+  });
+
+  test("names counties from their states' region files", async () => {
+    const path = "postal/us/999.json";
+    const { call, tamper } = await connect(undefined, "prefix");
+    tamper(
+      `releases/${RELEASE}/${path}`,
+      JSON.stringify(
+        wrap(path, "postal", { zips: { "99901": [["39049", 1]] } }),
+      ),
+    );
+    const answer = (await call("find_county", { zip_prefix: "999" })).answer();
+    // The made-up release has no Ohio region file, so the name stays null.
+    expect(answer.zips).toEqual([
+      {
+        zip: "99901",
+        counties: [{ county: "39049", state: "us-oh", name: null, share: 1 }],
+      },
+    ]);
+  });
+
+  test("refuses a whole ZIP code", async () => {
+    const { call, requests } = await connect(undefined, "prefix");
+    const result = await call("find_county", { zip_prefix: "99901" });
+    expect(result.isError).toBe(true);
+    expect(requests.some((path) => path.includes("postal/"))).toBe(false);
+  });
+
+  test("answers an unpublished prefix with no ZIP codes", async () => {
+    const { call } = await connect(undefined, "prefix");
+    const answer = (await call("find_county", { zip_prefix: "123" })).answer();
+    expect(answer.zips).toEqual([]);
+  });
+});
+
 describe("get_season", () => {
   test("gives a state's season weeks, with the day each starts", async () => {
     const { call } = await connect();
@@ -205,17 +262,19 @@ describe("get_season", () => {
     expect(answer.result).toMatchObject({
       season: null,
       withheld: "year-round",
-      why: "Recorded through most of the year, so there is no bounded season.",
+      why: "There is no bounded season to describe",
     });
   });
 
-  test("says a missing result never means absence", async () => {
+  test("says a missing result looks like no result", async () => {
     const { call } = await connect();
     const answer = (
       await call("get_season", { species_key: "EX2", state: "us-zz" })
     ).answer();
     expect(answer.result).toBeNull();
-    expect(answer.why).toContain("never means the species is absent");
+    expect(answer.note).toBe(
+      "A result withheld by the data rules is not published. It looks exactly like a result that does not exist.",
+    );
     // With no result of its own, the note comes from methods.json.
     expect(answer.limits).toBe("Made up.");
   });
@@ -292,6 +351,33 @@ describe("this_week", () => {
             group: "birds",
           },
         ],
+      },
+    ]);
+  });
+
+  test("shows a range label with its source and seasons", async () => {
+    const path = "backyard/us-zz/99001.json";
+    const file = releaseFiles[path] as { data: { species: object[] } };
+    const [species] = file.data.species as Record<string, unknown>[];
+    const range = { source: "example-range", seasons: ["year-round"] };
+    const { call, tamper } = await connect();
+    tamper(
+      `releases/${RELEASE}/${path}`,
+      JSON.stringify(
+        wrap(path, "backyard", {
+          ...file.data,
+          species: [{ ...species, labels: "m".repeat(53), range }],
+        }),
+      ),
+    );
+    const answer = (
+      await call("this_week", { county: "99001", state: "us-zz" })
+    ).answer();
+    expect(answer.labels).toMatchObject([
+      {
+        label: "m",
+        means: "Within its mapped range",
+        species: [{ species_key: "EX1", range }],
       },
     ]);
   });
