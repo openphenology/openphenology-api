@@ -9,11 +9,13 @@ export default defineConfig({
     // V8 coverage works only in Node.js and Chromium, so it is measured in Node.js.
     coverage: {
       provider: "v8",
-      include: ["src/**/*.ts"],
+      include: ["src/**/*.ts", "packages/*/src/**/*.ts"],
       thresholds: { lines: 90, branches: 90, functions: 90, statements: 90 },
     },
     projects: [
       { test: { name: "node", include } },
+      // The MCP server runs only in Node.js.
+      { test: { name: "mcp", include: ["packages/mcp/test/**/*.test.ts"] } },
       {
         test: {
           name: "browser",

@@ -1,0 +1,4 @@
+# The repository root is the client, @openphenology/api. Other packages built
+# on it live under packages/.
+packages:
+  - packages/*
