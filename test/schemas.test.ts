@@ -271,6 +271,26 @@ describe("schemas", () => {
     expect(errors(file)).toEqual([]);
   });
 
+  test("region/1.3 temperature, 53 weeks of low and high or null", async () => {
+    const file = structuredClone(
+      (await published()).get("releases/2026-01-05/regions/us-zz.json"),
+    );
+    if (!file) throw new Error("missing fixture");
+    const area = first(file.data.areas);
+    file.format = "region/1.3";
+    area.temperature = Array.from({ length: 53 }, () => [-4.2, 3.1]);
+    expect(errors(file)).toEqual([]);
+    (area.temperature as unknown[])[0] = null;
+    expect(errors(file)).toEqual([]);
+    area.temperature = Array.from({ length: 53 }, () => [-4.2]);
+    expect(errors(file)).not.toEqual([]);
+    area.temperature = Array.from({ length: 52 }, () => [-4.2, 3.1]);
+    expect(errors(file)).not.toEqual([]);
+    file.format = "region/1.2";
+    delete area.temperature;
+    expect(errors(file)).toEqual([]);
+  });
+
   test("a species/1.1 file needs no introductions", async () => {
     const file = structuredClone(
       (await published()).get("releases/2026-01-05/species/EX1.json"),

@@ -739,8 +739,9 @@ export const schemas = {
           },
           areaMatchesLevel,
         ),
-        // Optional: `ecoregions` added in region/1.1 and `daylight` in
-        // region/1.2, so absent from earlier files.
+        // Optional: `ecoregions` added in region/1.1, `daylight` in
+        // region/1.2 and `temperature` in region/1.3, so absent from earlier
+        // files.
         properties: {
           area,
           level: { enum: ["state", "county"] },
@@ -763,6 +764,10 @@ export const schemas = {
             ),
             { minItems: 53, maxItems: 53 },
           ),
+          temperature: list(nullable(tuple(celsius, celsius)), {
+            minItems: 53,
+            maxItems: 53,
+          }),
         },
       }),
     }),
