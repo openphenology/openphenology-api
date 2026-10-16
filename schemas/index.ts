@@ -172,7 +172,7 @@ const seasonMatchesWithheld: Schema = {
     },
   ],
 };
-/** A flowering result's season, or its reason, which may be too few records. */
+/** A flowering result's or window's season, or its reason, which may be too few records. */
 const floweringMatchesWithheld: Schema = {
   anyOf: [
     {
@@ -222,6 +222,35 @@ const season = list(week, { maxItems: 3 });
 const seasonWithheld = nullable({
   enum: ["year-round", "two-seasons", "one-year", "precision"],
 });
+/** A reason a flowering result or a window has no season weeks. */
+const windowWithheld = nullable({
+  enum: [
+    "too-few-records",
+    "year-round",
+    "two-seasons",
+    "one-year",
+    "precision",
+  ],
+});
+/** Only a result withheld as `two-seasons` has windows. */
+const windowsOnlyForTwoSeasons: Schema = {
+  if: {
+    type: "object",
+    required: ["windows"],
+    properties: { windows: { type: "array" } },
+  },
+  then: { properties: { season_withheld: { const: "two-seasons" } } },
+};
+/** A two-season result's two windows (data rules `seasonal.md`), or null. */
+const windows: Schema = nullable(
+  list(
+    object(
+      { records: count, season, season_withheld: windowWithheld },
+      floweringMatchesWithheld,
+    ),
+    { minItems: 2, maxItems: 2 },
+  ),
+);
 
 const classification = {
   kingdom: nullable(string),
@@ -552,9 +581,11 @@ export const schemas = {
               },
               areaMatchesLevel,
               seasonMatchesWithheld,
+              windowsOnlyForTwoSeasons,
             ),
-            // Optional: `conditions` added in species/1.7 and `flowering` in
-            // species/1.8, so absent from earlier files.
+            // Optional: `conditions` added in species/1.7, `flowering` in
+            // species/1.8 and `windows` in species/1.9, so absent from
+            // earlier files.
             properties: {
               area,
               level: { enum: ["state", "county"] },
@@ -568,24 +599,25 @@ export const schemas = {
                 low: nullable(celsius),
                 midpoint: nullable(celsius),
               }),
-              flowering: nullable(
-                object(
+              windows,
+              flowering: nullable({
+                ...object(
                   {
                     records: count,
                     season,
-                    season_withheld: nullable({
-                      enum: [
-                        "too-few-records",
-                        "year-round",
-                        "two-seasons",
-                        "one-year",
-                        "precision",
-                      ],
-                    }),
+                    season_withheld: windowWithheld,
                   },
                   floweringMatchesWithheld,
+                  windowsOnlyForTwoSeasons,
                 ),
-              ),
+                // Optional: added in species/1.9.
+                properties: {
+                  records: count,
+                  season,
+                  season_withheld: windowWithheld,
+                  windows,
+                },
+              }),
             },
           }),
           ranges: list(

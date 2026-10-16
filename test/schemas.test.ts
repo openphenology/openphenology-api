@@ -154,6 +154,43 @@ describe("schemas", () => {
     expect(errors(file)).toEqual([]);
   });
 
+  test("species/1.9 windows: two for a two-season result, none otherwise", async () => {
+    const file = structuredClone(
+      (await published()).get("releases/2026-01-05/species/EX1.json"),
+    );
+    if (!file) throw new Error("missing fixture");
+    const area = first(file.data.areas);
+    file.format = "species/1.9";
+    area.windows = null;
+    expect(errors(file)).toEqual([]);
+    const two = [
+      { records: 48, season: [14, 17, 21], season_withheld: null },
+      { records: 15, season: [], season_withheld: "too-few-records" },
+    ];
+    // A result with season weeks has no windows.
+    area.windows = two;
+    expect(errors(file)).not.toEqual([]);
+    area.season = [];
+    area.season_withheld = "two-seasons";
+    expect(errors(file)).toEqual([]);
+    area.windows = [two[0]];
+    expect(errors(file)).not.toEqual([]);
+    area.windows = [two[0], { ...two[1], season_withheld: null }];
+    expect(errors(file)).not.toEqual([]);
+    area.windows = two;
+    area.flowering = {
+      records: 30,
+      season: [],
+      season_withheld: "two-seasons",
+      windows: two,
+    };
+    expect(errors(file)).toEqual([]);
+    file.format = "species/1.8";
+    delete area.windows;
+    delete (area.flowering as Record<string, unknown>).windows;
+    expect(errors(file)).toEqual([]);
+  });
+
   test("a species/1.1 file needs no introductions", async () => {
     const file = structuredClone(
       (await published()).get("releases/2026-01-05/species/EX1.json"),

@@ -329,6 +329,12 @@ export type SpeciesFile = PublishedFile<
       /** Why `season` is empty, or `null`. */
       readonly season_withheld: Withheld | null;
       /**
+       * When `season_withheld` is `two-seasons`, the two windows its records
+       * split into (data rules `seasonal.md`); otherwise `null`. Added in
+       * `species/1.9`, so absent from earlier files.
+       */
+      readonly windows?: readonly SeasonWindow[] | null;
+      /**
        * Medians over the records the season counts, each on the record's date
        * at its place (ODR-2026-028). Added in `species/1.7`, so absent from
        * earlier files.
@@ -465,6 +471,22 @@ export interface SpeciesListing {
  */
 export interface Flowering {
   /** Records that show flowers, counted there. */
+  readonly records: number;
+  /** Early, middle and late weeks, or empty. */
+  readonly season: SeasonWeeks;
+  /** Why `season` is empty, or `null`. */
+  readonly season_withheld: FloweringWithheld | null;
+  /** Its two windows when it is `two-seasons`, or `null`. Added in `species/1.9`. */
+  readonly windows?: readonly SeasonWindow[] | null;
+}
+
+/**
+ * One of a two-season result's windows (data rules `seasonal.md`, Two
+ * windows): when people recorded the species in that part of the year, never
+ * why there are two.
+ */
+export interface SeasonWindow {
+  /** The window's records. */
   readonly records: number;
   /** Early, middle and late weeks, or empty. */
   readonly season: SeasonWeeks;

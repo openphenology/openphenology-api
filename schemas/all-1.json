@@ -2225,6 +2225,97 @@
                     }
                   }
                 },
+                "windows": {
+                  "description": "When `season_withheld` is `two-seasons`, the two windows its records\nsplit into (data rules `seasonal.md`); otherwise `null`. Added in\n`species/1.9`, so absent from earlier files.",
+                  "anyOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "records",
+                          "season",
+                          "season_withheld"
+                        ],
+                        "properties": {
+                          "records": {
+                            "description": "The window's records.",
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "season": {
+                            "description": "Early, middle and late weeks, or empty.",
+                            "type": "array",
+                            "items": {
+                              "type": "integer",
+                              "minimum": 1,
+                              "maximum": 53
+                            },
+                            "maxItems": 3
+                          },
+                          "season_withheld": {
+                            "description": "Why `season` is empty, or `null`.",
+                            "anyOf": [
+                              {
+                                "enum": [
+                                  "too-few-records",
+                                  "year-round",
+                                  "two-seasons",
+                                  "one-year",
+                                  "precision"
+                                ]
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          }
+                        },
+                        "allOf": [
+                          {
+                            "anyOf": [
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "season": {
+                                    "type": "array",
+                                    "minItems": 3
+                                  },
+                                  "season_withheld": {
+                                    "type": "null"
+                                  }
+                                }
+                              },
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "season": {
+                                    "type": "array",
+                                    "maxItems": 0
+                                  },
+                                  "season_withheld": {
+                                    "enum": [
+                                      "too-few-records",
+                                      "year-round",
+                                      "two-seasons",
+                                      "one-year",
+                                      "precision"
+                                    ]
+                                  }
+                                }
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      "minItems": 2,
+                      "maxItems": 2
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
                 "flowering": {
                   "description": "For a plant, the result from its records that show flowers\n(ODR-2026-025); `null` for a species that is not a plant. Added in\n`species/1.8`, so absent from earlier files.",
                   "anyOf": [
@@ -2267,6 +2358,97 @@
                               "type": "null"
                             }
                           ]
+                        },
+                        "windows": {
+                          "description": "Its two windows when it is `two-seasons`, or `null`. Added in `species/1.9`.",
+                          "anyOf": [
+                            {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "required": [
+                                  "records",
+                                  "season",
+                                  "season_withheld"
+                                ],
+                                "properties": {
+                                  "records": {
+                                    "description": "The window's records.",
+                                    "type": "integer",
+                                    "minimum": 0
+                                  },
+                                  "season": {
+                                    "description": "Early, middle and late weeks, or empty.",
+                                    "type": "array",
+                                    "items": {
+                                      "type": "integer",
+                                      "minimum": 1,
+                                      "maximum": 53
+                                    },
+                                    "maxItems": 3
+                                  },
+                                  "season_withheld": {
+                                    "description": "Why `season` is empty, or `null`.",
+                                    "anyOf": [
+                                      {
+                                        "enum": [
+                                          "too-few-records",
+                                          "year-round",
+                                          "two-seasons",
+                                          "one-year",
+                                          "precision"
+                                        ]
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ]
+                                  }
+                                },
+                                "allOf": [
+                                  {
+                                    "anyOf": [
+                                      {
+                                        "type": "object",
+                                        "properties": {
+                                          "season": {
+                                            "type": "array",
+                                            "minItems": 3
+                                          },
+                                          "season_withheld": {
+                                            "type": "null"
+                                          }
+                                        }
+                                      },
+                                      {
+                                        "type": "object",
+                                        "properties": {
+                                          "season": {
+                                            "type": "array",
+                                            "maxItems": 0
+                                          },
+                                          "season_withheld": {
+                                            "enum": [
+                                              "too-few-records",
+                                              "year-round",
+                                              "two-seasons",
+                                              "one-year",
+                                              "precision"
+                                            ]
+                                          }
+                                        }
+                                      }
+                                    ]
+                                  }
+                                ]
+                              },
+                              "minItems": 2,
+                              "maxItems": 2
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
                         }
                       },
                       "allOf": [
@@ -2303,6 +2485,26 @@
                               }
                             }
                           ]
+                        },
+                        {
+                          "if": {
+                            "type": "object",
+                            "required": [
+                              "windows"
+                            ],
+                            "properties": {
+                              "windows": {
+                                "type": "array"
+                              }
+                            }
+                          },
+                          "then": {
+                            "properties": {
+                              "season_withheld": {
+                                "const": "two-seasons"
+                              }
+                            }
+                          }
                         }
                       ]
                     },
@@ -2373,6 +2575,26 @@
                       }
                     }
                   ]
+                },
+                {
+                  "if": {
+                    "type": "object",
+                    "required": [
+                      "windows"
+                    ],
+                    "properties": {
+                      "windows": {
+                        "type": "array"
+                      }
+                    }
+                  },
+                  "then": {
+                    "properties": {
+                      "season_withheld": {
+                        "const": "two-seasons"
+                      }
+                    }
+                  }
                 }
               ]
             }
