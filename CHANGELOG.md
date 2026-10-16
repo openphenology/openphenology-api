@@ -8,6 +8,13 @@ All notable changes to this package are recorded here. The format follows
 
 ### Added
 
+- Data rules 1.43 (ODR-2026-035): `region/1.5`. Each area may carry
+  `warmth` (`Warmth`): `through`, `degree_days` (base 50°F, simple average,
+  since 1 January), the 1991–2020 `normal` for that day, `days_ahead` (or
+  `null` early in the year) and `provisional`; and `frost` (`Frost`): the
+  typical `last_spring` and `first_fall` frost, `MM-DD`, 1991–2020. Either
+  is `null` until the normal is read. They describe the place's weather only.
+  Absent from earlier files.
 - Data rules 1.40 (`formats.md` 1.21): `species/1.11` adds `fruiting`,
   `adult` and `larva` to each area, in the same form as `flowering`: a
   plant's fruiting result and an insect's adult and larva results

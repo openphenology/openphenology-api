@@ -372,6 +372,53 @@ describe("schemas", () => {
     expect(errors(file)).toEqual([]);
   });
 
+  test("region/1.5 warmth and frost", async () => {
+    const file = structuredClone(
+      (await published()).get("releases/2026-01-05/regions/us-zz.json"),
+    );
+    if (!file) throw new Error("missing fixture");
+    const area = first(file.data.areas);
+    file.format = "region/1.5";
+    area.warmth = {
+      through: "2026-10-12",
+      degree_days: 3412,
+      normal: 3290,
+      days_ahead: 6,
+      provisional: true,
+    };
+    area.frost = { last_spring: "04-22", first_fall: "10-19" };
+    expect(errors(file)).toEqual([]);
+    area.warmth = {
+      through: "2026-02-01",
+      degree_days: 12,
+      normal: 9,
+      days_ahead: null,
+      provisional: false,
+    };
+    area.frost = { last_spring: null, first_fall: "10-19" };
+    expect(errors(file)).toEqual([]);
+    area.warmth = null;
+    area.frost = null;
+    expect(errors(file)).toEqual([]);
+    area.warmth = {
+      through: "2026-10-12",
+      degree_days: 3412.5,
+      normal: 3290,
+      days_ahead: 6,
+      provisional: false,
+    };
+    expect(errors(file)).not.toEqual([]);
+    area.warmth = null;
+    area.frost = { last_spring: "4-22", first_fall: "10-19" };
+    expect(errors(file)).not.toEqual([]);
+    area.frost = { last_spring: "13-01", first_fall: "10-19" };
+    expect(errors(file)).not.toEqual([]);
+    file.format = "region/1.4";
+    delete area.warmth;
+    delete area.frost;
+    expect(errors(file)).toEqual([]);
+  });
+
   test("a species/1.1 file needs no introductions", async () => {
     const file = structuredClone(
       (await published()).get("releases/2026-01-05/species/EX1.json"),
