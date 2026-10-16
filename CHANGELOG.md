@@ -8,6 +8,15 @@ All notable changes to this package are recorded here. The format follows
 
 ### Added
 
+- Data rules 1.38 (`formats.md` 1.20, ODR-2026-031): `region/1.3`. Each area
+  may carry `temperature`: 53 weekly `[low, high]` (`TemperatureWeek`), the
+  typical daily low and high across the area in °C, or `null`. They describe
+  the place only. Absent from earlier files.
+- Data rules 1.37 (`formats.md` 1.19): `region/1.2`. Each area may carry
+  `daylight`: 53 weekly `[sunrise, sunset, hours]` (`DaylightWeek`), local
+  `HH:MM` times and hours of daylight at the area's centre for each week's
+  middle day in the release's year, or `null` for a week with no sunrise or
+  sunset. They describe the place only. Absent from earlier files.
 - Data rules 1.35 (`formats.md` 1.18): `region/1.1`. Each area may carry
   `ecoregions` (`Ecoregion`): the RESOLVE Ecoregions 2017 ecoregions it lies
   in, with `ecoregion` (RESOLVE's `ECO_ID`), `name`, `biome` and `share` (of
