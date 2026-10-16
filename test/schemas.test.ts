@@ -214,6 +214,41 @@ describe("schemas", () => {
     expect(errors(file)).toEqual([]);
   });
 
+  test("region/1.1 ecoregions, valid or not", async () => {
+    const file = structuredClone(
+      (await published()).get("releases/2026-01-05/regions/us-zz.json"),
+    );
+    if (!file) throw new Error("missing fixture");
+    const area = first(file.data.areas);
+    file.format = "region/1.1";
+    area.ecoregions = [
+      {
+        ecoregion: 342,
+        name: "Southern Great Lakes forests",
+        biome: "Temperate Broadleaf & Mixed Forests",
+        share: 0.77,
+      },
+      {
+        ecoregion: 329,
+        name: "Appalachian mixed mesophytic forests",
+        biome: "Temperate Broadleaf & Mixed Forests",
+        share: 0.23,
+      },
+    ];
+    expect(errors(file)).toEqual([]);
+    area.ecoregions = [];
+    expect(errors(file)).toEqual([]);
+    area.ecoregions = [{ ecoregion: 342, name: "x", biome: "y", share: 0.04 }];
+    expect(errors(file)).not.toEqual([]);
+    area.ecoregions = [{ ecoregion: 0, name: "x", biome: "y", share: 0.5 }];
+    expect(errors(file)).not.toEqual([]);
+    area.ecoregions = [{ ecoregion: 342, name: "x", share: 0.5 }];
+    expect(errors(file)).not.toEqual([]);
+    file.format = "region/1.0";
+    delete area.ecoregions;
+    expect(errors(file)).toEqual([]);
+  });
+
   test("a species/1.1 file needs no introductions", async () => {
     const file = structuredClone(
       (await published()).get("releases/2026-01-05/species/EX1.json"),
