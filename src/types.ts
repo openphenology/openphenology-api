@@ -661,6 +661,58 @@ export interface RegionArea {
    * `region/1.4`, so absent from earlier files.
    */
   readonly elevation?: Elevation | null;
+  /**
+   * The area's growing degree days so far this year against the 1991–2020
+   * normal (ODR-2026-035), or `null` until the normal is read or without
+   * values. It describes the place's weather only. Added in `region/1.5`,
+   * so absent from earlier files.
+   */
+  readonly warmth?: Warmth | null;
+  /**
+   * The area's typical last spring and first fall frost, 1991–2020
+   * (ODR-2026-035), or `null` until the normal is read or without values.
+   * It describes the place's weather only. Added in `region/1.5`, so absent
+   * from earlier files.
+   */
+  readonly frost?: Frost | null;
+}
+
+/** An area's growing degree days so far this year (`region/1.5`). */
+export interface Warmth {
+  /** The last day counted, `YYYY-MM-DD`. */
+  readonly through: string;
+  /**
+   * Degree days (base 50°F, simple average, in °F days) accumulated from 1
+   * January through `through`, rounded to a whole number.
+   */
+  readonly degree_days: number;
+  /**
+   * The 1991–2020 average of degree days accumulated from 1 January through
+   * the same calendar day, rounded to a whole number.
+   */
+  readonly normal: number;
+  /**
+   * Days from `through` to the first calendar day on which the normal
+   * reaches `degree_days`: positive ahead of normal, negative behind;
+   * `null` while `normal` is below 50.
+   */
+  readonly days_ahead: number | null;
+  /** True when any day counted comes from a preliminary NOAA file. */
+  readonly provisional: boolean;
+}
+
+/** An area's typical frost dates, 1991–2020 (`region/1.5`). */
+export interface Frost {
+  /**
+   * The median of each year's last day from 1 January to 31 July with a low
+   * of 32°F (0°C) or below, `MM-DD`, or `null` when a year has none.
+   */
+  readonly last_spring: string | null;
+  /**
+   * The median of each year's first day from 1 August to 31 December with a
+   * low of 32°F (0°C) or below, `MM-DD`, or `null` when a year has none.
+   */
+  readonly first_fall: string | null;
 }
 
 /** An area's land cover (`region/1.4`). */

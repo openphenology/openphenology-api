@@ -475,6 +475,97 @@
                     "type": "null"
                   }
                 ]
+              },
+              "warmth": {
+                "description": "The area's growing degree days so far this year against the 1991–2020\nnormal (ODR-2026-035), or `null` until the normal is read or without\nvalues. It describes the place's weather only. Added in `region/1.5`,\nso absent from earlier files.",
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "required": [
+                      "through",
+                      "degree_days",
+                      "normal",
+                      "days_ahead",
+                      "provisional"
+                    ],
+                    "properties": {
+                      "through": {
+                        "description": "The last day counted, `YYYY-MM-DD`.",
+                        "type": "string",
+                        "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                      },
+                      "degree_days": {
+                        "description": "Degree days (base 50°F, simple average, in °F days) accumulated from 1\nJanuary through `through`, rounded to a whole number.",
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "normal": {
+                        "description": "The 1991–2020 average of degree days accumulated from 1 January through\nthe same calendar day, rounded to a whole number.",
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "days_ahead": {
+                        "description": "Days from `through` to the first calendar day on which the normal\nreaches `degree_days`: positive ahead of normal, negative behind;\n`null` while `normal` is below 50.",
+                        "anyOf": [
+                          {
+                            "type": "integer"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "provisional": {
+                        "description": "True when any day counted comes from a preliminary NOAA file.",
+                        "type": "boolean"
+                      }
+                    }
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "frost": {
+                "description": "The area's typical last spring and first fall frost, 1991–2020\n(ODR-2026-035), or `null` until the normal is read or without values.\nIt describes the place's weather only. Added in `region/1.5`, so absent\nfrom earlier files.",
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "required": [
+                      "last_spring",
+                      "first_fall"
+                    ],
+                    "properties": {
+                      "last_spring": {
+                        "description": "The median of each year's last day from 1 January to 31 July with a low\nof 32°F (0°C) or below, `MM-DD`, or `null` when a year has none.",
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "pattern": "^(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "first_fall": {
+                        "description": "The median of each year's first day from 1 August to 31 December with a\nlow of 32°F (0°C) or below, `MM-DD`, or `null` when a year has none.",
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "pattern": "^(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
               }
             },
             "allOf": [

@@ -82,6 +82,8 @@ const object = (properties: Record<string, Schema>, ...rules: Schema[]) => ({
 const date = pattern("^\\d{4}-\\d{2}-\\d{2}$");
 /** A local clock time, `HH:MM` on a 24-hour clock. */
 const clock = pattern("^([01]\\d|2[0-3]):[0-5]\\d$");
+/** A month and day, `MM-DD`. */
+const monthDay = pattern("^(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$");
 /** A temperature in °C, to one decimal. */
 const celsius: Schema = { type: "number" };
 const percent: Schema = { type: "number", minimum: 0, maximum: 100 };
@@ -751,9 +753,9 @@ export const schemas = {
           areaMatchesLevel,
         ),
         // Optional: `ecoregions` added in region/1.1, `daylight` in
-        // region/1.2, `temperature` in region/1.3 and `precipitation`,
-        // `land_cover` and `elevation` in region/1.4, so absent from earlier
-        // files.
+        // region/1.2, `temperature` in region/1.3, `precipitation`,
+        // `land_cover` and `elevation` in region/1.4 and `warmth` and
+        // `frost` in region/1.5, so absent from earlier files.
         properties: {
           area,
           level: { enum: ["state", "county"] },
@@ -816,6 +818,21 @@ export const schemas = {
               min: { type: "integer" },
               median: { type: "integer" },
               max: { type: "integer" },
+            }),
+          ),
+          warmth: nullable(
+            object({
+              through: date,
+              degree_days: { type: "integer", minimum: 0 },
+              normal: { type: "integer", minimum: 0 },
+              days_ahead: nullable({ type: "integer" }),
+              provisional: { type: "boolean" },
+            }),
+          ),
+          frost: nullable(
+            object({
+              last_spring: nullable(monthDay),
+              first_fall: nullable(monthDay),
             }),
           ),
         },
