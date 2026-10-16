@@ -453,6 +453,28 @@ const file = (kind: Kind, description: string, data: Schema): Schema => ({
 });
 
 /** One schema per published file format, by kind. */
+/**
+ * An area's stage seasons (ODR-2026-037): per stage the species has there,
+ * its season exactly as the species file gives it, empty when withheld.
+ */
+const stageSeasonWeeks: Schema = {
+  ...season,
+  anyOf: [
+    { type: "array", maxItems: 0 },
+    { type: "array", minItems: 3 },
+  ],
+};
+const stageSeasons: Schema = {
+  type: "object",
+  properties: {
+    flowering: stageSeasonWeeks,
+    fruiting: stageSeasonWeeks,
+    adult: stageSeasonWeeks,
+    larva: stageSeasonWeeks,
+  },
+  additionalProperties: false,
+};
+
 export const schemas = {
   current: file(
     "current",
@@ -560,6 +582,12 @@ export const schemas = {
               sensitive_in: list(state),
               listed_in: list(state),
               introduced_in: list(state),
+              invasive_in: list(state),
+              stage_seasons: {
+                type: "object",
+                propertyNames: state,
+                additionalProperties: stageSeasons,
+              },
               seasons: {
                 type: "object",
                 propertyNames: state,
@@ -581,6 +609,7 @@ export const schemas = {
     sinceMinor("catalogue", 3, {
       species: ["sensitive_in", "listed_in", "introduced_in"],
     }),
+    sinceMinor("catalogue", 4, { species: ["stage_seasons", "invasive_in"] }),
   ),
 
   species: withRules(
@@ -912,6 +941,7 @@ export const schemas = {
               weekly: nullable(weekly),
               season,
               season_withheld: seasonWithheld,
+              stages: stageSeasons,
             },
           ),
         ),
@@ -920,6 +950,7 @@ export const schemas = {
     sinceMinor("backyard", 1, {
       species: ["records", "weekly", "season", "season_withheld"],
     }),
+    sinceMinor("backyard", 2, { species: ["stages"] }),
   ),
 
   methods: file(

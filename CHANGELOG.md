@@ -8,6 +8,15 @@ All notable changes to this package are recorded here. The format follows
 
 ### Added
 
+- Data rules 1.45 (ODR-2026-037): `catalogue/1.4` and `backyard/1.2`.
+  Catalogue species carry `stage_seasons`, per state with a result its
+  stage seasons (`StageSeasons`: `flowering`, `fruiting`, `adult`, `larva`,
+  each three weeks or empty when withheld; a stage the species file gives as
+  `null` is left out), and `invasive_in`, the states where a US-RIIS listing
+  with status `invasive` applies. Backyard species carry `stages`, the county
+  result's stage seasons in the same form. Both repeat the species file
+  exactly, so lists can be filtered by stage without reading every species
+  file. Absent from earlier files.
 - Data rules 1.44 (ODR-2026-036): `region/1.6`. Each area may carry
   `green_up` (`GreenUp`): the `typical` spring green-up (`MM-DD`, median of
   each year's date), the `years` read (`[first, last]`), the `latest_year`

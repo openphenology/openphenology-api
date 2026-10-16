@@ -281,6 +281,34 @@ export interface CatalogueEntry extends Classification {
    * Added in `catalogue/1.3`, so absent from earlier files.
    */
   readonly introduced_in?: readonly Area[];
+  /**
+   * The states in `introduced_in` where a listing with status `invasive`
+   * applies. Added in `catalogue/1.4`, so absent from earlier files.
+   */
+  readonly invasive_in?: readonly Area[];
+  /**
+   * Each state in `states` with its stage seasons, exactly as the species
+   * file gives them (ODR-2026-037). Added in `catalogue/1.4`, so absent from
+   * earlier files.
+   */
+  readonly stage_seasons?: Readonly<Record<Area, StageSeasons>>;
+}
+
+/**
+ * An area's stage seasons: per stage the species has there (`flowering`,
+ * `fruiting`, `adult` or `larva`), its season weeks exactly as the species
+ * file gives them, empty when withheld. A stage the species file gives as
+ * `null` is left out. Pages word stages as ODR-2026-032 sets out.
+ */
+export interface StageSeasons {
+  /** A plant's season reported in flower, or empty when withheld. */
+  readonly flowering?: SeasonWeeks;
+  /** A plant's season reported in fruit, or empty when withheld. */
+  readonly fruiting?: SeasonWeeks;
+  /** An insect's season reported as an adult, or empty when withheld. */
+  readonly adult?: SeasonWeeks;
+  /** An insect's season reported as a larva, or empty when withheld. */
+  readonly larva?: SeasonWeeks;
 }
 /** `catalogue.json` or one of its shards: the species with results. */
 export type CatalogueFile = PublishedFile<
@@ -930,6 +958,11 @@ export type BackyardFile = PublishedFile<
       readonly season?: SeasonWeeks;
       /** Why the county result's season is withheld, or `null`. Added in `backyard/1.1`. */
       readonly season_withheld?: Withheld | null;
+      /**
+       * The county result's stage seasons, `{}` without a county result or
+       * stages. Added in `backyard/1.2`.
+       */
+      readonly stages?: StageSeasons;
     }[];
   }
 >;
