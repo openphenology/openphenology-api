@@ -3953,6 +3953,42 @@
                   },
                   "minItems": 53,
                   "maxItems": 53
+                },
+                "ecoregions": {
+                  "description": "The ecoregions the area lies in (RESOLVE Ecoregions 2017), largest share\nfirst. They label the place only, never the species recorded there.\nAdded in `region/1.1`, so absent from earlier files.",
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "ecoregion",
+                      "name",
+                      "biome",
+                      "share"
+                    ],
+                    "properties": {
+                      "ecoregion": {
+                        "description": "RESOLVE's ecoregion number (`ECO_ID`), the same in every state.",
+                        "type": "integer",
+                        "minimum": 1
+                      },
+                      "name": {
+                        "description": "Its name, such as `Southern Great Lakes forests`.",
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "biome": {
+                        "description": "Its biome, such as `Temperate Broadleaf & Mixed Forests`.",
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "share": {
+                        "description": "Its share of the area's land, 0.05 to 1, to 2 decimal places.",
+                        "type": "number",
+                        "minimum": 0.05,
+                        "maximum": 1
+                      }
+                    }
+                  }
                 }
               },
               "allOf": [
