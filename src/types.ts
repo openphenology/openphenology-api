@@ -322,6 +322,12 @@ export type SpeciesFile = PublishedFile<
       readonly season: SeasonWeeks;
       /** Why `season` is empty, or `null`. */
       readonly season_withheld: Withheld | null;
+      /**
+       * Medians over the records the season counts, each on the record's date
+       * at its place (ODR-2026-028). Added in `species/1.7`, so absent from
+       * earlier files.
+       */
+      readonly conditions?: Conditions;
     }[];
     /** Every area within its mapped range. */
     readonly ranges: readonly {
@@ -437,6 +443,27 @@ export interface SpeciesListing {
    * Added in `species/1.6`.
    */
   readonly edition?: string;
+}
+
+/**
+ * The medians over a result's records, each on the record's date at its place
+ * (data rules `formats.md`). A value is `null` when fewer records than the
+ * method's minimum have it.
+ */
+export interface Conditions {
+  /** Median sunrise, local clock time `HH:MM`, calculated with NOAA's solar calculation. */
+  readonly sunrise: string | null;
+  /** Median sunset, local clock time `HH:MM`, calculated with NOAA's solar calculation. */
+  readonly sunset: string | null;
+  /** Median daily high in °C, from NOAA nClimGrid-Daily; lower 48 states only. */
+  readonly high: number | null;
+  /** Median daily low in °C, from NOAA nClimGrid-Daily; lower 48 states only. */
+  readonly low: number | null;
+  /**
+   * Median midpoint of the day's high and low in °C (NOAA's `tavg`); not an
+   * average of temperatures through the day. Lower 48 states only.
+   */
+  readonly midpoint: number | null;
 }
 
 /** One US-RIIS listing of a species, or of a subspecies or variety of it. */
