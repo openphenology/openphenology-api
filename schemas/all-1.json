@@ -2224,6 +2224,92 @@
                       ]
                     }
                   }
+                },
+                "flowering": {
+                  "description": "For a plant, the result from its records that show flowers\n(ODR-2026-025); `null` for a species that is not a plant. Added in\n`species/1.8`, so absent from earlier files.",
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "required": [
+                        "records",
+                        "season",
+                        "season_withheld"
+                      ],
+                      "properties": {
+                        "records": {
+                          "description": "Records that show flowers, counted there.",
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "season": {
+                          "description": "Early, middle and late weeks, or empty.",
+                          "type": "array",
+                          "items": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 53
+                          },
+                          "maxItems": 3
+                        },
+                        "season_withheld": {
+                          "description": "Why `season` is empty, or `null`.",
+                          "anyOf": [
+                            {
+                              "enum": [
+                                "too-few-records",
+                                "year-round",
+                                "two-seasons",
+                                "one-year",
+                                "precision"
+                              ]
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      },
+                      "allOf": [
+                        {
+                          "anyOf": [
+                            {
+                              "type": "object",
+                              "properties": {
+                                "season": {
+                                  "type": "array",
+                                  "minItems": 3
+                                },
+                                "season_withheld": {
+                                  "type": "null"
+                                }
+                              }
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "season": {
+                                  "type": "array",
+                                  "maxItems": 0
+                                },
+                                "season_withheld": {
+                                  "enum": [
+                                    "too-few-records",
+                                    "year-round",
+                                    "two-seasons",
+                                    "one-year",
+                                    "precision"
+                                  ]
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
                 }
               },
               "allOf": [

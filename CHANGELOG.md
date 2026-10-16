@@ -8,6 +8,13 @@ All notable changes to this package are recorded here. The format follows
 
 ### Added
 
+- Data rules 1.32 (`formats.md` 1.15, `seasonal.md` 1.4, ODR-2026-025):
+  `species/1.8`. Each area result may carry `flowering` (`Flowering`): for a
+  plant, the result from its records that show flowers, with `records`,
+  `season` and `season_withheld`, which may be `too-few-records`
+  (`FloweringWithheld`). It is `null` for a species that is not a plant and
+  absent from earlier files. It describes when people recorded the plant with
+  flowers showing, not when it flowers.
 - Data rules 1.31 (`formats.md` 1.14, ODR-2026-028): `species/1.7`. Each area
   result may carry `conditions` (`Conditions`): the medians of `sunrise` and
   `sunset` (local `HH:MM`, calculated with NOAA's solar calculation) and of

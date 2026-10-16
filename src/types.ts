@@ -64,6 +64,12 @@ export type Level = "state" | "county";
  */
 export type Withheld = "year-round" | "two-seasons" | "one-year" | "precision";
 
+/**
+ * Why a flowering result's `season` is empty: a reason in `Withheld`, or too
+ * few records that show flowers (data rules `seasonal.md`).
+ */
+export type FloweringWithheld = Withheld | "too-few-records";
+
 /** A mapped range's seasons. */
 export type RangeSeason =
   "year-round" | "summer" | "winter" | "migratory" | "passage";
@@ -328,6 +334,12 @@ export type SpeciesFile = PublishedFile<
        * earlier files.
        */
       readonly conditions?: Conditions;
+      /**
+       * For a plant, the result from its records that show flowers
+       * (ODR-2026-025); `null` for a species that is not a plant. Added in
+       * `species/1.8`, so absent from earlier files.
+       */
+      readonly flowering?: Flowering | null;
     }[];
     /** Every area within its mapped range. */
     readonly ranges: readonly {
@@ -443,6 +455,21 @@ export interface SpeciesListing {
    * Added in `species/1.6`.
    */
   readonly edition?: string;
+}
+
+/**
+ * A plant's flowering result in one area (data rules `seasonal.md`, Flowering
+ * results): when people recorded it with flowers showing and annotated, not
+ * when it flowers. Pages say "reported in flower" and name the middle week,
+ * never a peak.
+ */
+export interface Flowering {
+  /** Records that show flowers, counted there. */
+  readonly records: number;
+  /** Early, middle and late weeks, or empty. */
+  readonly season: SeasonWeeks;
+  /** Why `season` is empty, or `null`. */
+  readonly season_withheld: FloweringWithheld | null;
 }
 
 /**

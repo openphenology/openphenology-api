@@ -45,7 +45,8 @@
           "high": 25.6,
           "low": 14.4,
           "midpoint": 20
-        }
+        },
+        "flowering": null
       }
     ],
     "ranges": [],
