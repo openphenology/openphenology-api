@@ -599,6 +599,24 @@ export interface RegionArea {
   readonly range_species_keys: readonly string[];
   /** Records of all species counted in the area, weeks 1 to 53. */
   readonly effort: readonly number[];
+  /**
+   * The ecoregions the area lies in (RESOLVE Ecoregions 2017), largest share
+   * first. They label the place only, never the species recorded there.
+   * Added in `region/1.1`, so absent from earlier files.
+   */
+  readonly ecoregions?: readonly Ecoregion[];
+}
+
+/** An ecoregion an area lies in (`region/1.1`). */
+export interface Ecoregion {
+  /** RESOLVE's ecoregion number (`ECO_ID`), the same in every state. */
+  readonly ecoregion: number;
+  /** Its name, such as `Southern Great Lakes forests`. */
+  readonly name: string;
+  /** Its biome, such as `Temperate Broadleaf & Mixed Forests`. */
+  readonly biome: string;
+  /** Its share of the area's land, 0.05 to 1, to 2 decimal places. */
+  readonly share: number;
 }
 /** `regions/<state>.json`: a state, its counties, their species and effort. */
 export type RegionFile = PublishedFile<
