@@ -605,7 +605,17 @@ export interface RegionArea {
    * Added in `region/1.1`, so absent from earlier files.
    */
   readonly ecoregions?: readonly Ecoregion[];
+  /**
+   * Sunrise, sunset and hours of daylight each week at the area's centre,
+   * weeks 1 to 53, for each week's middle day in the release's year; `null`
+   * for a week with no sunrise or sunset. They describe the place only.
+   * Added in `region/1.2`, so absent from earlier files.
+   */
+  readonly daylight?: readonly (DaylightWeek | null)[];
 }
+
+/** A week's `[sunrise, sunset, hours]`: local `HH:MM` times and hours of daylight. */
+export type DaylightWeek = readonly [string, string, number];
 
 /** An ecoregion an area lies in (`region/1.1`). */
 export interface Ecoregion {
