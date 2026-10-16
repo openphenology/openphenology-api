@@ -8,6 +8,12 @@ All notable changes to this package are recorded here. The format follows
 
 ### Added
 
+- Data rules 1.34 (`formats.md` 1.17, `protection.md` 1.3): `species/1.10`.
+  Each area result may carry `record_dates`, how many distinct dates its
+  counted records fall on, and `latest_month`, the month of the latest of
+  them (`YYYY-MM`). Both are `null` for a species sensitive in the state and
+  absent from earlier files. They say when people recorded the species,
+  never whether it is there now.
 - Data rules 1.33 (`formats.md` 1.16, `seasonal.md` 1.5): `species/1.9`.
   A result withheld as `two-seasons`, and a flowering result, may carry
   `windows` (`SeasonWindow`): the two windows its records split into at the
