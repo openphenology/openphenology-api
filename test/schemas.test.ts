@@ -120,6 +120,40 @@ describe("schemas", () => {
     expect(errors(file)).toEqual([]);
   });
 
+  test("a species/1.8 flowering result has weeks or a reason, and 1.7 files need none", async () => {
+    const file = structuredClone(
+      (await published()).get("releases/2026-01-05/species/EX1.json"),
+    );
+    if (!file) throw new Error("missing fixture");
+    const area = first(file.data.areas);
+    file.format = "species/1.8";
+    area.flowering = {
+      records: 64,
+      season: [16, 18, 21],
+      season_withheld: null,
+    };
+    expect(errors(file)).toEqual([]);
+    area.flowering = {
+      records: 7,
+      season: [],
+      season_withheld: "too-few-records",
+    };
+    expect(errors(file)).toEqual([]);
+    area.flowering = { records: 7, season: [], season_withheld: null };
+    expect(errors(file)).not.toEqual([]);
+    area.flowering = {
+      records: 64,
+      season: [16, 18, 21],
+      season_withheld: "too-few-records",
+    };
+    expect(errors(file)).not.toEqual([]);
+    area.flowering = null;
+    expect(errors(file)).toEqual([]);
+    file.format = "species/1.7";
+    delete area.flowering;
+    expect(errors(file)).toEqual([]);
+  });
+
   test("a species/1.1 file needs no introductions", async () => {
     const file = structuredClone(
       (await published()).get("releases/2026-01-05/species/EX1.json"),

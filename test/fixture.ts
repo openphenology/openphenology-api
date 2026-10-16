@@ -147,6 +147,7 @@ const files: [string, string, unknown][] = [
             low: 14.4,
             midpoint: 20,
           },
+          flowering: null,
         },
       ],
       ranges: [],

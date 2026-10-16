@@ -172,6 +172,33 @@ const seasonMatchesWithheld: Schema = {
     },
   ],
 };
+/** A flowering result's season, or its reason, which may be too few records. */
+const floweringMatchesWithheld: Schema = {
+  anyOf: [
+    {
+      type: "object",
+      properties: {
+        season: { type: "array", minItems: 3 },
+        season_withheld: { type: "null" },
+      },
+    },
+    {
+      type: "object",
+      properties: {
+        season: { type: "array", maxItems: 0 },
+        season_withheld: {
+          enum: [
+            "too-few-records",
+            "year-round",
+            "two-seasons",
+            "one-year",
+            "precision",
+          ],
+        },
+      },
+    },
+  ],
+};
 /** `format` is null for `archive.tar.gz`, the one file that is not JSON, and only for it. */
 const archiveHasNoFormat: Schema = {
   anyOf: [
@@ -526,7 +553,8 @@ export const schemas = {
               areaMatchesLevel,
               seasonMatchesWithheld,
             ),
-            // Optional: added in species/1.7, so absent from earlier files.
+            // Optional: `conditions` added in species/1.7 and `flowering` in
+            // species/1.8, so absent from earlier files.
             properties: {
               area,
               level: { enum: ["state", "county"] },
@@ -540,6 +568,24 @@ export const schemas = {
                 low: nullable(celsius),
                 midpoint: nullable(celsius),
               }),
+              flowering: nullable(
+                object(
+                  {
+                    records: count,
+                    season,
+                    season_withheld: nullable({
+                      enum: [
+                        "too-few-records",
+                        "year-round",
+                        "two-seasons",
+                        "one-year",
+                        "precision",
+                      ],
+                    }),
+                  },
+                  floweringMatchesWithheld,
+                ),
+              ),
             },
           }),
           ranges: list(
