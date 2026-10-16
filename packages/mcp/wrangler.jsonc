@@ -1,0 +1,41 @@
+// The hosted MCP server. Only staging is set up; production needs approval
+// (#44). Deploy from this folder with:
+//   pnpm dlx wrangler@4.148.0 deploy --env staging
+{
+  "name": "openphenology-worker-mcp",
+  "main": "src/worker.ts",
+  "compatibility_date": "2026-10-01",
+  "workers_dev": false,
+  "preview_urls": false,
+  "env": {
+    "staging": {
+      "name": "openphenology-staging-worker-mcp",
+      "routes": [
+        {
+          "pattern": "api-staging.openphenology.com/mcp*",
+          "zone_name": "openphenology.com",
+        },
+      ],
+      // Read the published files from the API Worker, not over the internet.
+      "services": [
+        {
+          "binding": "API",
+          "service": "openphenology-staging-worker-api-read",
+        },
+      ],
+      "vars": { "API_BASE_URL": "https://api-staging.openphenology.com/" },
+      // 60 requests a minute from each address.
+      "ratelimits": [
+        {
+          "name": "RATE_LIMITER",
+          "namespace_id": "4401",
+          "simple": { "limit": 60, "period": 60 },
+        },
+      ],
+      // Caps the cost of each request.
+      "limits": { "cpu_ms": 50 },
+      // Nothing is logged, so no ZIP code or question is kept.
+      "observability": { "enabled": false },
+    },
+  },
+}

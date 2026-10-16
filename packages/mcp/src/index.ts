@@ -17,11 +17,17 @@ export const SERVER_INFO = { name: "openphenology", version: "0.0.0" };
 const INSTRUCTIONS =
   "OpenPhenology publishes when people recorded each species, week by week, in US states and counties. Every answer has `limits`: pass it on, and say a species was recorded or reported at a time, never that it occurs, is present or is absent then. A missing result never means absence. Credit the data with `terms.cite` and `terms.credit`; the licence is noncommercial.";
 
+/** One reader per client, so servers made for each request share its caches. */
+const readers = new WeakMap<Client, Reader>();
+
 /** Options for {@link createServer}. */
 export interface ServerOptions {
   /** The client to read data with. Defaults to one for the production API. */
   readonly client?: Client;
-  /** The clock, for this week's labels. Defaults to the system clock. */
+  /**
+   * The clock, for this week's labels. Defaults to the system clock. Servers
+   * made with the same client share the clock of the first.
+   */
   readonly now?: () => Date;
 }
 
@@ -54,7 +60,12 @@ const annotations = { readOnlyHint: true, openWorldHint: true };
  * @returns A server that is not yet connected.
  */
 export function createServer(options: ServerOptions = {}): McpServer {
-  const reader = new Reader(options.client ?? createClient(), options.now);
+  const client = options.client ?? createClient();
+  let reader = readers.get(client);
+  if (!reader) {
+    reader = new Reader(client, options.now);
+    readers.set(client, reader);
+  }
   const server = new McpServer(SERVER_INFO, { instructions: INSTRUCTIONS });
 
   server.registerTool(
