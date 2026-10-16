@@ -4,8 +4,8 @@ An MCP (Model Context Protocol) server that lets AI assistants read
 OpenPhenology's published data through
 [`@openphenology/api`](../../README.md).
 
-**Not yet released.** A hosted endpoint at `https://api.openphenology.com/mcp`
-and the full usage guide on data.openphenology.com are coming; see
+**Not yet released.** A hosted server at `https://mcp.openphenology.com` and
+the full usage guide on data.openphenology.com are coming; see
 [#44](https://github.com/openphenology/openphenology-api/issues/44).
 
 ## Tools
@@ -45,19 +45,19 @@ user's own, so a whole ZIP code never reaches the server.
 
 ## Hosted
 
-`src/worker.ts` is the same server as a Cloudflare Worker, keeping no
-sessions. `wrangler.jsonc` sets it up on staging only, at
-`https://api-staging.openphenology.com/mcp`:
+`@openphenology/mcp/http` serves the same server over stateless streamable
+HTTP, for a host such as a Cloudflare Worker:
 
-- it reads the published files from `https://api-staging.openphenology.com/`,
-  where openphenology/data publishes them;
-- it allows 60 requests a minute from each address, and 50 ms of CPU time
-  per request;
-- logging is off.
+```js
+import { createHttpHandler } from "@openphenology/mcp/http";
 
-The MCP (staging) workflow deploys it after a change to `main`, or by hand.
-It uses the `staging` environment: the `CF_ACCOUNT_ID` variable and a
-`CLOUDFLARE_API_TOKEN` secret. Production needs approval.
+const handle = createHttpHandler();
+export default { fetch: (request) => handle(request) };
+```
+
+It keeps no sessions and logs nothing, and its `find_county` takes only a ZIP
+code's first three digits. Routing, rate limits and access control are left to
+the host. OpenPhenology will host it at `https://mcp.openphenology.com`.
 
 ## Try it
 

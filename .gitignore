@@ -153,5 +153,3 @@ docs/
 # Written and removed by scripts/readme.ts
 .readme/
 
-# Wrangler state, from running the MCP Worker locally
-.wrangler/
