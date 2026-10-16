@@ -3518,12 +3518,20 @@
               ],
               "properties": {
                 "source": {
-                  "description": "The list: US-RIIS ver. 2.0, conterminous 48 states.",
-                  "const": "us-riis-l48-v2"
+                  "description": "The list: `us-riis-l48-v2` (US-RIIS ver. 2.0, conterminous 48 states);\nfrom `species/1.12` (ODR-2026-039), `inaturalist-checklist`\n(iNaturalist's state checklist, status `introduced` only),\n`oh-oda-invasive-plants` (Ohio Department of Agriculture, OAC\n901:5-30-01) and `oh-odnr-aquatic-invasive` (ODNR, OAC 1501:31-19-01),\nboth status `invasive`.",
+                  "enum": [
+                    "us-riis-l48-v2",
+                    "inaturalist-checklist",
+                    "oh-oda-invasive-plants",
+                    "oh-odnr-aquatic-invasive"
+                  ]
                 },
                 "region": {
-                  "description": "Where the listing applies: the 48 conterminous states and DC.",
-                  "const": "us-l48"
+                  "description": "Where the listing applies: `us-l48`, the 48 conterminous states and DC;\n`us-oh`, Ohio only (from `species/1.12`).",
+                  "enum": [
+                    "us-l48",
+                    "us-oh"
+                  ]
                 },
                 "listed_name": {
                   "description": "The scientific name the list gives; it shows when only a subspecies or variety is listed.",
