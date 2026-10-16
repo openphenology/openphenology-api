@@ -8,6 +8,12 @@ All notable changes to this package are recorded here. The format follows
 
 ### Added
 
+- Data rules 1.33 (`formats.md` 1.16, `seasonal.md` 1.5): `species/1.9`.
+  A result withheld as `two-seasons`, and a flowering result, may carry
+  `windows` (`SeasonWindow`): the two windows its records split into at the
+  valley between the peaks, each with `records`, `season` and
+  `season_withheld` (which may be `too-few-records`). It is `null` otherwise
+  and absent from earlier files. Windows say when, never why there are two.
 - Data rules 1.32 (`formats.md` 1.15, `seasonal.md` 1.4, ODR-2026-025):
   `species/1.8`. Each area result may carry `flowering` (`Flowering`): for a
   plant, the result from its records that show flowers, with `records`,
