@@ -140,6 +140,13 @@ const files: [string, string, unknown][] = [
           records: 120,
           season: [14, 22, 35],
           season_withheld: null,
+          conditions: {
+            sunrise: "06:24",
+            sunset: "20:51",
+            high: 25.6,
+            low: 14.4,
+            midpoint: 20,
+          },
         },
       ],
       ranges: [],

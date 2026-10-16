@@ -80,6 +80,10 @@ const object = (properties: Record<string, Schema>, ...rules: Schema[]) => ({
 });
 
 const date = pattern("^\\d{4}-\\d{2}-\\d{2}$");
+/** A local clock time, `HH:MM` on a 24-hour clock. */
+const clock = pattern("^([01]\\d|2[0-3]):[0-5]\\d$");
+/** A temperature in °C, to one decimal. */
+const celsius: Schema = { type: "number" };
 const time = pattern("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$");
 const STATE = "[a-z]{2}-[a-z0-9]{1,3}";
 const COUNTY = "\\d{5}";
@@ -510,8 +514,8 @@ export const schemas = {
           classification: object(classification),
           group: nullable(group),
           slug: nullable(slug),
-          areas: list(
-            object(
+          areas: list({
+            ...object(
               {
                 area,
                 level: { enum: ["state", "county"] },
@@ -522,7 +526,22 @@ export const schemas = {
               areaMatchesLevel,
               seasonMatchesWithheld,
             ),
-          ),
+            // Optional: added in species/1.7, so absent from earlier files.
+            properties: {
+              area,
+              level: { enum: ["state", "county"] },
+              records: count,
+              season,
+              season_withheld: seasonWithheld,
+              conditions: object({
+                sunrise: nullable(clock),
+                sunset: nullable(clock),
+                high: nullable(celsius),
+                low: nullable(celsius),
+                midpoint: nullable(celsius),
+              }),
+            },
+          }),
           ranges: list(
             object(
               {

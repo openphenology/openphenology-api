@@ -2154,6 +2154,76 @@
                       "type": "null"
                     }
                   ]
+                },
+                "conditions": {
+                  "description": "Medians over the records the season counts, each on the record's date\nat its place (ODR-2026-028). Added in `species/1.7`, so absent from\nearlier files.",
+                  "type": "object",
+                  "required": [
+                    "sunrise",
+                    "sunset",
+                    "high",
+                    "low",
+                    "midpoint"
+                  ],
+                  "properties": {
+                    "sunrise": {
+                      "description": "Median sunrise, local clock time `HH:MM`, calculated with NOAA's solar calculation.",
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "sunset": {
+                      "description": "Median sunset, local clock time `HH:MM`, calculated with NOAA's solar calculation.",
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "high": {
+                      "description": "Median daily high in °C, from NOAA nClimGrid-Daily; lower 48 states only.",
+                      "anyOf": [
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "low": {
+                      "description": "Median daily low in °C, from NOAA nClimGrid-Daily; lower 48 states only.",
+                      "anyOf": [
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "midpoint": {
+                      "description": "Median midpoint of the day's high and low in °C (NOAA's `tavg`); not an\naverage of temperatures through the day. Lower 48 states only.",
+                      "anyOf": [
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  }
                 }
               },
               "allOf": [

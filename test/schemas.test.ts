@@ -92,6 +92,34 @@ describe("schemas", () => {
     expect(errors(file)).toEqual([]);
   });
 
+  test("a species/1.6 file needs no conditions, and a 1.7 time is HH:MM", async () => {
+    const file = structuredClone(
+      (await published()).get("releases/2026-01-05/species/EX1.json"),
+    );
+    if (!file) throw new Error("missing fixture");
+    const area = first(file.data.areas);
+    file.format = "species/1.7";
+    area.conditions = {
+      sunrise: "06:24",
+      sunset: null,
+      high: null,
+      low: 14.4,
+      midpoint: 20,
+    };
+    expect(errors(file)).toEqual([]);
+    area.conditions = {
+      sunrise: "6:24",
+      sunset: null,
+      high: null,
+      low: 14.4,
+      midpoint: 20,
+    };
+    expect(errors(file)).not.toEqual([]);
+    file.format = "species/1.6";
+    delete area.conditions;
+    expect(errors(file)).toEqual([]);
+  });
+
   test("a species/1.1 file needs no introductions", async () => {
     const file = structuredClone(
       (await published()).get("releases/2026-01-05/species/EX1.json"),

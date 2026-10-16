@@ -8,6 +8,14 @@ All notable changes to this package are recorded here. The format follows
 
 ### Added
 
+- Data rules 1.31 (`formats.md` 1.14, ODR-2026-028): `species/1.7`. Each area
+  result may carry `conditions` (`Conditions`): the medians of `sunrise` and
+  `sunset` (local `HH:MM`, calculated with NOAA's solar calculation) and of
+  the daily `high`, `low` and `midpoint` (°C, from NOAA nClimGrid-Daily, lower
+  48 states only) over the records the season counts. `midpoint` is the mean
+  of the day's high and low, not an average through the day. A value is
+  `null` when too few records have it; `conditions` is absent from earlier
+  files.
 - Data rules 1.30 (`formats.md` 1.13): `manifest/2.0`. A manifest larger
   than 500 KB is split on `files`; its first part stays at `manifest.json`,
   then `manifest/1.json` and so on, and `parts` says how many there are.

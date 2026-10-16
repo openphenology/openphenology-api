@@ -40,9 +40,9 @@
       },
       {
         "path": "species/EX1.json",
-        "sha256": "a9742ff24a492fada63a580f4e8445ca4c5aafafd78441b046443ab532001506",
+        "sha256": "8a8d38783bd95b36efd56a281e58d413a045765cf32d3c3020f4cbcf0b3eda18",
         "format": "species/1.5",
-        "bytes": 1522
+        "bytes": 1609
       },
       {
         "path": "slugs.json",
