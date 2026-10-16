@@ -3,7 +3,9 @@ import jsdoc from "eslint-plugin-jsdoc";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
-  { ignores: ["coverage", "dist", "docs", ".readme", "scripts/*.mjs"] },
+  {
+    ignores: ["coverage", "**/dist", "docs", ".readme", "scripts/*.mjs"],
+  },
   js.configs.recommended,
   ...tseslint.configs.strictTypeChecked,
   {
@@ -41,11 +43,11 @@ export default tseslint.config(
   },
   {
     // Every export is documented, and its tags match what it takes and does.
-    files: ["src/**/*.ts"],
+    files: ["src/**/*.ts", "packages/*/src/**/*.ts"],
     ...jsdoc.configs["flat/recommended-typescript-error"],
   },
   {
-    files: ["src/**/*.ts"],
+    files: ["src/**/*.ts", "packages/*/src/**/*.ts"],
     rules: {
       "jsdoc/require-jsdoc": [
         "error",

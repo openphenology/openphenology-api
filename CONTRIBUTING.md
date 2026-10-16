@@ -64,6 +64,7 @@ If that passes, you're ready to make changes.
 | `scripts/llms.ts`, `scripts/readme.ts` | Check that `llms.txt` and the README examples match the API                        |
 | `scripts/size.mjs`                     | The size budget                                                                    |
 | `README.md`, `llms.txt`                | Docs for people and for AI agents; keep both in step with the API                  |
+| `packages/mcp`                         | `@openphenology/mcp`, an MCP server built on the client. Not yet published         |
 
 **Generated; don't edit by hand:** `schemas/*.json` and
 `schemas/examples/*.json` (run `pnpm schemas`), `dist/` (`pnpm build`) and
@@ -71,9 +72,15 @@ If that passes, you're ready to make changes.
 
 ## Guidelines
 
+The repository is a pnpm workspace. Its root is the client,
+`@openphenology/api`; other packages built on it live under `packages/` and
+depend on it with `workspace:*`. Run every command from the root:
+`pnpm check` covers every package.
+
 - **Runtime code** in `src` uses only web-standard APIs and no dependencies,
   so it runs in Node.js and browsers. `pnpm size` keeps the built code under
-  5 KB gzipped; comments don't count.
+  5 KB gzipped; comments don't count. These two rules are for the client
+  only: `packages/mcp` depends on the MCP SDK.
 - **Every export needs a doc comment.** Describe what it does, and use
   `@param`, `@returns` (including when the result is `null`) and `@throws`.
   Lint checks that the tags match the code, and `pnpm check` fails when

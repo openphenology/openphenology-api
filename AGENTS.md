@@ -29,7 +29,8 @@ In a Claude Code cloud session, `.claude/setup.sh` does this for you and sets
 ## Rules
 
 - `src` uses only web-standard APIs and has no runtime dependencies. The built
-  code stays under 5 KB gzipped (`pnpm size`).
+  code stays under 5 KB gzipped (`pnpm size`). Both rules cover only the
+  client: `packages/mcp`, the MCP server, may depend on the MCP SDK.
 - Every export has a doc comment with `@param`, `@returns` and `@throws`.
 - Field docs live in `src/types.ts`; the schemas copy them.
 - Tests use the made-up release in `test/fixture.ts` and never touch the
