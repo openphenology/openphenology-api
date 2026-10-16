@@ -692,7 +692,7 @@ export interface Warmth {
    */
   readonly normal: number;
   /**
-   * Days `through` is after the first calendar day on which the normal
+   * Days from `through` to the first calendar day on which the normal
    * reaches `degree_days`: positive ahead of normal, negative behind;
    * `null` while `normal` is below 50.
    */

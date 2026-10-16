@@ -505,7 +505,7 @@
                         "minimum": 0
                       },
                       "days_ahead": {
-                        "description": "Days `through` is after the first calendar day on which the normal\nreaches `degree_days`: positive ahead of normal, negative behind;\n`null` while `normal` is below 50.",
+                        "description": "Days from `through` to the first calendar day on which the normal\nreaches `degree_days`: positive ahead of normal, negative behind;\n`null` while `normal` is below 50.",
                         "anyOf": [
                           {
                             "type": "integer"
