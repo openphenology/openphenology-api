@@ -29,8 +29,19 @@ Every answer is JSON with three more fields:
 The server also gives assistants instructions to pass `limits` on and credit
 the data.
 
-A server checks for a new release at most once an hour. ZIP codes are only
-used to read the published postal file, and are never logged or stored.
+Fixed wording comes from the published data rules word for word: the Backyard
+labels, why season weeks are withheld, and what a missing result means. A
+species under "Within its mapped range" comes with the range's source and
+seasons.
+
+A server checks for a new release at most once an hour.
+
+**ZIP codes.** By default, `find_county` takes a whole ZIP code and reads only
+the published postal file for its first three digits; the ZIP code is never
+sent anywhere else or stored. A hosted server is made with
+`createServer({ zip: "prefix" })`: its `find_county` takes only the first three
+digits and returns every ZIP code under them, and the assistant picks the
+user's own, so a whole ZIP code never reaches the server.
 
 ## Try it
 

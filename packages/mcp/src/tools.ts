@@ -18,14 +18,17 @@ import {
 const LIMITS =
   "These results show when people recorded a species, not when or where it occurs.";
 
-/** What each reason for withholding season weeks means, for an assistant to pass on. */
+/** Why season weeks are withheld, word for word from the data rules (`seasonal.md`). */
 const WITHHELD: Readonly<Record<Withheld, string>> = {
-  "year-round":
-    "Recorded through most of the year, so there is no bounded season.",
-  "two-seasons": "The records have two clear peaks in the year.",
-  "one-year": "One calendar year holds most of the records.",
-  precision: "The weeks are too uncertain to show.",
+  "year-round": "There is no bounded season to describe",
+  "two-seasons": "One early-middle-late window would put the middle in the gap",
+  "one-year": "One year's activity would stand in for all of them",
+  precision: "The weeks are too uncertain to show",
 };
+
+/** What a missing result means, as the data rules (`published.md`) say it. */
+const NO_RESULT =
+  "A result withheld by the data rules is not published. It looks exactly like a result that does not exist.";
 
 /** How long a server keeps a release before checking for a newer one. */
 const REFRESH_MS = 60 * 60 * 1000;
@@ -226,6 +229,49 @@ export class Reader {
   }
 
   /**
+   * Every ZIP code that starts with a 3-digit prefix, with its counties, so
+   * the assistant can pick the user's own: the hosted server never receives
+   * a whole ZIP code.
+   *
+   * @param prefix The first three digits of a ZIP code.
+   * @returns Each ZIP code and its counties, largest share of its land first;
+   *   empty when none is published for the prefix.
+   * @throws {RangeError} When the prefix is not three digits.
+   * @throws {ApiError} Rejects when a file cannot be read.
+   */
+  async findCountiesByPrefix(prefix: string) {
+    const release = await this.release();
+    const file = await release.postal(prefix);
+    const zips = Object.entries(file?.data.zips ?? {});
+    const states = new Set(
+      zips.flatMap(([, counties]) =>
+        counties.map(([area]) => countyState(area) ?? ""),
+      ),
+    );
+    states.delete("");
+    const regions = await Promise.all(
+      [...states].map((s) => release.region(s)),
+    );
+    const names = new Map(
+      regions.flatMap((region) =>
+        (region?.data.areas ?? []).map((place) => [place.area, place.name]),
+      ),
+    );
+    return this.answer(release, {
+      prefix,
+      zips: zips.map(([zip, counties]) => ({
+        zip,
+        counties: counties.map(([area, share]) => ({
+          county: area,
+          state: countyState(area),
+          name: names.get(area) ?? null,
+          share,
+        })),
+      })),
+    });
+  }
+
+  /**
    * A species' season in a state or one of its counties.
    *
    * @param species The species key.
@@ -259,7 +305,7 @@ export class Reader {
         ...named,
         ...place,
         result: null,
-        why: "No result is published: there is too little evidence, or the species is sensitive and its result is withheld. This never means the species is absent.",
+        note: NO_RESULT,
       });
     const { data } = file;
     return this.answer(
@@ -317,6 +363,8 @@ export class Reader {
         species_key: species.species_key,
         ...namesOf(names, species.species_key),
         group: species.group,
+        // A range label is shown with the range's seasons and source.
+        ...(label === "m" ? { range: species.range } : {}),
       });
     }
     return this.answer(release, {
