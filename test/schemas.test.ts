@@ -540,6 +540,53 @@ describe("schemas", () => {
     expect(errors(file)).not.toEqual([]);
   });
 
+  test("catalogue/1.4 stage seasons and invasive status (ODR-2026-037)", async () => {
+    const file = structuredClone(
+      (await published()).get("releases/2026-01-05/catalogue/0.json"),
+    );
+    if (!file) throw new Error("missing fixture");
+    const species = first(file.data.species);
+    // Made-up values.
+    file.format = "catalogue/1.4";
+    species.invasive_in = [];
+    species.stage_seasons = {
+      "us-zz": { flowering: [16, 18, 21], fruiting: [] },
+    };
+    expect(errors(file)).toEqual([]);
+    species.stage_seasons = { "us-zz": {} };
+    expect(errors(file)).toEqual([]);
+    // Only the four stages, and a season is three weeks or none.
+    species.stage_seasons = { "us-zz": { blooming: [16, 18, 21] } };
+    expect(errors(file)).not.toEqual([]);
+    species.stage_seasons = { "us-zz": { adult: [16, 18] } };
+    expect(errors(file)).not.toEqual([]);
+    species.stage_seasons = { "99001": {} };
+    expect(errors(file)).not.toEqual([]);
+    // Required from 1.4, absent from earlier files.
+    delete species.stage_seasons;
+    delete species.invasive_in;
+    expect(errors(file)).not.toEqual([]);
+    file.format = "catalogue/1.3";
+    expect(errors(file)).toEqual([]);
+  });
+
+  test("backyard/1.2 stage seasons (ODR-2026-037)", async () => {
+    const file = structuredClone(
+      (await published()).get("releases/2026-01-05/backyard/us-zz/99001.json"),
+    );
+    if (!file) throw new Error("missing fixture");
+    const species = first(file.data.species);
+    file.format = "backyard/1.2";
+    species.stages = { adult: [22, 26, 30], larva: [] };
+    expect(errors(file)).toEqual([]);
+    species.stages = { pupa: [22, 26, 30] };
+    expect(errors(file)).not.toEqual([]);
+    delete species.stages;
+    expect(errors(file)).not.toEqual([]);
+    file.format = "backyard/1.1";
+    expect(errors(file)).toEqual([]);
+  });
+
   test("a species/1.2 file needs no iNaturalist taxon ID", async () => {
     const file = structuredClone(
       (await published()).get("releases/2026-01-05/species/EX1.json"),

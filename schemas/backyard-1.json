@@ -325,6 +325,93 @@
                     "type": "null"
                   }
                 ]
+              },
+              "stages": {
+                "description": "The county result's stage seasons, `{}` without a county result or\nstages. Added in `backyard/1.2`.",
+                "type": "object",
+                "properties": {
+                  "flowering": {
+                    "description": "A plant's season reported in flower, or empty when withheld.",
+                    "type": "array",
+                    "items": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 53
+                    },
+                    "maxItems": 3,
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "maxItems": 0
+                      },
+                      {
+                        "type": "array",
+                        "minItems": 3
+                      }
+                    ]
+                  },
+                  "fruiting": {
+                    "description": "A plant's season reported in fruit, or empty when withheld.",
+                    "type": "array",
+                    "items": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 53
+                    },
+                    "maxItems": 3,
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "maxItems": 0
+                      },
+                      {
+                        "type": "array",
+                        "minItems": 3
+                      }
+                    ]
+                  },
+                  "adult": {
+                    "description": "An insect's season reported as an adult, or empty when withheld.",
+                    "type": "array",
+                    "items": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 53
+                    },
+                    "maxItems": 3,
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "maxItems": 0
+                      },
+                      {
+                        "type": "array",
+                        "minItems": 3
+                      }
+                    ]
+                  },
+                  "larva": {
+                    "description": "An insect's season reported as a larva, or empty when withheld.",
+                    "type": "array",
+                    "items": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 53
+                    },
+                    "maxItems": 3,
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "maxItems": 0
+                      },
+                      {
+                        "type": "array",
+                        "minItems": 3
+                      }
+                    ]
+                  }
+                },
+                "additionalProperties": false
               }
             }
           }
@@ -365,6 +452,41 @@
                     "weekly",
                     "season",
                     "season_withheld"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "type": "object",
+        "properties": {
+          "format": {
+            "enum": [
+              "backyard/1.0",
+              "backyard/1.1"
+            ]
+          }
+        }
+      },
+      "else": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "object",
+            "properties": {
+              "species": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "stages": true
+                  },
+                  "required": [
+                    "stages"
                   ]
                 }
               }
