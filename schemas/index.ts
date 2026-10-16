@@ -726,8 +726,8 @@ export const schemas = {
       state,
       name: text,
       slug,
-      areas: list(
-        object(
+      areas: list({
+        ...object(
           {
             area,
             level: { enum: ["state", "county"] },
@@ -739,7 +739,26 @@ export const schemas = {
           },
           areaMatchesLevel,
         ),
-      ),
+        // Optional: `ecoregions` added in region/1.1, so absent from
+        // earlier files.
+        properties: {
+          area,
+          level: { enum: ["state", "county"] },
+          name: text,
+          slug,
+          species_keys: list(speciesKey),
+          range_species_keys: list(speciesKey),
+          effort: weekly,
+          ecoregions: list(
+            object({
+              ecoregion: { type: "integer", minimum: 1 },
+              name: text,
+              biome: text,
+              share: { type: "number", minimum: 0.05, maximum: 1 },
+            }),
+          ),
+        },
+      }),
     }),
   ),
 
