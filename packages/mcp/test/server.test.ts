@@ -55,6 +55,14 @@ test("an assistant can connect and read the server's name and instructions", asy
   expect(client.getInstructions()).toContain("limits");
 });
 
+test("reports its package version", async () => {
+  const { readFile } = await import("node:fs/promises");
+  const pkg = JSON.parse(
+    await readFile(new URL("../package.json", import.meta.url), "utf8"),
+  ) as { version: string };
+  expect(SERVER_INFO.version).toBe(pkg.version);
+});
+
 test("lists the five tools, each read-only", async () => {
   const { client } = await connect();
   const { tools } = await client.listTools();
