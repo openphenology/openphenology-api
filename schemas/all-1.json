@@ -4862,6 +4862,55 @@
                       "type": "null"
                     }
                   ]
+                },
+                "green_up": {
+                  "description": "The area's typical spring green-up and latest year, from NASA MODIS\nMCD12Q2 over its natural vegetation (ODR-2026-036), or `null`. It\ndescribes the place only. Added in `region/1.6`, so absent from earlier\nfiles.",
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "required": [
+                        "typical",
+                        "years",
+                        "latest_year",
+                        "latest",
+                        "days_later"
+                      ],
+                      "properties": {
+                        "typical": {
+                          "description": "The median of each year's green-up date, `MM-DD`.",
+                          "type": "string",
+                          "pattern": "^(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$"
+                        },
+                        "years": {
+                          "description": "The first and last year read.",
+                          "type": "array",
+                          "items": {
+                            "type": "integer",
+                            "minimum": 2000
+                          },
+                          "minItems": 2,
+                          "maxItems": 2
+                        },
+                        "latest_year": {
+                          "description": "The most recent year with a date.",
+                          "type": "integer",
+                          "minimum": 2000
+                        },
+                        "latest": {
+                          "description": "That year's green-up date, `MM-DD`.",
+                          "type": "string",
+                          "pattern": "^(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$"
+                        },
+                        "days_later": {
+                          "description": "`latest` minus `typical` in days: positive later, negative earlier.",
+                          "type": "integer"
+                        }
+                      }
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
                 }
               },
               "allOf": [

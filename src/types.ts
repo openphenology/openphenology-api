@@ -675,6 +675,27 @@ export interface RegionArea {
    * from earlier files.
    */
   readonly frost?: Frost | null;
+  /**
+   * The area's typical spring green-up and latest year, from NASA MODIS
+   * MCD12Q2 over its natural vegetation (ODR-2026-036), or `null`. It
+   * describes the place only. Added in `region/1.6`, so absent from earlier
+   * files.
+   */
+  readonly green_up?: GreenUp | null;
+}
+
+/** An area's spring green-up (`region/1.6`). */
+export interface GreenUp {
+  /** The median of each year's green-up date, `MM-DD`. */
+  readonly typical: string;
+  /** The first and last year read. */
+  readonly years: readonly [number, number];
+  /** The most recent year with a date. */
+  readonly latest_year: number;
+  /** That year's green-up date, `MM-DD`. */
+  readonly latest: string;
+  /** `latest` minus `typical` in days: positive later, negative earlier. */
+  readonly days_later: number;
 }
 
 /** An area's growing degree days so far this year (`region/1.5`). */

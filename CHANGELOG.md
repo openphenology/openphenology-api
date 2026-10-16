@@ -8,6 +8,13 @@ All notable changes to this package are recorded here. The format follows
 
 ### Added
 
+- Data rules 1.44 (ODR-2026-036): `region/1.6`. Each area may carry
+  `green_up` (`GreenUp`): the `typical` spring green-up (`MM-DD`, median of
+  each year's date), the `years` read (`[first, last]`), the `latest_year`
+  with a date, its date `latest` and `days_later` than typical (negative when
+  earlier), from NASA MODIS MCD12Q2 mid-green-up over the area's natural
+  vegetation; or `null`. It describes the place only. Absent from earlier
+  files.
 - Data rules 1.43 (ODR-2026-035): `region/1.5`. Each area may carry
   `warmth` (`Warmth`): `through`, `degree_days` (base 50°F, simple average,
   since 1 January), the 1991–2020 `normal` for that day, `days_ahead` (or
