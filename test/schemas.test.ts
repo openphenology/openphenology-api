@@ -120,6 +120,41 @@ describe("schemas", () => {
     expect(errors(file)).toEqual([]);
   });
 
+  test("species/1.11 fruiting, adult and larva results take the flowering form", async () => {
+    const file = structuredClone(
+      (await published()).get("releases/2026-01-05/species/EX1.json"),
+    );
+    if (!file) throw new Error("missing fixture");
+    const area = first(file.data.areas);
+    file.format = "species/1.11";
+    for (const field of ["fruiting", "adult", "larva"]) {
+      area[field] = {
+        records: 31,
+        season: [20, 24, 29],
+        season_withheld: null,
+        windows: null,
+      };
+      expect(errors(file), field).toEqual([]);
+      area[field] = {
+        records: 7,
+        season: [],
+        season_withheld: "too-few-records",
+        windows: null,
+      };
+      expect(errors(file), field).toEqual([]);
+      area[field] = { records: 7, season: [], season_withheld: null };
+      expect(errors(file), field).not.toEqual([]);
+      area[field] = null;
+      expect(errors(file), field).toEqual([]);
+    }
+    // Absent from files before species/1.11.
+    file.format = "species/1.10";
+    delete area.fruiting;
+    delete area.adult;
+    delete area.larva;
+    expect(errors(file)).toEqual([]);
+  });
+
   test("a species/1.8 flowering result has weeks or a reason, and 1.7 files need none", async () => {
     const file = structuredClone(
       (await published()).get("releases/2026-01-05/species/EX1.json"),
