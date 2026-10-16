@@ -1,7 +1,7 @@
 {
   "id": "releases/2026-01-05/species/EX1.json",
   "kind": "species",
-  "format": "species/1.5",
+  "format": "species/1.11",
   "provenance": {
     "release": "2026-01-05",
     "sources": ["example"],
@@ -46,7 +46,10 @@
           "low": 14.4,
           "midpoint": 20
         },
-        "flowering": null
+        "flowering": null,
+        "fruiting": null,
+        "adult": null,
+        "larva": null
       }
     ],
     "ranges": [],

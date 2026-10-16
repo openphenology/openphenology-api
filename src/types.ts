@@ -358,6 +358,25 @@ export type SpeciesFile = PublishedFile<
        * `species/1.8`, so absent from earlier files.
        */
       readonly flowering?: Flowering | null;
+      /**
+       * For a plant, the result from its records that show fruit
+       * (ODR-2026-032); `null` for a species that is not a plant. Added in
+       * `species/1.11`, so absent from earlier files.
+       */
+      readonly fruiting?: Flowering | null;
+      /**
+       * For an insect, the result from its records annotated as an adult
+       * (ODR-2026-032); `null` for a species that is not an insect. Added in
+       * `species/1.11`, so absent from earlier files.
+       */
+      readonly adult?: Flowering | null;
+      /**
+       * For an insect, the result from its records annotated as a larva
+       * (ODR-2026-032); `null` for a species that is not an insect. Pages say
+       * "reported as a caterpillar" for butterflies and moths. Added in
+       * `species/1.11`, so absent from earlier files.
+       */
+      readonly larva?: Flowering | null;
     }[];
     /** Every area within its mapped range. */
     readonly ranges: readonly {
@@ -476,10 +495,13 @@ export interface SpeciesListing {
 }
 
 /**
- * A plant's flowering result in one area (data rules `seasonal.md`, Flowering
- * results): when people recorded it with flowers showing and annotated, not
- * when it flowers. Pages say "reported in flower" and name the middle week,
- * never a peak.
+ * A stage result in one area (data rules `seasonal.md`): a plant's flowering
+ * or fruiting result, or an insect's adult or larva result. It says when
+ * people recorded the species with that stage showing and annotated, not
+ * when the stage happens. Pages say "reported in flower", "reported in
+ * fruit", "reported as an adult" or "reported as a larva" ("as a
+ * caterpillar" for butterflies and moths), and name the middle week, never a
+ * peak.
  */
 export interface Flowering {
   /** Records that show flowers, counted there. */

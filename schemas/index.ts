@@ -254,6 +254,29 @@ const windows: Schema = nullable(
   ),
 );
 
+/**
+ * A flowering, fruiting, adult or larva result (data rules `seasonal.md`):
+ * the season method on the records that show the stage, or `null` where the
+ * stage does not apply. `windows` was added in species/1.9.
+ */
+const stageResult: Schema = nullable({
+  ...object(
+    {
+      records: count,
+      season,
+      season_withheld: windowWithheld,
+    },
+    floweringMatchesWithheld,
+    windowsOnlyForTwoSeasons,
+  ),
+  properties: {
+    records: count,
+    season,
+    season_withheld: windowWithheld,
+    windows,
+  },
+});
+
 const classification = {
   kingdom: nullable(string),
   phylum: nullable(string),
@@ -586,8 +609,9 @@ export const schemas = {
               windowsOnlyForTwoSeasons,
             ),
             // Optional: `conditions` added in species/1.7, `flowering` in
-            // species/1.8, `windows` in species/1.9, and `record_dates` and
-            // `latest_month` in species/1.10, so absent from earlier files.
+            // species/1.8, `windows` in species/1.9, `record_dates` and
+            // `latest_month` in species/1.10, and `fruiting`, `adult` and
+            // `larva` in species/1.11, so absent from earlier files.
             properties: {
               area,
               level: { enum: ["state", "county"] },
@@ -604,24 +628,10 @@ export const schemas = {
                 midpoint: nullable(celsius),
               }),
               windows,
-              flowering: nullable({
-                ...object(
-                  {
-                    records: count,
-                    season,
-                    season_withheld: windowWithheld,
-                  },
-                  floweringMatchesWithheld,
-                  windowsOnlyForTwoSeasons,
-                ),
-                // Optional: added in species/1.9.
-                properties: {
-                  records: count,
-                  season,
-                  season_withheld: windowWithheld,
-                  windows,
-                },
-              }),
+              flowering: stageResult,
+              fruiting: stageResult,
+              adult: stageResult,
+              larva: stageResult,
             },
           }),
           ranges: list(
