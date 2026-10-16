@@ -1,5 +1,5 @@
 // The hosted MCP server. Only staging is set up; production needs approval
-// (#44). Deploy from this folder with:
+// (#44). The MCP (staging) workflow deploys it; by hand, from this folder:
 //   pnpm dlx wrangler@4.148.0 deploy --env staging
 {
   "name": "openphenology-worker-mcp",
@@ -16,13 +16,7 @@
           "zone_name": "openphenology.com",
         },
       ],
-      // Read the published files from the API Worker, not over the internet.
-      "services": [
-        {
-          "binding": "API",
-          "service": "openphenology-staging-worker-api-read",
-        },
-      ],
+      // Where openphenology/data publishes the staging release files.
       "vars": { "API_BASE_URL": "https://api-staging.openphenology.com/" },
       // 60 requests a minute from each address.
       "ratelimits": [

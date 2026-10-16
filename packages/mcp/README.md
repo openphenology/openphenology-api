@@ -38,12 +38,15 @@ used to read the published postal file, and are never logged or stored.
 sessions. `wrangler.jsonc` sets it up on staging only, at
 `https://api-staging.openphenology.com/mcp`:
 
-- it reads the published files through a service binding to the API Worker;
+- it reads the published files from `https://api-staging.openphenology.com/`,
+  where openphenology/data publishes them;
 - it allows 60 requests a minute from each address, and 50 ms of CPU time
   per request;
 - logging is off.
 
-Production needs approval.
+The MCP (staging) workflow deploys it after a change to `main`, or by hand.
+It uses the `staging` environment: the `CF_ACCOUNT_ID` variable and a
+`CLOUDFLARE_API_TOKEN` secret. Production needs approval.
 
 ## Try it
 

@@ -2,32 +2,33 @@ import {
   Client,
   StreamableHTTPClientTransport,
 } from "@modelcontextprotocol/client";
-import { expect, test } from "vitest";
+import { afterEach, expect, test, vi } from "vitest";
 import { handle, MCP_PATH, type Env, type RateLimit } from "../src/http.ts";
 import { fakeServer, RELEASE } from "../../../test/fixture.ts";
 
 const HOST = "https://api-staging.example.test";
 
-/** Bindings whose API Worker serves the made-up release. */
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
+
+/** Bindings for an API address that serves the made-up release. */
 async function bindings(limiter?: RateLimit) {
   const data = await fakeServer();
   // Each test gets its own address, so it gets its own client and caches.
+  const base = `https://example.test/${crypto.randomUUID()}/`;
+  const prefix = new URL(base).pathname;
+  // The Worker reads with the global fetch; strip the test's own prefix.
+  vi.stubGlobal("fetch", (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = new URL(input instanceof Request ? input.url : input);
+    url.pathname = "/" + url.pathname.slice(prefix.length);
+    return data.fetch(url, init);
+  });
   const env: Env = {
-    API: { fetch: data.fetch },
-    API_BASE_URL: `https://example.test/${crypto.randomUUID()}/`,
+    API_BASE_URL: base,
     ...(limiter ? { RATE_LIMITER: limiter } : {}),
   };
   return { env, data };
-}
-
-/** The made-up release's files, served under a test's own address. */
-function underPrefix(env: Env, serve: typeof fetch): typeof fetch {
-  const prefix = new URL(env.API_BASE_URL).pathname;
-  return (input, init) => {
-    const url = new URL(input instanceof Request ? input.url : input);
-    url.pathname = "/" + url.pathname.slice(prefix.length);
-    return serve(url, init);
-  };
 }
 
 /** Connects an MCP client to the Worker over HTTP. */
@@ -43,12 +44,9 @@ async function connect(env: Env) {
   return client;
 }
 
-test("serves the tools over HTTP, reading through the API binding", async () => {
+test("serves the tools over HTTP, reading from the API address", async () => {
   const { env, data } = await bindings();
-  const api = env.API;
-  if (!api) throw new Error("no API binding");
-  const served = { ...env, API: { fetch: underPrefix(env, api.fetch) } };
-  const client = await connect(served);
+  const client = await connect(env);
   const { tools } = await client.listTools();
   expect(tools).toHaveLength(5);
   const result = await client.callTool({
