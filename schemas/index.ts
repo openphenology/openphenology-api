@@ -754,8 +754,9 @@ export const schemas = {
         ),
         // Optional: `ecoregions` added in region/1.1, `daylight` in
         // region/1.2, `temperature` in region/1.3, `precipitation`,
-        // `land_cover` and `elevation` in region/1.4 and `warmth` and
-        // `frost` in region/1.5, so absent from earlier files.
+        // `land_cover` and `elevation` in region/1.4, `warmth` and `frost`
+        // in region/1.5 and `green_up` in region/1.6, so absent from earlier
+        // files.
         properties: {
           area,
           level: { enum: ["state", "county"] },
@@ -833,6 +834,20 @@ export const schemas = {
             object({
               last_spring: nullable(monthDay),
               first_fall: nullable(monthDay),
+            }),
+          ),
+          green_up: nullable(
+            object({
+              typical: monthDay,
+              years: {
+                type: "array",
+                items: { type: "integer", minimum: 2000 },
+                minItems: 2,
+                maxItems: 2,
+              },
+              latest_year: { type: "integer", minimum: 2000 },
+              latest: monthDay,
+              days_later: { type: "integer" },
             }),
           ),
         },

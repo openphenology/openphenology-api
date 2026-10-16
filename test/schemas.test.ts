@@ -419,6 +419,44 @@ describe("schemas", () => {
     expect(errors(file)).toEqual([]);
   });
 
+  test("region/1.6 green-up", async () => {
+    const file = structuredClone(
+      (await published()).get("releases/2026-01-05/regions/us-zz.json"),
+    );
+    if (!file) throw new Error("missing fixture");
+    const area = first(file.data.areas);
+    file.format = "region/1.6";
+    area.green_up = {
+      typical: "04-28",
+      years: [2001, 2025],
+      latest_year: 2025,
+      latest: "05-04",
+      days_later: 6,
+    };
+    expect(errors(file)).toEqual([]);
+    area.green_up = null;
+    expect(errors(file)).toEqual([]);
+    area.green_up = {
+      typical: "4-28",
+      years: [2001, 2025],
+      latest_year: 2025,
+      latest: "05-04",
+      days_later: 6,
+    };
+    expect(errors(file)).not.toEqual([]);
+    area.green_up = {
+      typical: "04-28",
+      years: [2001],
+      latest_year: 2025,
+      latest: "05-04",
+      days_later: 6,
+    };
+    expect(errors(file)).not.toEqual([]);
+    file.format = "region/1.5";
+    delete area.green_up;
+    expect(errors(file)).toEqual([]);
+  });
+
   test("a species/1.1 file needs no introductions", async () => {
     const file = structuredClone(
       (await published()).get("releases/2026-01-05/species/EX1.json"),
