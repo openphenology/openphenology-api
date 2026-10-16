@@ -467,6 +467,53 @@ describe("schemas", () => {
     expect(errors(file)).toEqual([]);
   });
 
+  test("species/1.12 Ohio listings", async () => {
+    const file = structuredClone(
+      (await published()).get("releases/2026-01-05/species/EX1.json"),
+    );
+    if (!file) throw new Error("missing fixture");
+    file.format = "species/1.12";
+    file.data.introductions = [
+      {
+        source: "us-riis-l48-v2",
+        region: "us-l48",
+        listed_name: "Example one",
+        status: "introduced",
+      },
+      {
+        source: "oh-oda-invasive-plants",
+        region: "us-oh",
+        listed_name: "Example one",
+        status: "invasive",
+      },
+      {
+        source: "inaturalist-checklist",
+        region: "us-oh",
+        listed_name: "Example one",
+        status: "introduced",
+      },
+    ];
+    expect(errors(file)).toEqual([]);
+    file.data.introductions = [
+      {
+        source: "oh-odnr-aquatic-invasive",
+        region: "us-in",
+        listed_name: "Example one",
+        status: "invasive",
+      },
+    ];
+    expect(errors(file)).not.toEqual([]);
+    file.data.introductions = [
+      {
+        source: "ohio",
+        region: "us-oh",
+        listed_name: "Example one",
+        status: "invasive",
+      },
+    ];
+    expect(errors(file)).not.toEqual([]);
+  });
+
   test("a terms/1.0 file needs no scope", async () => {
     const file = structuredClone((await published()).get("terms.json"));
     if (!file) throw new Error("missing fixture");

@@ -8,6 +8,12 @@ All notable changes to this package are recorded here. The format follows
 
 ### Added
 
+- Data rules 1.47 (ODR-2026-039): `species/1.12`. A species'
+  `introductions` may also come from `inaturalist-checklist` (iNaturalist's
+  Ohio checklist, status `introduced` only), `oh-oda-invasive-plants` and
+  `oh-odnr-aquatic-invasive` (Ohio's invasive species rules, status
+  `invasive`), each in region `us-oh`, which applies in Ohio only. Not being
+  listed never means native.
 - Data rules 1.45 (ODR-2026-037): `catalogue/1.4` and `backyard/1.2`.
   Catalogue species carry `stage_seasons`, per state with a result its
   stage seasons (`StageSeasons`: `flowering`, `fruiting`, `adult`, `larva`,

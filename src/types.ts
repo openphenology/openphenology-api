@@ -577,12 +577,26 @@ export interface Conditions {
   readonly midpoint: number | null;
 }
 
-/** One US-RIIS listing of a species, or of a subspecies or variety of it. */
+/** One listing of a species, or of a subspecies or variety of it. */
 export interface SpeciesIntroduction {
-  /** The list: US-RIIS ver. 2.0, conterminous 48 states. */
-  readonly source: "us-riis-l48-v2";
-  /** Where the listing applies: the 48 conterminous states and DC. */
-  readonly region: "us-l48";
+  /**
+   * The list: `us-riis-l48-v2` (US-RIIS ver. 2.0, conterminous 48 states);
+   * from `species/1.12` (ODR-2026-039), `inaturalist-checklist`
+   * (iNaturalist's state checklist, status `introduced` only),
+   * `oh-oda-invasive-plants` (Ohio Department of Agriculture, OAC
+   * 901:5-30-01) and `oh-odnr-aquatic-invasive` (ODNR, OAC 1501:31-19-01),
+   * both status `invasive`.
+   */
+  readonly source:
+    | "us-riis-l48-v2"
+    | "inaturalist-checklist"
+    | "oh-oda-invasive-plants"
+    | "oh-odnr-aquatic-invasive";
+  /**
+   * Where the listing applies: `us-l48`, the 48 conterminous states and DC;
+   * `us-oh`, Ohio only (from `species/1.12`).
+   */
+  readonly region: "us-l48" | "us-oh";
   /** The scientific name the list gives; it shows when only a subspecies or variety is listed. */
   readonly listed_name: string;
   /** `introduced`, or `invasive`: causing, or likely to cause, harm there. */

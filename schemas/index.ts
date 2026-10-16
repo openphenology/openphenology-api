@@ -701,8 +701,16 @@ export const schemas = {
           }),
           introductions: list(
             object({
-              source: { const: "us-riis-l48-v2" },
-              region: { const: "us-l48" },
+              // The Ohio sources and region from species/1.12 (ODR-2026-039).
+              source: {
+                enum: [
+                  "us-riis-l48-v2",
+                  "inaturalist-checklist",
+                  "oh-oda-invasive-plants",
+                  "oh-odnr-aquatic-invasive",
+                ],
+              },
+              region: { enum: ["us-l48", "us-oh"] },
               listed_name: text,
               status: { enum: ["introduced", "invasive"] },
             }),
