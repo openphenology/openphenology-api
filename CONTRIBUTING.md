@@ -104,6 +104,13 @@ A maintainer sets `version` in `package.json`, moves the CHANGELOG's
 Unreleased entries under that version, and pushes a tag such as `v0.1.0` on
 `main`. The Release workflow then checks and publishes the package to npm.
 
+`@openphenology/mcp` is released on its own, the same way, from
+`packages/mcp`: set its `version` (and remove `private`), move the Unreleased
+entries in `packages/mcp/CHANGELOG.md`, and push a tag such as `mcp-v0.1.0`.
+The Release (MCP) workflow checks and publishes it. It depends on the client
+by version range, so release the client first when the server needs a new
+client version.
+
 ## Reporting a security problem
 
 Please don't open an issue. See [SECURITY.md](SECURITY.md).
