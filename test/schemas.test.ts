@@ -191,6 +191,29 @@ describe("schemas", () => {
     expect(errors(file)).toEqual([]);
   });
 
+  test("species/1.10 record dates and latest month, null or valid", async () => {
+    const file = structuredClone(
+      (await published()).get("releases/2026-01-05/species/EX1.json"),
+    );
+    if (!file) throw new Error("missing fixture");
+    const area = first(file.data.areas);
+    file.format = "species/1.10";
+    area.record_dates = 87;
+    area.latest_month = "2025-12";
+    expect(errors(file)).toEqual([]);
+    area.latest_month = "2025-13";
+    expect(errors(file)).not.toEqual([]);
+    area.latest_month = "2025-06-01";
+    expect(errors(file)).not.toEqual([]);
+    area.record_dates = null;
+    area.latest_month = null;
+    expect(errors(file)).toEqual([]);
+    file.format = "species/1.9";
+    delete area.record_dates;
+    delete area.latest_month;
+    expect(errors(file)).toEqual([]);
+  });
+
   test("a species/1.1 file needs no introductions", async () => {
     const file = structuredClone(
       (await published()).get("releases/2026-01-05/species/EX1.json"),

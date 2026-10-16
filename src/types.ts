@@ -324,6 +324,18 @@ export type SpeciesFile = PublishedFile<
       readonly level: Level;
       /** Records counted there. */
       readonly records: number;
+      /**
+       * How many distinct dates those records fall on; `null` for a species
+       * sensitive in the state. Added in `species/1.10`, so absent from
+       * earlier files.
+       */
+      readonly record_dates?: number | null;
+      /**
+       * The month of the latest of those records, `YYYY-MM`: when people
+       * recorded it, never whether it is there now. `null` for a species
+       * sensitive in the state. Added in `species/1.10`.
+       */
+      readonly latest_month?: string | null;
       /** Early, middle and late weeks, or empty. */
       readonly season: SeasonWeeks;
       /** Why `season` is empty, or `null`. */

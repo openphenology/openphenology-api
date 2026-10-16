@@ -219,6 +219,8 @@ const archiveHasNoFormat: Schema = {
   ],
 };
 const season = list(week, { maxItems: 3 });
+/** A calendar month, `YYYY-MM`. */
+const month = pattern("^\\d{4}-(0[1-9]|1[0-2])$");
 const seasonWithheld = nullable({
   enum: ["year-round", "two-seasons", "one-year", "precision"],
 });
@@ -584,12 +586,14 @@ export const schemas = {
               windowsOnlyForTwoSeasons,
             ),
             // Optional: `conditions` added in species/1.7, `flowering` in
-            // species/1.8 and `windows` in species/1.9, so absent from
-            // earlier files.
+            // species/1.8, `windows` in species/1.9, and `record_dates` and
+            // `latest_month` in species/1.10, so absent from earlier files.
             properties: {
               area,
               level: { enum: ["state", "county"] },
               records: count,
+              record_dates: nullable(count),
+              latest_month: nullable(month),
               season,
               season_withheld: seasonWithheld,
               conditions: object({
