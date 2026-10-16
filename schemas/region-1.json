@@ -343,6 +343,138 @@
                 },
                 "minItems": 53,
                 "maxItems": 53
+              },
+              "precipitation": {
+                "description": "The typical precipitation each week across the area, weeks 1 to 53, in\nmillimetres to one decimal: the average over the pooled years of each\nyear's weekly total (ODR-2026-033); `null` for a week without values.\nIt describes the place only. Added in `region/1.4`, so absent from\nearlier files.",
+                "type": "array",
+                "items": {
+                  "anyOf": [
+                    {
+                      "type": "number",
+                      "minimum": 0
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "minItems": 53,
+                "maxItems": 53
+              },
+              "land_cover": {
+                "description": "The area's land cover from USGS Annual NLCD (ODR-2026-033), or `null`\nwhere the map does not cover it. It describes the place only. Added in\n`region/1.4`, so absent from earlier files.",
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "required": [
+                      "year",
+                      "groups",
+                      "classes",
+                      "water"
+                    ],
+                    "properties": {
+                      "year": {
+                        "description": "The NLCD year used, such as `2025`.",
+                        "type": "integer",
+                        "minimum": 1985
+                      },
+                      "groups": {
+                        "description": "Each group's share of the area's land in %, to one decimal, largest first.",
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "required": [
+                            "group",
+                            "share"
+                          ],
+                          "properties": {
+                            "group": {
+                              "description": "The group: `forest`, `farmland`, `developed`, `wetland`, `grassland-shrub` or `barren`.",
+                              "enum": [
+                                "forest",
+                                "farmland",
+                                "developed",
+                                "wetland",
+                                "grassland-shrub",
+                                "barren"
+                              ]
+                            },
+                            "share": {
+                              "description": "Its share of the area's land in %, to one decimal.",
+                              "type": "number",
+                              "minimum": 0,
+                              "maximum": 100
+                            }
+                          }
+                        }
+                      },
+                      "classes": {
+                        "description": "Each NLCD class's share of the area's land in %, to one decimal, largest first.",
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "required": [
+                            "class",
+                            "share"
+                          ],
+                          "properties": {
+                            "class": {
+                              "description": "The NLCD class code, such as `41` for deciduous forest.",
+                              "type": "integer",
+                              "minimum": 11,
+                              "maximum": 95
+                            },
+                            "share": {
+                              "description": "Its share of the area's land in %, to one decimal.",
+                              "type": "number",
+                              "minimum": 0,
+                              "maximum": 100
+                            }
+                          }
+                        }
+                      },
+                      "water": {
+                        "description": "Open water as a share of the whole area in %, to one decimal.",
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 100
+                      }
+                    }
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "elevation": {
+                "description": "The area's lowest, median and highest elevation over its land, in whole\nmetres, from USGS 3DEP (ODR-2026-033), or `null` without tiles. Added in\n`region/1.4`, so absent from earlier files.",
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "required": [
+                      "min",
+                      "median",
+                      "max"
+                    ],
+                    "properties": {
+                      "min": {
+                        "description": "The lowest elevation over the area's land, in whole metres.",
+                        "type": "integer"
+                      },
+                      "median": {
+                        "description": "The median elevation over the area's land, in whole metres.",
+                        "type": "integer"
+                      },
+                      "max": {
+                        "description": "The highest elevation over the area's land, in whole metres.",
+                        "type": "integer"
+                      }
+                    }
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
               }
             },
             "allOf": [
