@@ -1,9 +1,9 @@
 name: CI
 
+# Pull requests run every check; a branch is up to date with main before it
+# merges, so main does not run them again (Technical Guide 2.10 §5).
 on:
   pull_request:
-  push:
-    branches: [main]
 
 concurrency:
   group: ci-${{ github.ref }}
