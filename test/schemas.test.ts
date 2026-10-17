@@ -617,6 +617,27 @@ describe("schemas", () => {
     expect(errors(file)).toEqual([]);
   });
 
+  test("catalogue/1.5 protection unconfirmed (data rules 1.50)", async () => {
+    const file = structuredClone(
+      (await published()).get("releases/2026-01-05/catalogue/0.json"),
+    );
+    if (!file) throw new Error("missing fixture");
+    const species = first(file.data.species);
+    // Made-up values.
+    file.format = "catalogue/1.5";
+    species.invasive_in = [];
+    species.stage_seasons = {};
+    species.protection_unconfirmed_in = ["us-zz"];
+    expect(errors(file)).toEqual([]);
+    species.protection_unconfirmed_in = ["99001"];
+    expect(errors(file)).not.toEqual([]);
+    // Required from 1.5, absent from earlier files.
+    delete species.protection_unconfirmed_in;
+    expect(errors(file)).not.toEqual([]);
+    file.format = "catalogue/1.4";
+    expect(errors(file)).toEqual([]);
+  });
+
   test("backyard/1.2 stage seasons (ODR-2026-037)", async () => {
     const file = structuredClone(
       (await published()).get("releases/2026-01-05/backyard/us-zz/99001.json"),

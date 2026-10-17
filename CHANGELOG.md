@@ -8,6 +8,12 @@ All notable changes to this package are recorded here. The format follows
 
 ### Added
 
+- Data rules 1.50: `catalogue/1.5`. Catalogue species carry
+  `protection_unconfirmed_in`, the states in `sensitive_in` where the species
+  is sensitive only because its iNaturalist protection could not be confirmed
+  and no government list applies. Records there are withheld as in any other
+  sensitive state; pages report it as protection unconfirmed, not as
+  protected. Absent from earlier files.
 - Data rules 1.47 (ODR-2026-039): `species/1.12`. A species'
   `introductions` may also come from `inaturalist-checklist` (iNaturalist's
   Ohio checklist, status `introduced` only), `oh-oda-invasive-plants` and
