@@ -391,6 +391,14 @@
                   "pattern": "^[a-z]{2}-[a-z0-9]{1,3}$"
                 }
               },
+              "protection_unconfirmed_in": {
+                "description": "The states in `sensitive_in` where the species is sensitive only because\nits iNaturalist protection could not be confirmed (no single iNaturalist\nmatch) and no government list applies. Its records are withheld there\nexactly as in any other state in `sensitive_in`; pages report it as\nprotection unconfirmed, not as protected. Added in `catalogue/1.5`, so\nabsent from earlier files.",
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "pattern": "^[a-z]{2}-[a-z0-9]{1,3}$"
+                }
+              },
               "listed_in": {
                 "description": "The states in `states` where one of the species' `statuses` listings\napplies: every state for a federal listing, its own state for a state\nlisting. Added in `catalogue/1.3`, so absent from earlier files.",
                 "type": "array",
@@ -679,6 +687,44 @@
                   "required": [
                     "stage_seasons",
                     "invasive_in"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "type": "object",
+        "properties": {
+          "format": {
+            "enum": [
+              "catalogue/1.0",
+              "catalogue/1.1",
+              "catalogue/1.2",
+              "catalogue/1.3",
+              "catalogue/1.4"
+            ]
+          }
+        }
+      },
+      "else": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "object",
+            "properties": {
+              "species": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "protection_unconfirmed_in": true
+                  },
+                  "required": [
+                    "protection_unconfirmed_in"
                   ]
                 }
               }

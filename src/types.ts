@@ -270,6 +270,15 @@ export interface CatalogueEntry extends Classification {
    */
   readonly sensitive_in?: readonly Area[];
   /**
+   * The states in `sensitive_in` where the species is sensitive only because
+   * its iNaturalist protection could not be confirmed (no single iNaturalist
+   * match) and no government list applies. Its records are withheld there
+   * exactly as in any other state in `sensitive_in`; pages report it as
+   * protection unconfirmed, not as protected. Added in `catalogue/1.5`, so
+   * absent from earlier files.
+   */
+  readonly protection_unconfirmed_in?: readonly Area[];
+  /**
    * The states in `states` where one of the species' `statuses` listings
    * applies: every state for a federal listing, its own state for a state
    * listing. Added in `catalogue/1.3`, so absent from earlier files.

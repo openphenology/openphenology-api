@@ -580,6 +580,7 @@ export const schemas = {
             {
               photo,
               sensitive_in: list(state),
+              protection_unconfirmed_in: list(state),
               listed_in: list(state),
               introduced_in: list(state),
               invasive_in: list(state),
@@ -610,6 +611,7 @@ export const schemas = {
       species: ["sensitive_in", "listed_in", "introduced_in"],
     }),
     sinceMinor("catalogue", 4, { species: ["stage_seasons", "invasive_in"] }),
+    sinceMinor("catalogue", 5, { species: ["protection_unconfirmed_in"] }),
   ),
 
   species: withRules(
