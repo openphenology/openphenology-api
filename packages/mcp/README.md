@@ -56,7 +56,8 @@ export default { fetch: (request) => handle(request) };
 ```
 
 It keeps no sessions and logs nothing, and its `find_county` takes only a ZIP
-code's first three digits. Routing, rate limits and access control are left to
+code's first three digits. `@openphenology/api` is a peer dependency: the host
+installs it beside this package. Routing, rate limits and access control are left to
 the host. OpenPhenology will host it at `https://mcp.openphenology.com`.
 
 ## Try it
