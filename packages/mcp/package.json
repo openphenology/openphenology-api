@@ -27,15 +27,22 @@
     "dist",
     "CHANGELOG.md"
   ],
+  "scripts": {
+    "prepare": "tsc -p tsconfig.build.json"
+  },
   "engines": {
     "node": ">=22"
   },
   "dependencies": {
     "@modelcontextprotocol/server": "2.3.1",
-    "@openphenology/api": "workspace:^",
     "zod": "4.6.7"
   },
+  "peerDependencies": {
+    "@openphenology/api": "^0.1.0"
+  },
   "devDependencies": {
-    "@modelcontextprotocol/client": "2.3.1"
+    "@modelcontextprotocol/client": "2.3.1",
+    "@openphenology/api": "workspace:^",
+    "typescript": "6.0.3"
   }
 }

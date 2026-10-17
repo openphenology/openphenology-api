@@ -15,3 +15,5 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `openphenology-mcp`, to run it over standard input and output.
 - `@openphenology/mcp/http`: `createHttpHandler`, to host it over HTTP, with
   `find_county` taking only a ZIP code's first three digits.
+- `@openphenology/api` is a peer dependency, so the server shares the host's
+  client, and the package builds itself when installed from Git.
