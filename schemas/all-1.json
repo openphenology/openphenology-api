@@ -4705,6 +4705,11 @@
                   "type": "string",
                   "minLength": 1
                 },
+                "full_name": {
+                  "description": "Its name as pages show it: a county's Census legal name with its kind,\nsuch as `Franklin County`, `Orleans Parish` or `Richmond city`; a\nstate's name. Added in `region/1.7`, so absent from earlier files.",
+                  "type": "string",
+                  "minLength": 1
+                },
                 "slug": {
                   "description": "Its page slug.",
                   "type": "string",

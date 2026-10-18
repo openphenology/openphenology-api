@@ -457,6 +457,23 @@ describe("schemas", () => {
     expect(errors(file)).toEqual([]);
   });
 
+  test("region/1.7 full names", async () => {
+    const file = structuredClone(
+      (await published()).get("releases/2026-01-05/regions/us-zz.json"),
+    );
+    if (!file) throw new Error("missing fixture");
+    const area = first(file.data.areas);
+    file.format = "region/1.7";
+    // Made-up name.
+    area.full_name = "Example Parish";
+    expect(errors(file)).toEqual([]);
+    area.full_name = 7;
+    expect(errors(file)).not.toEqual([]);
+    delete area.full_name;
+    file.format = "region/1.6";
+    expect(errors(file)).toEqual([]);
+  });
+
   test("a species/1.1 file needs no introductions", async () => {
     const file = structuredClone(
       (await published()).get("releases/2026-01-05/species/EX1.json"),

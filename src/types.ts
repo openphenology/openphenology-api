@@ -664,6 +664,12 @@ export interface RegionArea {
   readonly level: Level;
   /** Its name, such as `Franklin`. */
   readonly name: string;
+  /**
+   * Its name as pages show it: a county's Census legal name with its kind,
+   * such as `Franklin County`, `Orleans Parish` or `Richmond city`; a
+   * state's name. Added in `region/1.7`, so absent from earlier files.
+   */
+  readonly full_name?: string;
   /** Its page slug. */
   readonly slug: string;
   /** Species with a result there. */

@@ -8,6 +8,10 @@ All notable changes to this package are recorded here. The format follows
 
 ### Added
 
+- Data rules 1.54: `region/1.7`. Each area may carry `full_name`, its name
+  as pages show it: a county's Census legal name with its kind (`Franklin
+County`, `Orleans Parish`, `Richmond city`), a state's name. `name` stays
+  the short name. Absent from earlier files.
 - Data rules 1.53 (ODR-2026-040): `cities/1.0`, `places/<state>/cities.json`.
   `release.cities(state)` reads a state's cities, villages and
   census-designated places (`CitiesFile`), each with `name`, `type`, the
