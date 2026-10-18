@@ -414,6 +414,52 @@ export type SpeciesFile = PublishedFile<
        * `species/1.11`, so absent from earlier files.
        */
       readonly larva?: Flowering | null;
+      /**
+       * The result from its records reported as male, or `null` without
+       * such records there (ODR-2026-042). Pages say "reported as male".
+       * Added in `species/1.15`, so absent from earlier files.
+       */
+      readonly male?: Flowering | null;
+      /** As `male`, for records reported as female. Added in `species/1.15`. */
+      readonly female?: Flowering | null;
+      /**
+       * Per kind of sign with records there, the result from its records
+       * reported from that sign; `{}` with none. Pages say "reported from
+       * galls" and so on. Added in `species/1.15`.
+       */
+      readonly signs?: Readonly<Partial<Record<Sign, Flowering>>>;
+      /**
+       * The result from its records with a sound recording, with the hours
+       * they were made in, or `null` without such records. Pages say
+       * "reported with a sound recording". Added in `species/1.15`.
+       */
+      readonly heard?: Heard | null;
+      /**
+       * State only: record counts for hours 0 to 23 of local time, from
+       * records that give a time; `null` for a county, below the minimum, or
+       * for a species sensitive in the state. When people recorded it, never
+       * when it is active. Added in `species/1.15`.
+       */
+      readonly hours?: readonly number[] | null;
+      /**
+       * State only: month numbers, 1 to 12, with no record in any pooled
+       * year (and no FeederWatch report); `[]` when every month is reported,
+       * `null` for a county. Never absence or migration. Added in
+       * `species/1.15`.
+       */
+      readonly months_not_reported?: readonly number[] | null;
+      /**
+       * State only: land cover at its records within 100 m that are not
+       * obscured; `null` for a county, below the minimum, or for a species
+       * sensitive in the state. Where records come from, never where it
+       * lives. Added in `species/1.15`.
+       */
+      readonly land_cover?: RecordLandCover | null;
+      /**
+       * State only: up to 5 species often confused with it, the state's
+       * confusions first; `null` for a county. Added in `species/1.15`.
+       */
+      readonly look_alikes?: readonly LookAlike[] | null;
     }[];
     /** Every area within its mapped range. */
     readonly ranges: readonly {
@@ -464,6 +510,12 @@ export type SpeciesFile = PublishedFile<
      * so absent from earlier files.
      */
     readonly photo?: SpeciesPhoto | null;
+    /**
+     * A photo for each stage, sex or kind of sign with a result, from a
+     * record annotated with it; `{}` for a species sensitive anywhere it is
+     * shown. Added in `species/1.15`, so absent from earlier files.
+     */
+    readonly part_photos?: Readonly<Partial<Record<Part, SpeciesPhoto>>>;
     /**
      * Per state with a result, the taxa below species that its records were
      * identified to: names only, never counts, never per county. Empty when
@@ -583,6 +635,61 @@ export interface Flowering {
   readonly season_withheld: FloweringWithheld | null;
   /** Its two windows when it is `two-seasons`, or `null`. Added in `species/1.9`. */
   readonly windows?: readonly SeasonWindow[] | null;
+}
+
+/** A kind of sign in Evidence of Presence results (`species/1.15`). */
+export type Sign =
+  | "feather"
+  | "scat"
+  | "track"
+  | "bone"
+  | "molt"
+  | "gall"
+  | "egg"
+  | "hair"
+  | "leaf-mine"
+  | "construction";
+
+/** A stage, sex or kind of sign that can have a photo (`species/1.15`). */
+export type Part =
+  "flowering" | "fruiting" | "adult" | "larva" | "male" | "female" | Sign;
+
+/** The heard result (`species/1.15`): a stage result with its hours. */
+export interface Heard extends Flowering {
+  /** Record counts for hours 0 to 23, or `null` below the minimum or for a sensitive species. */
+  readonly hours: readonly number[] | null;
+}
+
+/** Land cover at a state result's records (`species/1.15`). */
+export interface RecordLandCover {
+  /** The records counted. */
+  readonly records: number;
+  /** Largest first: the group and its share of the records counted, in %. */
+  readonly groups: readonly {
+    /** A land-cover group, as in region `land_cover`, or `water`. */
+    readonly group:
+      | "forest"
+      | "farmland"
+      | "developed"
+      | "wetland"
+      | "grassland-shrub"
+      | "barren"
+      | "water";
+    /** Its share of the records counted, in %, to one decimal. */
+    readonly share: number;
+  }[];
+}
+
+/** A species often confused with this one (`species/1.15`). */
+export interface LookAlike {
+  /** The look-alike's species key. */
+  readonly species_key: string;
+  /** iNaturalist identifications confusing the two in the state. */
+  readonly state: number;
+  /** The same, worldwide. */
+  readonly worldwide: number;
+  /** Which count chose it: the state's first, then worldwide. */
+  readonly chosen_by: "state" | "worldwide";
 }
 
 /**

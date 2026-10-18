@@ -484,6 +484,57 @@ describe("schemas", () => {
     expect(errors(file)).toEqual([]);
   });
 
+  test("species/1.15 identification results (ODR-2026-042)", async () => {
+    const file = structuredClone(
+      (await published()).get("releases/2026-01-05/species/EX1.json"),
+    );
+    if (!file) throw new Error("missing fixture");
+    file.format = "species/1.15";
+    file.data.concerns = [];
+    file.data.recorded_in = [];
+    file.data.part_photos = {};
+    const result = { records: 31, season: [], season_withheld: "precision" };
+    const area = first(file.data.areas);
+    Object.assign(area, {
+      male: result,
+      female: null,
+      signs: { gall: result },
+      heard: { ...result, hours: Array.from({ length: 24 }, () => 1) },
+      hours: Array.from({ length: 24 }, () => 2),
+      months_not_reported: [1, 2, 12],
+      land_cover: {
+        records: 40,
+        groups: [
+          { group: "forest", share: 60 },
+          { group: "water", share: 40 },
+        ],
+      },
+      look_alikes: [
+        { species_key: "EX2", state: 12, worldwide: 300, chosen_by: "state" },
+      ],
+    });
+    expect(errors(file)).toEqual([]);
+    area.hours = [1, 2, 3];
+    expect(errors(file)).not.toEqual([]);
+    area.hours = null;
+    area.signs = { feathers: result };
+    expect(errors(file)).not.toEqual([]);
+    area.signs = {};
+    area.months_not_reported = [13];
+    expect(errors(file)).not.toEqual([]);
+    area.months_not_reported = null;
+    area.look_alikes = [
+      { species_key: "EX2", state: 1, worldwide: 2, chosen_by: "ohio" },
+    ];
+    expect(errors(file)).not.toEqual([]);
+    area.look_alikes = null;
+    // part_photos is required from 1.15, absent from earlier files.
+    delete file.data.part_photos;
+    expect(errors(file)).not.toEqual([]);
+    file.format = "species/1.14";
+    expect(errors(file)).toEqual([]);
+  });
+
   test("species/1.14 counties recorded without a result", async () => {
     const file = structuredClone(
       (await published()).get("releases/2026-01-05/species/EX1.json"),
