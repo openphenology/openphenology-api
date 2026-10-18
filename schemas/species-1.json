@@ -1652,6 +1652,14 @@
             }
           }
         },
+        "recorded_in": {
+          "description": "The counties, in area-code order, where the species has records counted\ntoward a result but no county result of its own, because they fall\nshort of the minimum in `seasonal.md`. It says only that the species was\nrecorded there, never how many records or when. Empty in a state where\nthe species is sensitive. Added in `species/1.14`, so absent from\nearlier files.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^\\d{5}$"
+          }
+        },
         "introductions": {
           "description": "The species' US-RIIS listings in the lower 48 states: introduced, or\nintroduced and assessed as invasive. Empty when it is not listed, which\nnever means native. Added in `species/1.2`, so absent from earlier files.",
           "type": "array",
@@ -2029,6 +2037,45 @@
             },
             "required": [
               "concerns"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "type": "object",
+        "properties": {
+          "format": {
+            "enum": [
+              "species/1.0",
+              "species/1.1",
+              "species/1.2",
+              "species/1.3",
+              "species/1.4",
+              "species/1.5",
+              "species/1.6",
+              "species/1.7",
+              "species/1.8",
+              "species/1.9",
+              "species/1.10",
+              "species/1.11",
+              "species/1.12",
+              "species/1.13"
+            ]
+          }
+        }
+      },
+      "else": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "object",
+            "properties": {
+              "recorded_in": true
+            },
+            "required": [
+              "recorded_in"
             ]
           }
         }

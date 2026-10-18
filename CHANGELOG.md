@@ -8,6 +8,10 @@ All notable changes to this package are recorded here. The format follows
 
 ### Added
 
+- Data rules 1.57: `species/1.14`. Species carry `recorded_in`: the
+  counties, in area-code order, where the species has records counted toward
+  a result but too few for a county result. It never says how many records or
+  when, and is `[]` where the species is sensitive. Absent from earlier files.
 - Data rules 1.55–1.56 (ODR-2026-041): `species/1.13`. Species carry
   `concerns` (`SpeciesConcern`): each time Ohio names the species as a
   species of concern or of special interest in the Division of Wildlife's
