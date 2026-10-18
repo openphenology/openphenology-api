@@ -8,6 +8,13 @@ All notable changes to this package are recorded here. The format follows
 
 ### Added
 
+- Data rules 1.61 (ODR-2026-042): `species/1.15`. Each area carries
+  `male`, `female`, `signs` (per kind of sign) and `heard` (with `hours`),
+  in the same form as `flowering`; the state area also carries `hours`,
+  `months_not_reported`, `land_cover` and `look_alikes`, `null` for a
+  county. Species carry `part_photos`, a photo per stage, sex or sign, `{}`
+  for a sensitive species. Types `Sign`, `Part`, `Heard`, `RecordLandCover`
+  and `LookAlike`. Absent from earlier files.
 - Data rules 1.57: `species/1.14`. Species carry `recorded_in`: the
   counties, in area-code order, where the species has records counted toward
   a result but too few for a county result. It never says how many records or

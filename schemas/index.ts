@@ -264,6 +264,21 @@ const windows: Schema = nullable(
  * the season method on the records that show the stage, or `null` where the
  * stage does not apply. `windows` was added in species/1.9.
  */
+/** The kinds of sign in Evidence of Presence results (formats.md 1.28). */
+const SIGNS = [
+  "feather",
+  "scat",
+  "track",
+  "bone",
+  "molt",
+  "gall",
+  "egg",
+  "hair",
+  "leaf-mine",
+  "construction",
+] as const;
+/** Record counts for hours 0 to 23 of local time (species/1.15). */
+const hours24 = list(count, { minItems: 24, maxItems: 24 });
 const stageResult: Schema = nullable({
   ...object(
     {
@@ -281,6 +296,50 @@ const stageResult: Schema = nullable({
     windows,
   },
 });
+/** A sign's result: as a stage result, never null (species/1.15). */
+const signResult: Schema = (stageResult.anyOf as Schema[])[0] as Schema;
+/** The heard result: a stage result with its hours (species/1.15). */
+const heardResult: Schema = nullable({
+  ...signResult,
+  properties: {
+    ...(signResult.properties as Record<string, Schema>),
+    hours: nullable(hours24),
+  },
+});
+/** Land cover at a state result's records (species/1.15). */
+const recordLandCover: Schema = nullable(
+  object({
+    records: count,
+    groups: list(
+      object({
+        group: {
+          enum: [
+            "forest",
+            "farmland",
+            "developed",
+            "wetland",
+            "grassland-shrub",
+            "barren",
+            "water",
+          ],
+        },
+        share: percent,
+      }),
+    ),
+  }),
+);
+/** Up to 5 look-alikes in a state (species/1.15). */
+const lookAlikes: Schema = nullable(
+  list(
+    object({
+      species_key: speciesKey,
+      state: count,
+      worldwide: count,
+      chosen_by: { enum: ["state", "worldwide"] },
+    }),
+    { maxItems: 5 },
+  ),
+);
 
 const classification = {
   kingdom: nullable(string),
@@ -669,6 +728,25 @@ export const schemas = {
               fruiting: stageResult,
               adult: stageResult,
               larva: stageResult,
+              // Added in species/1.15 (ODR-2026-042), so absent from earlier
+              // files. The last four are given for the state only.
+              male: stageResult,
+              female: stageResult,
+              signs: {
+                type: "object",
+                propertyNames: { enum: [...SIGNS] },
+                additionalProperties: signResult,
+              },
+              heard: heardResult,
+              hours: nullable(hours24),
+              months_not_reported: nullable(
+                list(
+                  { type: "integer", minimum: 1, maximum: 12 },
+                  { uniqueItems: true },
+                ),
+              ),
+              land_cover: recordLandCover,
+              look_alikes: lookAlikes,
             },
           }),
           ranges: list(
@@ -739,6 +817,23 @@ export const schemas = {
           ),
           inaturalist_taxon_id: nullable({ type: "integer", minimum: 1 }),
           photo,
+          // A photo per stage, sex or kind of sign (species/1.15); `{}` for a
+          // species sensitive anywhere it is shown.
+          part_photos: {
+            type: "object",
+            propertyNames: {
+              enum: [
+                "flowering",
+                "fruiting",
+                "adult",
+                "larva",
+                "male",
+                "female",
+                ...SIGNS,
+              ],
+            },
+            additionalProperties: (photo.anyOf as Schema[])[0],
+          },
           below_species: belowSpecies,
         },
       ),
@@ -750,6 +845,7 @@ export const schemas = {
     sinceMinorData("species", 5, ["below_species"]),
     sinceMinorData("species", 13, ["concerns"]),
     sinceMinorData("species", 14, ["recorded_in"]),
+    sinceMinorData("species", 15, ["part_photos"]),
   ),
 
   slugs: file(
