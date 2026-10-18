@@ -16,6 +16,7 @@ import type {
   AttributionFile,
   BackyardFile,
   BoundariesFile,
+  CitiesFile,
   CatalogueEntry,
   CatalogueFile,
   CountyResultFile,
@@ -92,6 +93,7 @@ const SPLIT: Readonly<Record<string, readonly string[]>> = {
   backyard: ["species"],
   sources: ["sources"],
   boundaries: ["features"],
+  cities: ["cities"],
   postal: ["zips"],
   releases: ["releases"],
   notes: ["corrections", "key_changes"],
@@ -678,6 +680,22 @@ export class Release {
     return this.#file<BoundariesFile>(
       `places/${stateCode(state)}/boundaries.json`,
       "boundaries",
+    );
+  }
+
+  /**
+   * A state's cities, villages and census-designated places, each with the
+   * county it leads with and its other counties (ODR-2026-040). Match a
+   * typed place name on the device; never send it anywhere.
+   *
+   * @param state The state code, such as `us-oh`.
+   * @returns The places, or `null` when not published.
+   * @throws {RangeError} When the state code is malformed.
+   */
+  cities(state: string): Promise<CitiesFile | null> {
+    return this.#file<CitiesFile>(
+      `places/${stateCode(state)}/cities.json`,
+      "cities",
     );
   }
 

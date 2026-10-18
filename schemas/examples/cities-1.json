@@ -1,0 +1,34 @@
+{
+  "id": "releases/2026-01-05/places/us-zz/cities.json",
+  "kind": "cities",
+  "format": "cities/1.0",
+  "provenance": {
+    "release": "2026-01-05",
+    "sources": ["example"],
+    "licences": ["CC-BY-4.0"],
+    "gbif_download_dois": ["10.0000/example"],
+    "method": "test-1",
+    "taxonomy": "test-taxonomy",
+    "boundaries": "test-boundaries",
+    "ranges": null,
+    "protection": null,
+    "code": "0.0.0",
+    "run": "run-1"
+  },
+  "data": {
+    "cities": [
+      {
+        "name": "Exampleton",
+        "type": "city",
+        "area": "99001",
+        "also_in": ["99002"]
+      },
+      {
+        "name": "Sample",
+        "type": "village",
+        "area": "99002",
+        "also_in": []
+      }
+    ]
+  }
+}

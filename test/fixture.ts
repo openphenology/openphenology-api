@@ -339,6 +339,17 @@ const files: [string, string, unknown][] = [
     },
   ],
   [
+    "places/us-zz/cities.json",
+    "cities",
+    {
+      // Made-up places.
+      cities: [
+        { name: "Exampleton", type: "city", area: "99001", also_in: ["99002"] },
+        { name: "Sample", type: "village", area: "99002", also_in: [] },
+      ],
+    },
+  ],
+  [
     "postal/us/999.json",
     "postal",
     {

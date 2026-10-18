@@ -8,6 +8,11 @@ All notable changes to this package are recorded here. The format follows
 
 ### Added
 
+- Data rules 1.53 (ODR-2026-040): `cities/1.0`, `places/<state>/cities.json`.
+  `release.cities(state)` reads a state's cities, villages and
+  census-designated places (`CitiesFile`), each with `name`, `type`, the
+  county it leads with (`area`) and its other counties (`also_in`), for
+  turning a typed place name into a county on the device.
 - Data rules 1.50: `catalogue/1.5`. Catalogue species carry
   `protection_unconfirmed_in`, the states in `sensitive_in` where the species
   is sensitive only because its iNaturalist protection could not be confirmed

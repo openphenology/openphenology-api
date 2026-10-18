@@ -5,6 +5,7 @@ import type {
   AttributionFile,
   BackyardFile,
   BoundariesFile,
+  CitiesFile,
   CatalogueFile,
   CountyResultFile,
   CurrentFile,
@@ -28,6 +29,7 @@ export type Kind = (
   | BackyardFile
   | BoundariesFile
   | CatalogueFile
+  | CitiesFile
   | CountyResultFile
   | CurrentFile
   | GroupsFile
@@ -434,6 +436,7 @@ const paths: Record<Kind, string> = {
   methods: `${RELEASE}methods`,
   sources: `${RELEASE}sources`,
   boundaries: `${RELEASE}places/${STATE}/boundaries`,
+  cities: `${RELEASE}places/${STATE}/cities`,
   postal: `${RELEASE}postal/us/\\d{3}`,
 };
 
@@ -1025,6 +1028,21 @@ export const schemas = {
               { minItems: 1 },
             ),
           }),
+        }),
+      ),
+    }),
+  ),
+
+  cities: file(
+    "cities",
+    "A state's cities, villages and census-designated places, and the counties each falls in (ODR-2026-040).",
+    object({
+      cities: list(
+        object({
+          name: text,
+          type: { enum: ["city", "village", "cdp"] },
+          area: county,
+          also_in: list(county),
         }),
       ),
     }),

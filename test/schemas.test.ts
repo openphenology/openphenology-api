@@ -935,6 +935,13 @@ describe("schemas reject", () => {
       },
     ],
     [
+      "a place type other than city, village or cdp",
+      "releases/2026-01-05/places/us-zz/cities.json",
+      (f) => {
+        first(f.data.cities).type = "township";
+      },
+    ],
+    [
       "a ZIP code share above 1",
       "releases/2026-01-05/postal/us/999.json",
       (f) => {

@@ -99,6 +99,12 @@
         "bytes": 577
       },
       {
+        "path": "places/us-zz/cities.json",
+        "sha256": "e4772568c8b7834bc353c384a993ff38511c0b76f52b9452ac162e903144ea36",
+        "format": "cities/1.0",
+        "bytes": 508
+      },
+      {
         "path": "postal/us/999.json",
         "sha256": "2e991fb572d688ad665760fd1d9ad61f181e94c73d45cc40aa81d2541ea6f73a",
         "format": "postal/1.0",

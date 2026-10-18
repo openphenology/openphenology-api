@@ -1075,6 +1075,28 @@ export type BoundariesFile = PublishedFile<
   }
 >;
 
+/**
+ * `places/<state>/cities.json`: the state's cities, villages and
+ * census-designated places, and the counties each falls in (ODR-2026-040).
+ * For turning a typed place name into a county on the device.
+ */
+export type CitiesFile = PublishedFile<
+  "cities",
+  {
+    /** Every place, by name; places that share a name each have an entry. */
+    readonly cities: readonly {
+      /** Its Census name without the type word, such as `Dublin`. */
+      readonly name: string;
+      /** `city`, `village` or `cdp` (census-designated place). */
+      readonly type: "city" | "village" | "cdp";
+      /** The county it leads with: the one holding its Census internal point. */
+      readonly area: Area;
+      /** Its other counties, possibly none. */
+      readonly also_in: readonly Area[];
+    }[];
+  }
+>;
+
 /** `postal/us/<prefix>.json`: ZIP codes with that 3-digit prefix, and their counties. */
 export type PostalFile = PublishedFile<
   "postal",

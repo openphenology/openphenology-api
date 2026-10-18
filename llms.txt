@@ -37,7 +37,7 @@ A malformed code is a `RangeError` before any request is made.
 ## Release (each returns the parsed file, or `null` when not published; lists are empty instead)
 
 - Species: `catalogue()` → `CatalogueEntry[]`; `species(key)`; `speciesBySlug(slug)` → key or `null`; `groups()`; `searchNames()` → `SearchName[]`.
-- Places: `region(state)`; `boundaries(state)` (GeoJSON county outlines, display only); `zipCounties(zip)` → `ZipCounty[]`; `postal(prefix)` (every ZIP code with a 3-digit prefix, for suggestions).
+- Places: `region(state)`; `boundaries(state)` (GeoJSON county outlines, display only); `zipCounties(zip)` → `ZipCounty[]`; `postal(prefix)` (every ZIP code with a 3-digit prefix, for suggestions); `cities(state)` (cities, villages and CDPs with `area` and `also_in` counties; match typed names on the device, like ZIP codes, and never send them).
 - Results: `stateResult(state, species)`; `countyResult(state, county, species)`; `backyard(state, county)`; `attribution(state, species, county?)`.
 - The release: `manifest()`; `notes()`; `methods()`; `sources()`.
 
@@ -88,7 +88,7 @@ Branch on `error.code`; messages may change.
 - `schemas/<kind>-<major>.json`: JSON Schema 2020-12 for each format, every field described. The major is 1, except `manifest-2.json`.
 - `schemas/all-1.json`: every schema in one file, by kind.
 - `schemas/examples/<kind>-<major>.json`: one made-up example file per format.
-- Kinds: current, releases, terms, manifest, notes, catalogue, species, slugs, groups, search, region, state-weekly, county-weekly, attribution, backyard, methods, sources, boundaries, postal.
+- Kinds: current, releases, terms, manifest, notes, catalogue, species, slugs, groups, search, region, state-weekly, county-weekly, attribution, backyard, methods, sources, boundaries, cities, postal.
 - `README.md`: the same, with more examples.
 
 Outside the package, the repository's `postman/openphenology.postman_collection.json` is a Postman collection with one request per file kind, with descriptions, examples and schema tests; `postman/README.md` explains it.
