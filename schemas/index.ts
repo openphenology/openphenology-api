@@ -797,12 +797,13 @@ export const schemas = {
         // Optional: `ecoregions` added in region/1.1, `daylight` in
         // region/1.2, `temperature` in region/1.3, `precipitation`,
         // `land_cover` and `elevation` in region/1.4, `warmth` and `frost`
-        // in region/1.5 and `green_up` in region/1.6, so absent from earlier
-        // files.
+        // in region/1.5, `green_up` in region/1.6 and `full_name` in
+        // region/1.7, so absent from earlier files.
         properties: {
           area,
           level: { enum: ["state", "county"] },
           name: text,
+          full_name: text,
           slug,
           species_keys: list(speciesKey),
           range_species_keys: list(speciesKey),
