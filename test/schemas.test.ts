@@ -484,6 +484,24 @@ describe("schemas", () => {
     expect(errors(file)).toEqual([]);
   });
 
+  test("species/1.14 counties recorded without a result", async () => {
+    const file = structuredClone(
+      (await published()).get("releases/2026-01-05/species/EX1.json"),
+    );
+    if (!file) throw new Error("missing fixture");
+    file.format = "species/1.14";
+    file.data.concerns = [];
+    file.data.recorded_in = ["99001", "99003"];
+    expect(errors(file)).toEqual([]);
+    file.data.recorded_in = ["us-zz"];
+    expect(errors(file)).not.toEqual([]);
+    // Required from 1.14, absent from earlier files.
+    delete file.data.recorded_in;
+    expect(errors(file)).not.toEqual([]);
+    file.format = "species/1.13";
+    expect(errors(file)).toEqual([]);
+  });
+
   test("species/1.13 Ohio species of concern (ODR-2026-041)", async () => {
     const file = structuredClone(
       (await published()).get("releases/2026-01-05/species/EX1.json"),

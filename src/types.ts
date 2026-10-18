@@ -440,6 +440,15 @@ export type SpeciesFile = PublishedFile<
      */
     readonly concerns?: readonly SpeciesConcern[];
     /**
+     * The counties, in area-code order, where the species has records counted
+     * toward a result but no county result of its own, because they fall
+     * short of the minimum in `seasonal.md`. It says only that the species was
+     * recorded there, never how many records or when. Empty in a state where
+     * the species is sensitive. Added in `species/1.14`, so absent from
+     * earlier files.
+     */
+    readonly recorded_in?: readonly string[];
+    /**
      * The species' US-RIIS listings in the lower 48 states: introduced, or
      * introduced and assessed as invasive. Empty when it is not listed, which
      * never means native. Added in `species/1.2`, so absent from earlier files.

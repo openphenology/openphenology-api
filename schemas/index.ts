@@ -717,6 +717,10 @@ export const schemas = {
               edition: text,
             }),
           ),
+          // Counties with records counted toward a result but no county
+          // result of their own (species/1.14): names only, `[]` where the
+          // species is sensitive.
+          recorded_in: list(county),
           introductions: list(
             object({
               // The Ohio sources and region from species/1.12 (ODR-2026-039).
@@ -745,6 +749,7 @@ export const schemas = {
     sinceMinorData("species", 4, ["photo"]),
     sinceMinorData("species", 5, ["below_species"]),
     sinceMinorData("species", 13, ["concerns"]),
+    sinceMinorData("species", 14, ["recorded_in"]),
   ),
 
   slugs: file(
