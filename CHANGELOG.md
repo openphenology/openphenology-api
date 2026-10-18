@@ -8,6 +8,12 @@ All notable changes to this package are recorded here. The format follows
 
 ### Added
 
+- Data rules 1.55–1.56 (ODR-2026-041): `species/1.13`. Species carry
+  `concerns` (`SpeciesConcern`): each time Ohio names the species as a
+  species of concern or of special interest in the Division of Wildlife's
+  Ohio's Listed Species, with `listed_name`, `category`, `list_name`,
+  `keeper` and `edition`. Neither is a listing or makes records sensitive.
+  Absent from earlier files.
 - Data rules 1.54: `region/1.7`. Each area may carry `full_name`, its name
   as pages show it: a county's Census legal name with its kind (`Franklin
 County`, `Orleans Parish`, `Richmond city`), a state's name. `name` stays

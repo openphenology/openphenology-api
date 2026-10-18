@@ -704,6 +704,19 @@ export const schemas = {
               edition: text,
             },
           }),
+          // Ohio's species of concern and special interest (species/1.13,
+          // ODR-2026-041): never listings, never making records sensitive.
+          concerns: list(
+            object({
+              list: { const: "ohio" },
+              place: pattern(`^${STATE}$`),
+              listed_name: text,
+              category: { enum: ["species of concern", "special interest"] },
+              list_name: text,
+              keeper: text,
+              edition: text,
+            }),
+          ),
           introductions: list(
             object({
               // The Ohio sources and region from species/1.12 (ODR-2026-039).
@@ -731,6 +744,7 @@ export const schemas = {
     sinceMinorData("species", 3, ["inaturalist_taxon_id"]),
     sinceMinorData("species", 4, ["photo"]),
     sinceMinorData("species", 5, ["below_species"]),
+    sinceMinorData("species", 13, ["concerns"]),
   ),
 
   slugs: file(
