@@ -484,6 +484,34 @@ describe("schemas", () => {
     expect(errors(file)).toEqual([]);
   });
 
+  test("species/1.13 Ohio species of concern (ODR-2026-041)", async () => {
+    const file = structuredClone(
+      (await published()).get("releases/2026-01-05/species/EX1.json"),
+    );
+    if (!file) throw new Error("missing fixture");
+    file.format = "species/1.13";
+    // Made-up entry.
+    file.data.concerns = [
+      {
+        list: "ohio",
+        place: "us-zz",
+        listed_name: "Examplea exampla",
+        category: "special interest",
+        list_name: "Example list",
+        keeper: "Example keeper",
+        edition: "June 2026",
+      },
+    ];
+    expect(errors(file)).toEqual([]);
+    first(file.data.concerns).category = "endangered";
+    expect(errors(file)).not.toEqual([]);
+    // Required from 1.13, absent from earlier files.
+    delete file.data.concerns;
+    expect(errors(file)).not.toEqual([]);
+    file.format = "species/1.12";
+    expect(errors(file)).toEqual([]);
+  });
+
   test("species/1.12 Ohio listings", async () => {
     const file = structuredClone(
       (await published()).get("releases/2026-01-05/species/EX1.json"),

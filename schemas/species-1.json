@@ -1598,6 +1598,60 @@
             }
           }
         },
+        "concerns": {
+          "description": "Each time Ohio names the species, or a subspecies or variety of it, as\na species of concern or of special interest (ODR-2026-041). Neither is\na listing, and neither makes records sensitive. Empty when none\napplies. Added in `species/1.13`, so absent from earlier files.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "list",
+              "place",
+              "listed_name",
+              "category",
+              "list_name",
+              "keeper",
+              "edition"
+            ],
+            "properties": {
+              "list": {
+                "description": "The list: `ohio`.",
+                "const": "ohio"
+              },
+              "place": {
+                "description": "Where it applies: the state's code.",
+                "type": "string",
+                "pattern": "^[a-z]{2}-[a-z0-9]{1,3}$"
+              },
+              "listed_name": {
+                "description": "The scientific name the publication gives.",
+                "type": "string",
+                "minLength": 1
+              },
+              "category": {
+                "description": "`species of concern` or `special interest`.",
+                "enum": [
+                  "species of concern",
+                  "special interest"
+                ]
+              },
+              "list_name": {
+                "description": "The publication, such as `Ohio's Listed Species`.",
+                "type": "string",
+                "minLength": 1
+              },
+              "keeper": {
+                "description": "Who keeps it, such as `Ohio Division of Wildlife`.",
+                "type": "string",
+                "minLength": 1
+              },
+              "edition": {
+                "description": "Its edition, such as `June 2026`.",
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        },
         "introductions": {
           "description": "The species' US-RIIS listings in the lower 48 states: introduced, or\nintroduced and assessed as invasive. Empty when it is not listed, which\nnever means native. Added in `species/1.2`, so absent from earlier files.",
           "type": "array",
@@ -1937,6 +1991,44 @@
             },
             "required": [
               "below_species"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "type": "object",
+        "properties": {
+          "format": {
+            "enum": [
+              "species/1.0",
+              "species/1.1",
+              "species/1.2",
+              "species/1.3",
+              "species/1.4",
+              "species/1.5",
+              "species/1.6",
+              "species/1.7",
+              "species/1.8",
+              "species/1.9",
+              "species/1.10",
+              "species/1.11",
+              "species/1.12"
+            ]
+          }
+        }
+      },
+      "else": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "object",
+            "properties": {
+              "concerns": true
+            },
+            "required": [
+              "concerns"
             ]
           }
         }

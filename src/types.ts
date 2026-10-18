@@ -433,6 +433,13 @@ export type SpeciesFile = PublishedFile<
      */
     readonly statuses?: readonly SpeciesListing[];
     /**
+     * Each time Ohio names the species, or a subspecies or variety of it, as
+     * a species of concern or of special interest (ODR-2026-041). Neither is
+     * a listing, and neither makes records sensitive. Empty when none
+     * applies. Added in `species/1.13`, so absent from earlier files.
+     */
+    readonly concerns?: readonly SpeciesConcern[];
+    /**
      * The species' US-RIIS listings in the lower 48 states: introduced, or
      * introduced and assessed as invasive. Empty when it is not listed, which
      * never means native. Added in `species/1.2`, so absent from earlier files.
@@ -529,6 +536,24 @@ export interface SpeciesListing {
    * Added in `species/1.6`.
    */
   readonly edition?: string;
+}
+
+/** A species-of-concern or special-interest entry (`species/1.13`). */
+export interface SpeciesConcern {
+  /** The list: `ohio`. */
+  readonly list: "ohio";
+  /** Where it applies: the state's code. */
+  readonly place: string;
+  /** The scientific name the publication gives. */
+  readonly listed_name: string;
+  /** `species of concern` or `special interest`. */
+  readonly category: "species of concern" | "special interest";
+  /** The publication, such as `Ohio's Listed Species`. */
+  readonly list_name: string;
+  /** Who keeps it, such as `Ohio Division of Wildlife`. */
+  readonly keeper: string;
+  /** Its edition, such as `June 2026`. */
+  readonly edition: string;
 }
 
 /**
