@@ -121,7 +121,7 @@ From a release (`await client.release()`):
 | Topic       | Methods                                                                                                                                  |
 | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
 | Species     | `catalogue()`, `species(key)`, `speciesBySlug(slug)`, `groups()`, `searchNames()`                                                        |
-| Places      | `region(state)`, `boundaries(state)`, `zipCounties(zip)`                                                                                 |
+| Places      | `region(state)`, `boundaries(state)`, `cities(state)`, `zipCounties(zip)`                                                                |
 | Results     | `stateResult(state, species)`, `countyResult(state, county, species)`, `backyard(state, county)`, `attribution(state, species, county?)` |
 | The release | `manifest()`, `notes()`, `methods()`, `sources()`                                                                                        |
 

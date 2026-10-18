@@ -115,6 +115,12 @@ const FOLDERS: readonly (readonly [string, string, readonly Request[]])[] = [
         codes: [STATE],
       },
       {
+        kind: "cities",
+        name: "Cities",
+        path: `${IN_RELEASE}/places/{{state}}/cities.json`,
+        codes: [STATE],
+      },
+      {
         kind: "postal",
         name: "ZIP codes",
         path: `${IN_RELEASE}/postal/us/{{zipPrefix}}.json`,

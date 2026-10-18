@@ -234,6 +234,10 @@ describe("files", () => {
       Object.keys((await release.postal("999"))?.data.zips ?? {}),
     ).toContain("99901");
     expect(await release.postal("123")).toBeNull();
+    expect(
+      (await release.cities("us-zz"))?.data.cities.map((c) => c.name),
+    ).toEqual(["Exampleton", "Sample"]);
+    expect(() => release.cities("ohio")).toThrow(RangeError);
     expect(() => release.postal("99")).toThrow(RangeError);
   });
 
