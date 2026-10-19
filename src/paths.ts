@@ -5,6 +5,8 @@ const STATE = /^[a-z]{2}-[a-z0-9]{1,3}$/;
 const COUNTY = /^\d{5}$/;
 const SPECIES = /^[A-Za-z0-9._-]+$/;
 const ZIP = /^\d{5}$/;
+const PLACE = /^(huc8-\d{8}|eco-\d+|parks?-[a-z0-9]+(-[a-z0-9]+)*)$/;
+const PLACE_KIND = /^(watersheds|ecoregions|parks)$/;
 
 /**
  * Checks a code before it is used in a path, so it cannot change the path.
@@ -65,3 +67,22 @@ export const speciesKey = (value: string): string =>
  * @throws {RangeError} When it is malformed.
  */
 export const zipCode = (value: string): string => check("ZIP code", value, ZIP);
+/**
+ * Checks a place's area code: `huc8-` and a HUC8 code, `eco-` and an
+ * `ECO_ID`, or `park-` or `parks-` and an address slug.
+ *
+ * @param value The code.
+ * @returns The code, unchanged.
+ * @throws {RangeError} When it is malformed.
+ */
+export const placeCode = (value: string): string =>
+  check("place", value, PLACE);
+/**
+ * Checks a kind of place file: `watersheds`, `ecoregions` or `parks`.
+ *
+ * @param value The kind.
+ * @returns The kind, unchanged.
+ * @throws {RangeError} When it is not one of them.
+ */
+export const placeKind = (value: string): string =>
+  check("place kind", value, PLACE_KIND);

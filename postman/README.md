@@ -20,21 +20,24 @@ https://raw.githubusercontent.com/openphenology/openphenology-api/main/postman/o
 
 Send **1. Start here › Current release** first. It saves the current release
 into `{{release}}`. Then run the collection, or any folder, from the top:
-**Catalogue** and **Region** save a species with results into `{{species}}`, so
-nothing needs typing.
+**Catalogue** and **Region** save a species with results into `{{species}}`, and
+**Place labels** saves one into `{{placeSpecies}}`, so nothing needs typing.
 
 ## Variables
 
 Set these on the collection's **Variables** tab.
 
-| Variable  | Starts as                       | What it is                                    |
-| --------- | ------------------------------- | --------------------------------------------- |
-| `baseUrl` | `https://api.openphenology.com` | The API                                       |
-| `release` | `2026-10-19`                    | A release ID, its date; saved by Start here   |
-| `state`   | `us-oh`                         | A state: `us-` and the postal abbreviation    |
-| `county`  | `39049`                         | A county's 5-digit Census code (GEOID)        |
-| `species` | `example-species`               | A species key; saved by Catalogue and Region  |
-| `zip`     | `43215`                         | A ZIP code; ZIP codes reads its 3-digit group |
+| Variable       | Starts as                       | What it is                                                |
+| -------------- | ------------------------------- | --------------------------------------------------------- |
+| `baseUrl`      | `https://api.openphenology.com` | The API                                                   |
+| `release`      | `2026-10-19`                    | A release ID, its date; saved by Start here               |
+| `state`        | `us-oh`                         | A state: `us-` and the postal abbreviation                |
+| `county`       | `39049`                         | A county's 5-digit Census code (GEOID)                    |
+| `species`      | `example-species`               | A species key; saved by Catalogue and Region              |
+| `zip`          | `43215`                         | A ZIP code; ZIP codes reads its 3-digit group             |
+| `placeKind`    | `parks`                         | `watersheds`, `ecoregions` or `parks`                     |
+| `place`        | `parks-cleveland-metroparks`    | A place's area code: `huc8-`, `eco-`, `park-` or `parks-` |
+| `placeSpecies` | `example-species`               | A species with a result in `place`; saved by Place labels |
 
 ## What the tests check
 

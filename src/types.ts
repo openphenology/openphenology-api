@@ -45,13 +45,25 @@ export interface PublishedFile<Kind extends string, Data> {
 }
 
 /**
- * A place's code: `us-` and the postal abbreviation for a state (`us-oh`,
- * its ISO 3166-2 code), or the 5-digit Census code for a county (`39049`,
- * its GEOID).
+ * An area's code: `us-` and the postal abbreviation for a state (`us-oh`,
+ * its ISO 3166-2 code), the 5-digit Census code for a county (`39049`, its
+ * GEOID), or a place's code (`species/1.16`): `huc8-` and the HUC8 code for
+ * a watershed (`huc8-04100011`), `eco-` and RESOLVE's `ECO_ID` for an
+ * ecoregion (`eco-342`), `park-` and its address slug for a park
+ * (`park-hocking-hills-state-park`), and `parks-` and its address slug for a
+ * metro park system (`parks-cleveland-metroparks`).
  */
 export type Area = string;
 /** Whether an area is a state or a county. */
 export type Level = "state" | "county";
+/**
+ * The kind of a place (ODR-2026-043, ODR-2026-044): a watershed (a USGS
+ * HUC8 subbasin), an ecoregion (RESOLVE Ecoregions 2017), a national or
+ * state park, or a metro park system, whose parks are pooled.
+ */
+export type PlaceLevel = "watershed" | "ecoregion" | "park" | "park-system";
+/** A kind of place file: `places/<kind>.json`. */
+export type PlaceKind = "watersheds" | "ecoregions" | "parks";
 
 /**
  * Why season weeks are withheld:
@@ -175,6 +187,11 @@ export type ManifestFile = PublishedFile<
       readonly state_results: number;
       /** County results. */
       readonly county_results: number;
+      /**
+       * Place results: watersheds, ecoregions, parks and metro park
+       * systems. Added in `manifest/2.1`, so absent from earlier files.
+       */
+      readonly place_results?: number;
       /** Records counted. */
       readonly records: number;
     };
@@ -357,8 +374,12 @@ export type SpeciesFile = PublishedFile<
     readonly areas: readonly {
       /** The area code. */
       readonly area: Area;
-      /** Whether it is a state or a county. */
-      readonly level: Level;
+      /**
+       * Whether it is a state or a county, or from `species/1.16` a
+       * watershed, ecoregion, park or metro park system. A sensitive species
+       * has no place result.
+       */
+      readonly level: Level | PlaceLevel;
       /** Records counted there. */
       readonly records: number;
       /**
@@ -880,6 +901,17 @@ export interface RegionArea {
    * files.
    */
   readonly green_up?: GreenUp | null;
+  /**
+   * The area codes of the watersheds it touches, possibly none. Added in
+   * `region/1.8`, so absent from earlier files.
+   */
+  readonly watersheds?: readonly Area[];
+  /**
+   * The area codes of the parks and metro park systems with a page that it
+   * touches, possibly none. Added in `region/1.8`, so absent from earlier
+   * files.
+   */
+  readonly parks?: readonly Area[];
 }
 
 /** An area's spring green-up (`region/1.6`). */
@@ -1011,7 +1043,7 @@ export type RegionFile = PublishedFile<
 >;
 
 /**
- * The phenology result for one species in one county or state. It shows when
+ * The phenology result for one species in one county, state or place. It shows when
  * people recorded the species, not when or where it occurs: see `limits`.
  */
 export interface WeeklyResult {
@@ -1050,8 +1082,18 @@ export interface WeeklyResult {
 export type CountyResultFile = PublishedFile<"county-weekly", WeeklyResult>;
 /** `results/<state>/<species_key>.json`: a state result. */
 export type StateResultFile = PublishedFile<"state-weekly", WeeklyResult>;
+/**
+ * `results/places/<area>/<species_key>.json`: a watershed's, ecoregion's,
+ * park's or metro park system's result (ODR-2026-043, ODR-2026-044). A place
+ * that runs into a state not covered yet has results from its covered part
+ * only.
+ */
+export type PlaceResultFile = PublishedFile<"place-weekly", WeeklyResult>;
 
-/** `attribution/<state>/[<county>/]<species_key>.json`: the sources behind a result. */
+/**
+ * `attribution/<state>/[<county>/]<species_key>.json` or
+ * `attribution/places/<area>/<species_key>.json`: the sources behind a result.
+ */
 export type AttributionFile = PublishedFile<
   "attribution",
   {
@@ -1252,5 +1294,172 @@ export type PostalFile = PublishedFile<
     readonly zips: Readonly<
       Record<string, readonly (readonly [Area, number])[]>
     >;
+  }
+>;
+
+/**
+ * A park's or metro park system's details in `places/parks.json`
+ * (ODR-2026-043).
+ */
+export interface Park {
+  /** `national` or `state` for a park, `park-system` for a metro park system. */
+  readonly type: "national" | "state" | "park-system";
+  /** The managing agency. */
+  readonly agency: string;
+  /** Its area in acres; `null` for a metro park system. */
+  readonly acres: number | null;
+  /** Its page on its managing agency's official site, or `null` when it has none. */
+  readonly official_url: string | null;
+  /** True when at least 25 species have a result there, so it has a page. */
+  readonly has_page: boolean;
+  /** A metro park system's park names; empty for a park. */
+  readonly parks: readonly string[];
+}
+
+/** One watershed, ecoregion, park or metro park system in a places file. */
+export interface Place {
+  /** The place's area code, such as `huc8-04100011`. */
+  readonly area: Area;
+  /** What kind of place it is. */
+  readonly level: PlaceLevel;
+  /** Its name. */
+  readonly name: string;
+  /** Its address slug. */
+  readonly slug: string;
+  /**
+   * A watershed's HUC8 code, as a string such as `04100011`, or an
+   * ecoregion's RESOLVE `ECO_ID`, as a number; `null` for a park or metro
+   * park system.
+   */
+  readonly code: string | number | null;
+  /** The covered states it lies in. */
+  readonly states: readonly Area[];
+  /**
+   * The states it lies in that are not covered yet, possibly none. Its
+   * results come from its covered part only.
+   */
+  readonly continues_into: readonly Area[];
+  /** The county codes it touches. */
+  readonly counties: readonly Area[];
+  /**
+   * Species with a result there. Empty for a park or metro park system below
+   * the minimum of 25 species, which has no other place file.
+   */
+  readonly species_keys: readonly string[];
+  /** Records of all species counted in the place, weeks 1 to 53. */
+  readonly effort: readonly number[];
+  /**
+   * For a park or metro park system with results, the weeks in which the
+   * most species are recorded there (data rules `seasonal.md`, Best weeks to
+   * visit a park); `null` otherwise, and always for a watershed or ecoregion.
+   */
+  readonly best_weeks: BestWeeks | null;
+  /** A park's or metro park system's details; `null` for a watershed or ecoregion. */
+  readonly park: Park | null;
+}
+
+/** A first and last week, 1 to 53. */
+export type WeekSpan = readonly [first: number, last: number];
+
+/** A park's best weeks (formats.md 1.32): overall and per group with a span. */
+export interface BestWeeks {
+  /** The span over all species with a result there. */
+  readonly all: WeekSpan;
+  /** The span per `group`; groups with no span are left out. */
+  readonly groups: Readonly<Record<string, WeekSpan>>;
+}
+
+/**
+ * `places/<kind>.json`: every watershed, ecoregion, or park and metro park
+ * system with results, with its species with results (ODR-2026-043,
+ * ODR-2026-044). Every national and state park is listed, with or without a
+ * page. No place file holds a sensitive species.
+ */
+export type PlacesFile = PublishedFile<
+  "places",
+  {
+    /** `watersheds`, `ecoregions` or `parks`. */
+    readonly kind: PlaceKind;
+    /** Every place of that kind. */
+    readonly places: readonly Place[];
+  }
+>;
+
+/**
+ * `places/<kind>/boundaries.json`: a GeoJSON FeatureCollection for maps.
+ * Watersheds and ecoregions are each covered part's outline, simplified for
+ * display; parks are each national or state park's middle, and each park of
+ * a metro park system with results, as a point. Display only.
+ */
+export type PlaceBoundariesFile = PublishedFile<
+  "place-boundaries",
+  {
+    /** Always `FeatureCollection`. */
+    readonly type: "FeatureCollection";
+    /** One feature per place, or per park of a metro park system. */
+    readonly features: readonly {
+      /** Always `Feature`. */
+      readonly type: "Feature";
+      /** The place. */
+      readonly properties: {
+        /** The place's area code. */
+        readonly area: Area;
+        /** Its name. */
+        readonly name: string;
+        /** Its address slug. */
+        readonly slug: string;
+        /** For a park in a metro park system, the system's area code; otherwise `null`. */
+        readonly system: Area | null;
+      };
+      /** Its outline or middle, WGS 84 longitude and latitude. */
+      readonly geometry: {
+        /** `MultiPolygon` for a watershed's or ecoregion's outline, `Point` for a park's middle. */
+        readonly type: "MultiPolygon" | "Point";
+        /**
+         * For a `MultiPolygon`, polygons of rings of `[longitude, latitude]`
+         * positions; for a `Point`, one `[longitude, latitude]` position.
+         */
+        readonly coordinates:
+          | readonly number[]
+          | readonly (readonly (readonly (readonly number[])[])[])[];
+      };
+    }[];
+  }
+>;
+
+/**
+ * `labels/<area>.json`: a place's labels, one letter per week for each
+ * species with a result there, read from the place's own result: `c`
+ * commonly reported this time of year, `s` seasonally reported, `r`
+ * reported in the area (data rules `seasonal.md`, Place labels).
+ */
+export type PlaceLabelsFile = PublishedFile<
+  "place-labels",
+  {
+    /** The place's area code. */
+    readonly area: Area;
+    /** The method version. */
+    readonly method: string;
+    /** The latest record date counted, `YYYY-MM-DD`. */
+    readonly evidence_through: string | null;
+    /** Records of all species counted in the place, weeks 1 to 53. */
+    readonly effort: readonly number[];
+    /** Each species with a result there. */
+    readonly species: readonly {
+      /** The species key. */
+      readonly species_key: string;
+      /** The browse group. */
+      readonly group: string | null;
+      /** 53 letters, one per week: `c`, `s` or `r`. */
+      readonly labels: string;
+      /** The place result's records counted. */
+      readonly records: number;
+      /** The place result's weekly records, weeks 1 to 53. */
+      readonly weekly: readonly number[];
+      /** The place result's season weeks, or empty. */
+      readonly season: SeasonWeeks;
+      /** Why the place result's season is withheld, or `null`. */
+      readonly season_withheld: Withheld | null;
+    }[];
   }
 >;

@@ -1,7 +1,7 @@
 {
   "id": "releases/2026-01-05/manifest.json",
   "kind": "manifest",
-  "format": "manifest/2.0",
+  "format": "manifest/2.1",
   "provenance": {
     "release": "2026-01-05",
     "sources": ["example"],
@@ -105,6 +105,42 @@
         "bytes": 508
       },
       {
+        "path": "places/parks.json",
+        "sha256": "e24064ec5f6ec2238f29f0edb753b0be95b4a6fb015b84b4819fd4c0a2c8301d",
+        "format": "places/1.0",
+        "bytes": 1647
+      },
+      {
+        "path": "places/watersheds.json",
+        "sha256": "ba67503cfe3b128338d08fe718bd3f7193085ce1075b7eb179f70eee8f4b2a4b",
+        "format": "places/1.0",
+        "bytes": 808
+      },
+      {
+        "path": "places/watersheds/boundaries.json",
+        "sha256": "242ba6c065eb7a101a9e0e82a61e28464b695e941489bd72fd638c0192dab0ef",
+        "format": "place-boundaries/1.0",
+        "bytes": 637
+      },
+      {
+        "path": "places/parks/boundaries.json",
+        "sha256": "80a9e0958d0af5543fb6124b27287157c95e68f42259be370c5d38abb633155a",
+        "format": "place-boundaries/1.0",
+        "bytes": 833
+      },
+      {
+        "path": "labels/parks-example-metro-parks.json",
+        "sha256": "9886015bc8f60490dfe05d25775086d9926f16807893064fc076b303e1d07aa7",
+        "format": "place-labels/1.0",
+        "bytes": 931
+      },
+      {
+        "path": "attribution/places/parks-example-metro-parks/EX1.json",
+        "sha256": "6e15647f759316b6599593f302f7569068eeccf7a062a77461b72b92ecf07fc8",
+        "format": "attribution/1.0",
+        "bytes": 665
+      },
+      {
         "path": "postal/us/999.json",
         "sha256": "2e991fb572d688ad665760fd1d9ad61f181e94c73d45cc40aa81d2541ea6f73a",
         "format": "postal/1.0",
@@ -123,6 +159,12 @@
         "bytes": 1055
       },
       {
+        "path": "results/places/parks-example-metro-parks/EX1.json",
+        "sha256": "bd0fcd45b021f50c43994e4c043aac1e5ce97f60a80bb11976a56db0f6159f46",
+        "format": "place-weekly/1.0",
+        "bytes": 1094
+      },
+      {
         "path": "archive.tar.gz",
         "sha256": "eac08293266f6a619ff1dc43a3100fb86aaf596bd581fc111d3818cef37a066c",
         "format": null,
@@ -133,6 +175,7 @@
       "species": 2,
       "state_results": 1,
       "county_results": 1,
+      "place_results": 1,
       "records": 120
     }
   }

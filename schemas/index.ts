@@ -13,6 +13,10 @@ import type {
   ManifestFile,
   MethodsFile,
   NotesFile,
+  PlaceBoundariesFile,
+  PlaceLabelsFile,
+  PlaceResultFile,
+  PlacesFile,
   PostalFile,
   RegionFile,
   ReleasesFile,
@@ -36,6 +40,10 @@ export type Kind = (
   | ManifestFile
   | MethodsFile
   | NotesFile
+  | PlaceBoundariesFile
+  | PlaceLabelsFile
+  | PlaceResultFile
+  | PlacesFile
   | PostalFile
   | RegionFile
   | ReleasesFile
@@ -93,9 +101,20 @@ const time = pattern("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$");
 const STATE = "[a-z]{2}-[a-z0-9]{1,3}";
 const COUNTY = "\\d{5}";
 const KEY = "[A-Za-z0-9._-]+";
+/** The address slug in a park's or metro park system's code. */
+const SLUG = "[a-z0-9]+(-[a-z0-9]+)*";
+/** A place's area code (formats.md 1.29): a watershed, ecoregion, park or metro park system. */
+const PLACE = `(huc8-\\d{8}|eco-\\d+|parks?-${SLUG})`;
 const state = pattern(`^${STATE}$`);
 const county = pattern(`^${COUNTY}$`);
-const area: Schema = { anyOf: [state, county] };
+const watershed = pattern("^huc8-\\d{8}$");
+const ecoregion = pattern("^eco-\\d+$");
+const park = pattern(`^park-${SLUG}$`);
+const parkSystem = pattern(`^parks-${SLUG}$`);
+const place = pattern(`^${PLACE}$`);
+const area: Schema = { anyOf: [state, county, place] };
+/** The kinds of place (species/1.16). */
+const PLACE_LEVELS = ["watershed", "ecoregion", "park", "park-system"] as const;
 const speciesKey = pattern(`^${KEY}$`);
 const slug = pattern("^[a-z0-9]+(-[a-z0-9]+)*$");
 const group = pattern("^[a-z]+(-[a-z]+)*$");
@@ -142,18 +161,26 @@ const belowSpecies = list(
   }),
 );
 
-/** `area` is a state code when `level` is `state`, and a county's 5-digit Census code when it is `county`. */
+/**
+ * `area` is a state code when `level` is `state`, a county's 5-digit Census
+ * code when it is `county`, and the matching place code for a place:
+ * `huc8-` for a watershed, `eco-` for an ecoregion, `park-` for a park and
+ * `parks-` for a metro park system.
+ */
 const areaMatchesLevel: Schema = {
-  anyOf: [
-    {
-      type: "object",
-      properties: { level: { const: "state" }, area: state },
-    },
-    {
-      type: "object",
-      properties: { level: { const: "county" }, area: county },
-    },
-  ],
+  anyOf: (
+    [
+      ["state", state],
+      ["county", county],
+      ["watershed", watershed],
+      ["ecoregion", ecoregion],
+      ["park", park],
+      ["park-system", parkSystem],
+    ] as const
+  ).map(([level, code]) => ({
+    type: "object",
+    properties: { level: { const: level }, area: code },
+  })),
 };
 
 /** `season` is three weeks with no reason withheld, or empty with the reason. */
@@ -474,6 +501,140 @@ const sinceMinorData = (
   },
 });
 
+/** A GeoJSON position, `[longitude, latitude]` in WGS 84. */
+const position = tuple(
+  { type: "number", minimum: -180, maximum: 180 },
+  { type: "number", minimum: -90, maximum: 90 },
+);
+/** A GeoJSON MultiPolygon: polygons of closed rings of positions. */
+const multiPolygon = object({
+  type: { const: "MultiPolygon" },
+  coordinates: list(list(list(position, { minItems: 4 }), { minItems: 1 }), {
+    minItems: 1,
+  }),
+});
+
+/** A place's fields that depend on its level (formats.md 1.29, Places). */
+const placeMatchesLevel: Schema = {
+  anyOf: [
+    {
+      type: "object",
+      properties: {
+        level: { const: "watershed" },
+        code: pattern("^\\d{8}$"),
+        best_weeks: { type: "null" },
+        park: { type: "null" },
+      },
+    },
+    {
+      type: "object",
+      properties: {
+        level: { const: "ecoregion" },
+        code: { type: "integer", minimum: 1 },
+        best_weeks: { type: "null" },
+        park: { type: "null" },
+      },
+    },
+    {
+      type: "object",
+      properties: {
+        level: { const: "park" },
+        code: { type: "null" },
+        park: {
+          type: "object",
+          properties: {
+            type: { enum: ["national", "state"] },
+            acres: { type: "number" },
+            parks: { type: "array", maxItems: 0 },
+          },
+        },
+      },
+    },
+    {
+      type: "object",
+      properties: {
+        level: { const: "park-system" },
+        code: { type: "null" },
+        park: {
+          type: "object",
+          properties: {
+            type: { const: "park-system" },
+            acres: { type: "null" },
+          },
+        },
+      },
+    },
+  ],
+};
+/** A park with a page has at least 25 species with a result; one without has none listed. */
+const pageMatchesSpecies = (hasPage: boolean, keys: Schema): Schema => ({
+  if: {
+    type: "object",
+    required: ["park"],
+    properties: {
+      park: {
+        type: "object",
+        required: ["has_page"],
+        properties: { has_page: { const: hasPage } },
+      },
+    },
+  },
+  then: { type: "object", properties: { species_keys: keys } },
+});
+/** Each place in `places/<kind>.json` is of that kind. */
+const placesMatchKind: Schema = {
+  anyOf: (
+    [
+      ["watersheds", ["watershed"]],
+      ["ecoregions", ["ecoregion"]],
+      ["parks", ["park", "park-system"]],
+    ] as const
+  ).map(([kind, levels]) => ({
+    type: "object",
+    properties: {
+      kind: { const: kind },
+      places: {
+        type: "array",
+        items: {
+          type: "object",
+          properties: { level: { enum: [...levels] } },
+        },
+      },
+    },
+  })),
+};
+/** Outlines for watersheds and ecoregions, points for parks, and `system` only for parks. */
+const geometryMatchesArea: Schema = {
+  anyOf: [
+    {
+      type: "object",
+      properties: {
+        properties: {
+          type: "object",
+          properties: {
+            area: { anyOf: [watershed, ecoregion] },
+            system: { type: "null" },
+          },
+        },
+        geometry: {
+          type: "object",
+          properties: { type: { const: "MultiPolygon" } },
+        },
+      },
+    },
+    {
+      type: "object",
+      properties: {
+        properties: {
+          type: "object",
+          properties: { area: { anyOf: [park, parkSystem] } },
+        },
+        geometry: { type: "object", properties: { type: { const: "Point" } } },
+      },
+    },
+  ],
+};
+
 /** Each file's path from the API root, without `.json`. */
 const RELEASE = "releases/\\d{4}-\\d{2}-\\d{2}/";
 const paths: Record<Kind, string> = {
@@ -490,12 +651,16 @@ const paths: Record<Kind, string> = {
   region: `${RELEASE}regions/${STATE}`,
   "state-weekly": `${RELEASE}results/${STATE}/${KEY}`,
   "county-weekly": `${RELEASE}results/${STATE}/${COUNTY}/${KEY}`,
-  attribution: `${RELEASE}attribution/${STATE}(/${COUNTY})?/${KEY}`,
+  attribution: `${RELEASE}attribution/(${STATE}(/${COUNTY})?|places/${PLACE})/${KEY}`,
   backyard: `${RELEASE}backyard/${STATE}/${COUNTY}`,
   methods: `${RELEASE}methods`,
   sources: `${RELEASE}sources`,
   boundaries: `${RELEASE}places/${STATE}/boundaries`,
   cities: `${RELEASE}places/${STATE}/cities`,
+  places: `${RELEASE}places/(watersheds|ecoregions|parks)`,
+  "place-boundaries": `${RELEASE}places/(watersheds|ecoregions|parks)/boundaries`,
+  "place-weekly": `${RELEASE}results/places/${PLACE}/${KEY}`,
+  "place-labels": `${RELEASE}labels/${PLACE}`,
   postal: `${RELEASE}postal/us/\\d{3}`,
 };
 
@@ -580,31 +745,65 @@ export const schemas = {
     sinceMinorData("terms", 1, ["scope"]),
   ),
 
-  manifest: file(
-    "manifest",
-    "Every file in a release, with its SHA-256, size and format. A large manifest is split on `files`: its first part is always `manifest.json`, then `manifest/1.json` and so on.",
-    object({
-      release: date,
-      published_at: time,
-      parts: { type: "integer", minimum: 1 },
-      files: list(
-        object(
-          {
-            path: text,
-            format: nullable(pattern("^[a-z]+(-[a-z]+)*/\\d+\\.\\d+$")),
-            sha256: pattern("^[0-9a-f]{64}$"),
-            bytes: count,
-          },
-          archiveHasNoFormat,
+  manifest: withRules(
+    file(
+      "manifest",
+      "Every file in a release, with its SHA-256, size and format. A large manifest is split on `files`: its first part is always `manifest.json`, then `manifest/1.json` and so on.",
+      object({
+        release: date,
+        published_at: time,
+        parts: { type: "integer", minimum: 1 },
+        files: list(
+          object(
+            {
+              path: text,
+              format: nullable(pattern("^[a-z]+(-[a-z]+)*/\\d+\\.\\d+$")),
+              sha256: pattern("^[0-9a-f]{64}$"),
+              bytes: count,
+            },
+            archiveHasNoFormat,
+          ),
         ),
-      ),
-      counts: object({
-        species: count,
-        state_results: count,
-        county_results: count,
-        records: count,
+        counts: {
+          ...object({
+            species: count,
+            state_results: count,
+            county_results: count,
+            records: count,
+          }),
+          // Optional: added in manifest/2.1, so absent from manifest/2.0.
+          properties: {
+            species: count,
+            state_results: count,
+            county_results: count,
+            place_results: count,
+            records: count,
+          },
+        },
       }),
-    }),
+    ),
+    // counts.place_results is required from manifest/2.1.
+    {
+      if: {
+        type: "object",
+        properties: { format: { const: "manifest/2.0" } },
+      },
+      else: {
+        type: "object",
+        properties: {
+          data: {
+            type: "object",
+            properties: {
+              counts: {
+                type: "object",
+                properties: { place_results: true },
+                required: ["place_results"],
+              },
+            },
+          },
+        },
+      },
+    },
   ),
 
   notes: file(
@@ -695,7 +894,7 @@ export const schemas = {
             ...object(
               {
                 area,
-                level: { enum: ["state", "county"] },
+                level: { enum: ["state", "county", ...PLACE_LEVELS] },
                 records: count,
                 season,
                 season_withheld: seasonWithheld,
@@ -710,7 +909,7 @@ export const schemas = {
             // `larva` in species/1.11, so absent from earlier files.
             properties: {
               area,
-              level: { enum: ["state", "county"] },
+              level: { enum: ["state", "county", ...PLACE_LEVELS] },
               records: count,
               record_dates: nullable(count),
               latest_month: nullable(month),
@@ -889,128 +1088,138 @@ export const schemas = {
     }),
   ),
 
-  region: file(
-    "region",
-    "A state, its counties, their species and effort.",
-    object({
-      state,
-      name: text,
-      slug,
-      areas: list({
-        ...object(
-          {
+  region: withRules(
+    file(
+      "region",
+      "A state, its counties, their species and effort.",
+      object({
+        state,
+        name: text,
+        slug,
+        areas: list({
+          ...object(
+            {
+              area,
+              level: { enum: ["state", "county"] },
+              name: text,
+              slug,
+              species_keys: list(speciesKey),
+              range_species_keys: list(speciesKey),
+              effort: weekly,
+            },
+            areaMatchesLevel,
+          ),
+          // Optional: `ecoregions` added in region/1.1, `daylight` in
+          // region/1.2, `temperature` in region/1.3, `precipitation`,
+          // `land_cover` and `elevation` in region/1.4, `warmth` and `frost`
+          // in region/1.5, `green_up` in region/1.6 and `full_name` in
+          // region/1.7, and `watersheds` and `parks` in region/1.8, so absent
+          // from earlier files.
+          properties: {
             area,
             level: { enum: ["state", "county"] },
             name: text,
+            full_name: text,
             slug,
             species_keys: list(speciesKey),
             range_species_keys: list(speciesKey),
             effort: weekly,
-          },
-          areaMatchesLevel,
-        ),
-        // Optional: `ecoregions` added in region/1.1, `daylight` in
-        // region/1.2, `temperature` in region/1.3, `precipitation`,
-        // `land_cover` and `elevation` in region/1.4, `warmth` and `frost`
-        // in region/1.5, `green_up` in region/1.6 and `full_name` in
-        // region/1.7, so absent from earlier files.
-        properties: {
-          area,
-          level: { enum: ["state", "county"] },
-          name: text,
-          full_name: text,
-          slug,
-          species_keys: list(speciesKey),
-          range_species_keys: list(speciesKey),
-          effort: weekly,
-          ecoregions: list(
-            object({
-              ecoregion: { type: "integer", minimum: 1 },
-              name: text,
-              biome: text,
-              share: { type: "number", minimum: 0.05, maximum: 1 },
-            }),
-          ),
-          daylight: list(
-            nullable(
-              tuple(clock, clock, { type: "number", minimum: 0, maximum: 24 }),
+            ecoregions: list(
+              object({
+                ecoregion: { type: "integer", minimum: 1 },
+                name: text,
+                biome: text,
+                share: { type: "number", minimum: 0.05, maximum: 1 },
+              }),
             ),
-            { minItems: 53, maxItems: 53 },
-          ),
-          temperature: list(nullable(tuple(celsius, celsius)), {
-            minItems: 53,
-            maxItems: 53,
-          }),
-          precipitation: list(nullable({ type: "number", minimum: 0 }), {
-            minItems: 53,
-            maxItems: 53,
-          }),
-          land_cover: nullable(
-            object({
-              year: { type: "integer", minimum: 1985 },
-              groups: list(
-                object({
-                  group: {
-                    enum: [
-                      "forest",
-                      "farmland",
-                      "developed",
-                      "wetland",
-                      "grassland-shrub",
-                      "barren",
-                    ],
-                  },
-                  share: percent,
+            daylight: list(
+              nullable(
+                tuple(clock, clock, {
+                  type: "number",
+                  minimum: 0,
+                  maximum: 24,
                 }),
               ),
-              classes: list(
-                object({
-                  class: { type: "integer", minimum: 11, maximum: 95 },
-                  share: percent,
-                }),
-              ),
-              water: percent,
+              { minItems: 53, maxItems: 53 },
+            ),
+            temperature: list(nullable(tuple(celsius, celsius)), {
+              minItems: 53,
+              maxItems: 53,
             }),
-          ),
-          elevation: nullable(
-            object({
-              min: { type: "integer" },
-              median: { type: "integer" },
-              max: { type: "integer" },
+            precipitation: list(nullable({ type: "number", minimum: 0 }), {
+              minItems: 53,
+              maxItems: 53,
             }),
-          ),
-          warmth: nullable(
-            object({
-              through: date,
-              degree_days: { type: "integer", minimum: 0 },
-              normal: { type: "integer", minimum: 0 },
-              days_ahead: nullable({ type: "integer" }),
-              provisional: { type: "boolean" },
-            }),
-          ),
-          frost: nullable(
-            object({
-              last_spring: nullable(monthDay),
-              first_fall: nullable(monthDay),
-            }),
-          ),
-          green_up: nullable(
-            object({
-              typical: monthDay,
-              years: {
-                type: "array",
-                items: { type: "integer", minimum: 2000 },
-                minItems: 2,
-                maxItems: 2,
-              },
-              latest_year: { type: "integer", minimum: 2000 },
-              latest: monthDay,
-              days_later: { type: "integer" },
-            }),
-          ),
-        },
+            land_cover: nullable(
+              object({
+                year: { type: "integer", minimum: 1985 },
+                groups: list(
+                  object({
+                    group: {
+                      enum: [
+                        "forest",
+                        "farmland",
+                        "developed",
+                        "wetland",
+                        "grassland-shrub",
+                        "barren",
+                      ],
+                    },
+                    share: percent,
+                  }),
+                ),
+                classes: list(
+                  object({
+                    class: { type: "integer", minimum: 11, maximum: 95 },
+                    share: percent,
+                  }),
+                ),
+                water: percent,
+              }),
+            ),
+            elevation: nullable(
+              object({
+                min: { type: "integer" },
+                median: { type: "integer" },
+                max: { type: "integer" },
+              }),
+            ),
+            warmth: nullable(
+              object({
+                through: date,
+                degree_days: { type: "integer", minimum: 0 },
+                normal: { type: "integer", minimum: 0 },
+                days_ahead: nullable({ type: "integer" }),
+                provisional: { type: "boolean" },
+              }),
+            ),
+            frost: nullable(
+              object({
+                last_spring: nullable(monthDay),
+                first_fall: nullable(monthDay),
+              }),
+            ),
+            green_up: nullable(
+              object({
+                typical: monthDay,
+                years: {
+                  type: "array",
+                  items: { type: "integer", minimum: 2000 },
+                  minItems: 2,
+                  maxItems: 2,
+                },
+                latest_year: { type: "integer", minimum: 2000 },
+                latest: monthDay,
+                days_later: { type: "integer" },
+              }),
+            ),
+            watersheds: list(watershed),
+            parks: list({ anyOf: [park, parkSystem] }),
+          },
+        }),
       }),
-    }),
+    ),
+    sinceMinor("region", 8, { areas: ["watersheds", "parks"] }),
   ),
 
   "state-weekly": file(
@@ -1160,6 +1369,123 @@ export const schemas = {
           area: county,
           also_in: list(county),
         }),
+      ),
+    }),
+  ),
+
+  places: withRules(
+    file(
+      "places",
+      "Every watershed, every ecoregion, or every national and state park and metro park system with results, with its species with a result (ODR-2026-043, ODR-2026-044). No place file holds a sensitive species. May be split into shards.",
+      object({
+        kind: { enum: ["watersheds", "ecoregions", "parks"] },
+        places: list(
+          object(
+            {
+              area: place,
+              level: { enum: [...PLACE_LEVELS] },
+              name: text,
+              slug,
+              code: {
+                anyOf: [
+                  pattern("^\\d{8}$"),
+                  { type: "integer", minimum: 1 },
+                  { type: "null" },
+                ],
+              },
+              states: list(state),
+              continues_into: list(state),
+              counties: list(county),
+              species_keys: list(speciesKey),
+              effort: weekly,
+              // formats.md 1.32.
+              best_weeks: nullable(
+                object({
+                  all: tuple(week, week),
+                  groups: {
+                    type: "object",
+                    propertyNames: group,
+                    additionalProperties: tuple(week, week),
+                  },
+                }),
+              ),
+              park: nullable(
+                object({
+                  type: { enum: ["national", "state", "park-system"] },
+                  agency: text,
+                  acres: nullable({ type: "number", minimum: 0 }),
+                  official_url: nullable(text),
+                  has_page: { type: "boolean" },
+                  parks: list(text),
+                }),
+              ),
+            },
+            areaMatchesLevel,
+            placeMatchesLevel,
+            pageMatchesSpecies(true, { type: "array", minItems: 25 }),
+            pageMatchesSpecies(false, { type: "array", maxItems: 0 }),
+          ),
+        ),
+      }),
+    ),
+    { type: "object", properties: { data: placesMatchKind } },
+  ),
+
+  "place-boundaries": file(
+    "place-boundaries",
+    "Watershed and ecoregion outlines, and park middles as points, for maps, as a GeoJSON FeatureCollection. For display only.",
+    object({
+      type: { const: "FeatureCollection" },
+      features: list(
+        object(
+          {
+            type: { const: "Feature" },
+            properties: object({
+              area: place,
+              name: text,
+              slug,
+              system: nullable(parkSystem),
+            }),
+            geometry: {
+              anyOf: [
+                multiPolygon,
+                object({ type: { const: "Point" }, coordinates: position }),
+              ],
+            },
+          },
+          geometryMatchesArea,
+        ),
+      ),
+    }),
+  ),
+
+  "place-weekly": file(
+    "place-weekly",
+    "A species' weekly result for a watershed, ecoregion, park or metro park system.",
+    weeklyResult(place),
+  ),
+
+  "place-labels": file(
+    "place-labels",
+    "A place's label for each species with a result there and each week. May be split into shards.",
+    object({
+      area: place,
+      method: text,
+      evidence_through: nullable(date),
+      effort: weekly,
+      species: list(
+        object(
+          {
+            species_key: speciesKey,
+            group: nullable(group),
+            labels: pattern("^[csr]{53}$"),
+            records: count,
+            weekly,
+            season,
+            season_withheld: seasonWithheld,
+          },
+          seasonMatchesWithheld,
+        ),
       ),
     }),
   ),

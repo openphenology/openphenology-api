@@ -1,0 +1,45 @@
+{
+  "id": "releases/2026-01-05/places/watersheds/boundaries.json",
+  "kind": "place-boundaries",
+  "format": "place-boundaries/1.0",
+  "provenance": {
+    "release": "2026-01-05",
+    "sources": ["example"],
+    "licences": ["CC-BY-4.0"],
+    "gbif_download_dois": ["10.0000/example"],
+    "method": "test-1",
+    "taxonomy": "test-taxonomy",
+    "boundaries": "test-boundaries",
+    "ranges": null,
+    "protection": null,
+    "code": "0.0.0",
+    "run": "run-1"
+  },
+  "data": {
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Feature",
+        "properties": {
+          "area": "huc8-99990001",
+          "name": "Example River",
+          "slug": "example-river-99990001",
+          "system": null
+        },
+        "geometry": {
+          "type": "MultiPolygon",
+          "coordinates": [
+            [
+              [
+                [0, 0],
+                [2, 0],
+                [0, 2],
+                [0, 0]
+              ]
+            ]
+          ]
+        }
+      }
+    ]
+  }
+}
