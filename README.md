@@ -1,7 +1,8 @@
 # @openphenology/api (beta)
 
 Find out when each species is recorded, week by week, in US counties and
-states, from OpenPhenology's published data.
+states, and in watersheds, ecoregions and parks, from OpenPhenology's
+published data.
 
 > **Beta.** OpenPhenology and this package are in beta: the interface may
 > change before 1.0.0, and published file formats change only by version.
@@ -49,14 +50,15 @@ method takes, returns and throws.
 
 Every read takes codes, not names:
 
-| You have             | Get the code with                                                  |
-| -------------------- | ------------------------------------------------------------------ |
-| A species' page slug | `release.speciesBySlug("northern-cardinal")`                       |
-| A name someone typed | `release.searchNames()`: every common, scientific and former name  |
-| Nothing yet          | `release.catalogue()`: every species with a result                 |
-| A state              | `us-` and its postal abbreviation, such as `us-oh`                 |
-| A county             | `release.region("us-oh")` lists each county's 5-digit Census code  |
-| A ZIP code           | `release.zipCounties("43215")` gives its counties and their states |
+| You have                       | Get the code with                                                                                                                                      |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| A species' page slug           | `release.speciesBySlug("northern-cardinal")`                                                                                                           |
+| A name someone typed           | `release.searchNames()`: every common, scientific and former name                                                                                      |
+| Nothing yet                    | `release.catalogue()`: every species with a result                                                                                                     |
+| A state                        | `us-` and its postal abbreviation, such as `us-oh`                                                                                                     |
+| A county                       | `release.region("us-oh")` lists each county's 5-digit Census code                                                                                      |
+| A ZIP code                     | `release.zipCounties("43215")` gives its counties and their states                                                                                     |
+| A watershed, ecoregion or park | `release.places("parks")` lists each place's code, such as `huc8-04100011`, `eco-342`, `park-hocking-hills-state-park` or `parks-cleveland-metroparks` |
 
 ## Reading the results
 
@@ -73,7 +75,12 @@ Every read takes codes, not names:
   `c` commonly reported, `s` seasonally reported, `r` reported in your area,
   `m` within its mapped range, `n` not enough evidence.
 - **Places** use codes: `us-oh` for a state, a 5-digit Census code such as
-  `39049` for a county.
+  `39049` for a county, and `huc8-`, `eco-`, `park-` or `parks-` codes for
+  watersheds, ecoregions, parks and metro park systems. A place that runs
+  into a state not covered yet has results from its covered part only, and
+  sensitive species never have place results.
+- **Place labels** give each species with a result in a place one letter per
+  week, from the place's own result: `c`, `s` or `r`, as in Backyard.
 - **No result** comes back as `null`. Results with too little evidence, or for
   sensitive species, are never published.
 
@@ -105,6 +112,15 @@ const outlines = await release.boundaries("us-oh");
 map.addSource("counties", { type: "geojson", data: outlines?.data });
 ```
 
+### Parks with a page
+
+```ts
+const parks = await release.places("parks");
+for (const place of parks?.data.places ?? []) {
+  if (place.park?.has_page) console.log(place.name, place.species_keys.length);
+}
+```
+
 ### Species in each county of a state
 
 ```ts
@@ -118,12 +134,13 @@ for (const area of region?.data.areas ?? []) {
 
 From a release (`await client.release()`):
 
-| Topic       | Methods                                                                                                                                  |
-| ----------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| Species     | `catalogue()`, `species(key)`, `speciesBySlug(slug)`, `groups()`, `searchNames()`                                                        |
-| Places      | `region(state)`, `boundaries(state)`, `cities(state)`, `zipCounties(zip)`                                                                |
-| Results     | `stateResult(state, species)`, `countyResult(state, county, species)`, `backyard(state, county)`, `attribution(state, species, county?)` |
-| The release | `manifest()`, `notes()`, `methods()`, `sources()`                                                                                        |
+| Topic         | Methods                                                                                                                                  |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| Species       | `catalogue()`, `species(key)`, `speciesBySlug(slug)`, `groups()`, `searchNames()`                                                        |
+| Places        | `region(state)`, `boundaries(state)`, `cities(state)`, `zipCounties(zip)`, `places(kind)`, `placeBoundaries(kind)`                       |
+| Results       | `stateResult(state, species)`, `countyResult(state, county, species)`, `backyard(state, county)`, `attribution(state, species, county?)` |
+| Place results | `placeResult(area, species)`, `placeLabels(area)`, `placeAttribution(area, species)`                                                     |
+| The release   | `manifest()`, `notes()`, `methods()`, `sources()`                                                                                        |
 
 From the client: `releases()` lists every release, and `terms()` gives the
 licence and how to cite the data.

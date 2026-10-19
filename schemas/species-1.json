@@ -344,14 +344,22 @@
                   {
                     "type": "string",
                     "pattern": "^\\d{5}$"
+                  },
+                  {
+                    "type": "string",
+                    "pattern": "^(huc8-\\d{8}|eco-\\d+|parks?-[a-z0-9]+(-[a-z0-9]+)*)$"
                   }
                 ]
               },
               "level": {
-                "description": "Whether it is a state or a county.",
+                "description": "Whether it is a state or a county, or from `species/1.16` a\nwatershed, ecoregion, park or metro park system. A sensitive species\nhas no place result.",
                 "enum": [
                   "state",
-                  "county"
+                  "county",
+                  "watershed",
+                  "ecoregion",
+                  "park",
+                  "park-system"
                 ]
               },
               "records": {
@@ -2325,6 +2333,54 @@
                         "pattern": "^\\d{5}$"
                       }
                     }
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "level": {
+                        "const": "watershed"
+                      },
+                      "area": {
+                        "type": "string",
+                        "pattern": "^huc8-\\d{8}$"
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "level": {
+                        "const": "ecoregion"
+                      },
+                      "area": {
+                        "type": "string",
+                        "pattern": "^eco-\\d+$"
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "level": {
+                        "const": "park"
+                      },
+                      "area": {
+                        "type": "string",
+                        "pattern": "^park-[a-z0-9]+(-[a-z0-9]+)*$"
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "level": {
+                        "const": "park-system"
+                      },
+                      "area": {
+                        "type": "string",
+                        "pattern": "^parks-[a-z0-9]+(-[a-z0-9]+)*$"
+                      }
+                    }
                   }
                 ]
               },
@@ -2406,6 +2462,10 @@
                   {
                     "type": "string",
                     "pattern": "^\\d{5}$"
+                  },
+                  {
+                    "type": "string",
+                    "pattern": "^(huc8-\\d{8}|eco-\\d+|parks?-[a-z0-9]+(-[a-z0-9]+)*)$"
                   }
                 ]
               },
@@ -2465,6 +2525,54 @@
                       "area": {
                         "type": "string",
                         "pattern": "^\\d{5}$"
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "level": {
+                        "const": "watershed"
+                      },
+                      "area": {
+                        "type": "string",
+                        "pattern": "^huc8-\\d{8}$"
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "level": {
+                        "const": "ecoregion"
+                      },
+                      "area": {
+                        "type": "string",
+                        "pattern": "^eco-\\d+$"
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "level": {
+                        "const": "park"
+                      },
+                      "area": {
+                        "type": "string",
+                        "pattern": "^park-[a-z0-9]+(-[a-z0-9]+)*$"
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "level": {
+                        "const": "park-system"
+                      },
+                      "area": {
+                        "type": "string",
+                        "pattern": "^parks-[a-z0-9]+(-[a-z0-9]+)*$"
                       }
                     }
                   }

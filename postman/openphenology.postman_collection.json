@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "OpenPhenology",
-    "description": "**Beta.** OpenPhenology is in beta: requests may change before 1.0.0, while published file formats change only by version.\n\nEvery file OpenPhenology publishes: when each species is recorded, week by week, in US counties and states. Generated from [openphenology-api](https://github.com/openphenology/openphenology-api); see `postman/README.md` there.\n\n- **No keys or accounts.** Every request is a plain `GET`.\n- **Releases never change.** Files under `releases/<date>/` stay the same for good. `current.json` names the current release.\n- **A 404 means the file isn't published**: the species, county or state has no such file in this release.\n- **Large files are split into shards.** When a file is too large, it is published as `<name>/0.json`, `<name>/1.json` and so on, and the unsplit file is not published. The Catalogue's saved example is shard 0. Each request's test checks shard 0 when the unsplit file isn't there.\n- **Licence:** CC BY-NC 4.0, for noncommercial use. `terms.json` says how to cite the data and credit its sources.\n\n**Variables.** `baseUrl` is the API. `release`, `state`, `county`, `species` and `zip` start with made-up but valid values. Run the collection from the top and it fills in `release` and `species` itself.\n\n**Tests.** Each request checks that its file loads, is the expected kind and major format version, and matches its JSON Schema from the release's `schemas/` folder.",
+    "description": "**Beta.** OpenPhenology is in beta: requests may change before 1.0.0, while published file formats change only by version.\n\nEvery file OpenPhenology publishes: when each species is recorded, week by week, in US counties and states. Generated from [openphenology-api](https://github.com/openphenology/openphenology-api); see `postman/README.md` there.\n\n- **No keys or accounts.** Every request is a plain `GET`.\n- **Releases never change.** Files under `releases/<date>/` stay the same for good. `current.json` names the current release.\n- **A 404 means the file isn't published**: the species, county or state has no such file in this release.\n- **Large files are split into shards.** When a file is too large, it is published as `<name>/0.json`, `<name>/1.json` and so on, and the unsplit file is not published. The Catalogue's saved example is shard 0. Each request's test checks shard 0 when the unsplit file isn't there.\n- **Licence:** CC BY-NC 4.0, for noncommercial use. `terms.json` says how to cite the data and credit its sources.\n\n**Variables.** `baseUrl` is the API. `release`, `state`, `county`, `species`, `zip`, `placeKind`, `place` and `placeSpecies` start with made-up but valid values. Run the collection from the top and it fills in `release`, `species` and `placeSpecies` itself.\n\n**Tests.** Each request checks that its file loads, is the expected kind and major format version, and matches its JSON Schema from the release's `schemas/` folder.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -539,7 +539,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"id\": \"releases/2026-01-05/manifest.json\",\n  \"kind\": \"manifest\",\n  \"format\": \"manifest/2.0\",\n  \"provenance\": {\n    \"release\": \"2026-01-05\",\n    \"sources\": [\"example\"],\n    \"licences\": [\"CC-BY-4.0\"],\n    \"gbif_download_dois\": [\"10.0000/example\"],\n    \"method\": \"test-1\",\n    \"taxonomy\": \"test-taxonomy\",\n    \"boundaries\": \"test-boundaries\",\n    \"ranges\": null,\n    \"protection\": null,\n    \"code\": \"0.0.0\",\n    \"run\": \"run-1\"\n  },\n  \"data\": {\n    \"release\": \"2026-01-05\",\n    \"published_at\": \"2026-01-05T06:00:00Z\",\n    \"parts\": 1,\n    \"files\": [\n      {\n        \"path\": \"notes.json\",\n        \"sha256\": \"d72198a45d5d50d85ad358a96ec1bced2fe4b962d457637b53b06ccd7c02c645\",\n        \"format\": \"notes/1.0\",\n        \"bytes\": 479\n      },\n      {\n        \"path\": \"catalogue/0.json\",\n        \"sha256\": \"2a3344a242d29ccc3c43c8f7ae2f6b41cbde33b662f052685df99ae2540c8848\",\n        \"format\": \"catalogue/1.3\",\n        \"bytes\": 1031\n      },\n      {\n        \"path\": \"catalogue/1.json\",\n        \"sha256\": \"47d313ad426c0ac451a49adef9e99d9cf537544d21d239c9fd5f69adee608f85\",\n        \"format\": \"catalogue/1.3\",\n        \"bytes\": 718\n      },\n      {\n        \"path\": \"species/EX1.json\",\n        \"sha256\": \"7d787b42dac50f5f604ec1dfb44533079393d13f74e7518b3dc2bd0cf24b7126\",\n        \"format\": \"species/1.11\",\n        \"bytes\": 1669\n      },\n      {\n        \"path\": \"slugs.json\",\n        \"sha256\": \"95ec15fbafe5fc4154e4058e0e04a1e9a267aa82d24acd3212292bb35532338e\",\n        \"format\": \"slugs/1.0\",\n        \"bytes\": 426\n      },\n      {\n        \"path\": \"groups.json\",\n        \"sha256\": \"c44aad6138d2f9e7b1ac7a8165c03ec476ad767f5a34b306479175adb8cee7f2\",\n        \"format\": \"groups/1.0\",\n        \"bytes\": 420\n      },\n      {\n        \"path\": \"search/index.json\",\n        \"sha256\": \"8571c6ad55d1b6873ca13ce317d4675585f91b6c554388bcdddc8101f10f6752\",\n        \"format\": \"search/1.1\",\n        \"bytes\": 476\n      },\n      {\n        \"path\": \"regions/us-zz.json\",\n        \"sha256\": \"8f89f044321a6c03812eac6793fcfe7a3d67cb402235c2b73a9c7e17a6b8ec47\",\n        \"format\": \"region/1.0\",\n        \"bytes\": 694\n      },\n      {\n        \"path\": \"attribution/us-zz/EX1.json\",\n        \"sha256\": \"807fc40d386fcf0fdefb2ff4db5e3e1fe6e8c3a74b2ec45cf79d26e316115fce\",\n        \"format\": \"attribution/1.0\",\n        \"bytes\": 589\n      },\n      {\n        \"path\": \"backyard/us-zz/99001.json\",\n        \"sha256\": \"376554c40305f481624346c89b853ed7fc36a0acec84ccda28bf62a96d12fc76\",\n        \"format\": \"backyard/1.1\",\n        \"bytes\": 904\n      },\n      {\n        \"path\": \"methods.json\",\n        \"sha256\": \"c124c4547068eaf3d4d7263bbb53318e76a8f378e4cfaa33849179e0d4f4a88d\",\n        \"format\": \"methods/1.0\",\n        \"bytes\": 594\n      },\n      {\n        \"path\": \"sources.json\",\n        \"sha256\": \"f1dfbe65e9a45842fed146232f65d39088e992ee38ddca4ca5025761835c9017\",\n        \"format\": \"sources/1.0\",\n        \"bytes\": 558\n      },\n      {\n        \"path\": \"places/us-zz/boundaries.json\",\n        \"sha256\": \"d1393bd33951a3a35c594c03f3c1633521d0e9605d6d21695a3a9521ff5cea85\",\n        \"format\": \"boundaries/1.0\",\n        \"bytes\": 577\n      },\n      {\n        \"path\": \"places/us-zz/cities.json\",\n        \"sha256\": \"e4772568c8b7834bc353c384a993ff38511c0b76f52b9452ac162e903144ea36\",\n        \"format\": \"cities/1.0\",\n        \"bytes\": 508\n      },\n      {\n        \"path\": \"postal/us/999.json\",\n        \"sha256\": \"2e991fb572d688ad665760fd1d9ad61f181e94c73d45cc40aa81d2541ea6f73a\",\n        \"format\": \"postal/1.0\",\n        \"bytes\": 406\n      },\n      {\n        \"path\": \"results/us-zz/EX1.json\",\n        \"sha256\": \"5320f5ff4050bea70111e2f731116797ad7fb2fde9f5ab955140ef7bd3427e1d\",\n        \"format\": \"state-weekly/1.0\",\n        \"bytes\": 1047\n      },\n      {\n        \"path\": \"results/us-zz/99001/EX1.json\",\n        \"sha256\": \"6502115386a34b5e9b7046a0d5f4633aa6ed1bba729a8df90e8b62de634d5293\",\n        \"format\": \"county-weekly/1.0\",\n        \"bytes\": 1055\n      },\n      {\n        \"path\": \"archive.tar.gz\",\n        \"sha256\": \"eac08293266f6a619ff1dc43a3100fb86aaf596bd581fc111d3818cef37a066c\",\n        \"format\": null,\n        \"bytes\": 15\n      }\n    ],\n    \"counts\": {\n      \"species\": 2,\n      \"state_results\": 1,\n      \"county_results\": 1,\n      \"records\": 120\n    }\n  }\n}"
+              "body": "{\n  \"id\": \"releases/2026-01-05/manifest.json\",\n  \"kind\": \"manifest\",\n  \"format\": \"manifest/2.1\",\n  \"provenance\": {\n    \"release\": \"2026-01-05\",\n    \"sources\": [\"example\"],\n    \"licences\": [\"CC-BY-4.0\"],\n    \"gbif_download_dois\": [\"10.0000/example\"],\n    \"method\": \"test-1\",\n    \"taxonomy\": \"test-taxonomy\",\n    \"boundaries\": \"test-boundaries\",\n    \"ranges\": null,\n    \"protection\": null,\n    \"code\": \"0.0.0\",\n    \"run\": \"run-1\"\n  },\n  \"data\": {\n    \"release\": \"2026-01-05\",\n    \"published_at\": \"2026-01-05T06:00:00Z\",\n    \"parts\": 1,\n    \"files\": [\n      {\n        \"path\": \"notes.json\",\n        \"sha256\": \"d72198a45d5d50d85ad358a96ec1bced2fe4b962d457637b53b06ccd7c02c645\",\n        \"format\": \"notes/1.0\",\n        \"bytes\": 479\n      },\n      {\n        \"path\": \"catalogue/0.json\",\n        \"sha256\": \"2a3344a242d29ccc3c43c8f7ae2f6b41cbde33b662f052685df99ae2540c8848\",\n        \"format\": \"catalogue/1.3\",\n        \"bytes\": 1031\n      },\n      {\n        \"path\": \"catalogue/1.json\",\n        \"sha256\": \"47d313ad426c0ac451a49adef9e99d9cf537544d21d239c9fd5f69adee608f85\",\n        \"format\": \"catalogue/1.3\",\n        \"bytes\": 718\n      },\n      {\n        \"path\": \"species/EX1.json\",\n        \"sha256\": \"7d787b42dac50f5f604ec1dfb44533079393d13f74e7518b3dc2bd0cf24b7126\",\n        \"format\": \"species/1.11\",\n        \"bytes\": 1669\n      },\n      {\n        \"path\": \"slugs.json\",\n        \"sha256\": \"95ec15fbafe5fc4154e4058e0e04a1e9a267aa82d24acd3212292bb35532338e\",\n        \"format\": \"slugs/1.0\",\n        \"bytes\": 426\n      },\n      {\n        \"path\": \"groups.json\",\n        \"sha256\": \"c44aad6138d2f9e7b1ac7a8165c03ec476ad767f5a34b306479175adb8cee7f2\",\n        \"format\": \"groups/1.0\",\n        \"bytes\": 420\n      },\n      {\n        \"path\": \"search/index.json\",\n        \"sha256\": \"8571c6ad55d1b6873ca13ce317d4675585f91b6c554388bcdddc8101f10f6752\",\n        \"format\": \"search/1.1\",\n        \"bytes\": 476\n      },\n      {\n        \"path\": \"regions/us-zz.json\",\n        \"sha256\": \"8f89f044321a6c03812eac6793fcfe7a3d67cb402235c2b73a9c7e17a6b8ec47\",\n        \"format\": \"region/1.0\",\n        \"bytes\": 694\n      },\n      {\n        \"path\": \"attribution/us-zz/EX1.json\",\n        \"sha256\": \"807fc40d386fcf0fdefb2ff4db5e3e1fe6e8c3a74b2ec45cf79d26e316115fce\",\n        \"format\": \"attribution/1.0\",\n        \"bytes\": 589\n      },\n      {\n        \"path\": \"backyard/us-zz/99001.json\",\n        \"sha256\": \"376554c40305f481624346c89b853ed7fc36a0acec84ccda28bf62a96d12fc76\",\n        \"format\": \"backyard/1.1\",\n        \"bytes\": 904\n      },\n      {\n        \"path\": \"methods.json\",\n        \"sha256\": \"c124c4547068eaf3d4d7263bbb53318e76a8f378e4cfaa33849179e0d4f4a88d\",\n        \"format\": \"methods/1.0\",\n        \"bytes\": 594\n      },\n      {\n        \"path\": \"sources.json\",\n        \"sha256\": \"f1dfbe65e9a45842fed146232f65d39088e992ee38ddca4ca5025761835c9017\",\n        \"format\": \"sources/1.0\",\n        \"bytes\": 558\n      },\n      {\n        \"path\": \"places/us-zz/boundaries.json\",\n        \"sha256\": \"d1393bd33951a3a35c594c03f3c1633521d0e9605d6d21695a3a9521ff5cea85\",\n        \"format\": \"boundaries/1.0\",\n        \"bytes\": 577\n      },\n      {\n        \"path\": \"places/us-zz/cities.json\",\n        \"sha256\": \"e4772568c8b7834bc353c384a993ff38511c0b76f52b9452ac162e903144ea36\",\n        \"format\": \"cities/1.0\",\n        \"bytes\": 508\n      },\n      {\n        \"path\": \"places/parks.json\",\n        \"sha256\": \"1091b4e91fef51d2c9b3e702461fa2ba6a2dbc108b32258eb77e9bbfe563fce3\",\n        \"format\": \"places/1.0\",\n        \"bytes\": 1609\n      },\n      {\n        \"path\": \"places/watersheds.json\",\n        \"sha256\": \"ba67503cfe3b128338d08fe718bd3f7193085ce1075b7eb179f70eee8f4b2a4b\",\n        \"format\": \"places/1.0\",\n        \"bytes\": 808\n      },\n      {\n        \"path\": \"places/watersheds/boundaries.json\",\n        \"sha256\": \"242ba6c065eb7a101a9e0e82a61e28464b695e941489bd72fd638c0192dab0ef\",\n        \"format\": \"place-boundaries/1.0\",\n        \"bytes\": 637\n      },\n      {\n        \"path\": \"places/parks/boundaries.json\",\n        \"sha256\": \"80a9e0958d0af5543fb6124b27287157c95e68f42259be370c5d38abb633155a\",\n        \"format\": \"place-boundaries/1.0\",\n        \"bytes\": 833\n      },\n      {\n        \"path\": \"labels/parks-example-metro-parks.json\",\n        \"sha256\": \"9886015bc8f60490dfe05d25775086d9926f16807893064fc076b303e1d07aa7\",\n        \"format\": \"place-labels/1.0\",\n        \"bytes\": 931\n      },\n      {\n        \"path\": \"attribution/places/parks-example-metro-parks/EX1.json\",\n        \"sha256\": \"6e15647f759316b6599593f302f7569068eeccf7a062a77461b72b92ecf07fc8\",\n        \"format\": \"attribution/1.0\",\n        \"bytes\": 665\n      },\n      {\n        \"path\": \"postal/us/999.json\",\n        \"sha256\": \"2e991fb572d688ad665760fd1d9ad61f181e94c73d45cc40aa81d2541ea6f73a\",\n        \"format\": \"postal/1.0\",\n        \"bytes\": 406\n      },\n      {\n        \"path\": \"results/us-zz/EX1.json\",\n        \"sha256\": \"5320f5ff4050bea70111e2f731116797ad7fb2fde9f5ab955140ef7bd3427e1d\",\n        \"format\": \"state-weekly/1.0\",\n        \"bytes\": 1047\n      },\n      {\n        \"path\": \"results/us-zz/99001/EX1.json\",\n        \"sha256\": \"6502115386a34b5e9b7046a0d5f4633aa6ed1bba729a8df90e8b62de634d5293\",\n        \"format\": \"county-weekly/1.0\",\n        \"bytes\": 1055\n      },\n      {\n        \"path\": \"results/places/parks-example-metro-parks/EX1.json\",\n        \"sha256\": \"bd0fcd45b021f50c43994e4c043aac1e5ce97f60a80bb11976a56db0f6159f46\",\n        \"format\": \"place-weekly/1.0\",\n        \"bytes\": 1094\n      },\n      {\n        \"path\": \"archive.tar.gz\",\n        \"sha256\": \"eac08293266f6a619ff1dc43a3100fb86aaf596bd581fc111d3818cef37a066c\",\n        \"format\": null,\n        \"bytes\": 15\n      }\n    ],\n    \"counts\": {\n      \"species\": 2,\n      \"state_results\": 1,\n      \"county_results\": 1,\n      \"place_results\": 1,\n      \"records\": 120\n    }\n  }\n}"
             }
           ]
         },
@@ -1639,7 +1639,7 @@
     },
     {
       "name": "4. Places",
-      "description": "States, counties and ZIP codes.",
+      "description": "States, counties, ZIP codes, and watersheds, ecoregions and parks.",
       "item": [
         {
           "name": "Region",
@@ -2055,6 +2055,282 @@
                 }
               ],
               "body": "{\n  \"id\": \"releases/2026-01-05/places/us-zz/cities.json\",\n  \"kind\": \"cities\",\n  \"format\": \"cities/1.0\",\n  \"provenance\": {\n    \"release\": \"2026-01-05\",\n    \"sources\": [\"example\"],\n    \"licences\": [\"CC-BY-4.0\"],\n    \"gbif_download_dois\": [\"10.0000/example\"],\n    \"method\": \"test-1\",\n    \"taxonomy\": \"test-taxonomy\",\n    \"boundaries\": \"test-boundaries\",\n    \"ranges\": null,\n    \"protection\": null,\n    \"code\": \"0.0.0\",\n    \"run\": \"run-1\"\n  },\n  \"data\": {\n    \"cities\": [\n      {\n        \"name\": \"Exampleton\",\n        \"type\": \"city\",\n        \"area\": \"99001\",\n        \"also_in\": [\"99002\"]\n      },\n      {\n        \"name\": \"Sample\",\n        \"type\": \"village\",\n        \"area\": \"99002\",\n        \"also_in\": []\n      }\n    ]\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Places",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const KIND = \"places\";",
+                  "const MAJOR = 1;",
+                  "const SPLIT = true;",
+                  "function saved(file) {",
+                  "  // Nothing to save.",
+                  "}",
+                  "",
+                  "// The test every request in the Postman collection runs, in Postman's script",
+                  "// sandbox. scripts/postman.ts puts it after each request's `KIND`, `MAJOR`, `SPLIT`",
+                  "// and `saved(file)`, which saves values for later requests. It checks that",
+                  "// the file loads, is the expected kind and major format version, and matches",
+                  "// its JSON Schema, which it reads from the release's schemas/ folder. A file",
+                  "// split into shards is checked through its first shard.",
+                  "",
+                  "/**",
+                  " * Postman's validator reads JSON Schema draft-07, and these schemas are",
+                  " * 2020-12. The only 2020-12 keyword they use is `prefixItems`, which becomes",
+                  " * draft-07's tuple form: `items` as a list, and `additionalItems` for what",
+                  " * `items` said about the rest.",
+                  " */",
+                  "function draft07(node) {",
+                  "  if (Array.isArray(node)) return node.map(draft07);",
+                  "  if (node === null || typeof node !== \"object\") return node;",
+                  "  const out = {};",
+                  "  for (const [key, value] of Object.entries(node))",
+                  "    if (key !== \"$schema\" && key !== \"prefixItems\") out[key] = draft07(value);",
+                  "  if (\"prefixItems\" in node) {",
+                  "    out.items = draft07(node.prefixItems);",
+                  "    out.additionalItems = \"items\" in node ? draft07(node.items) : true;",
+                  "  }",
+                  "  return out;",
+                  "}",
+                  "",
+                  "function check(file, url) {",
+                  "  saved(file);",
+                  "  pm.test(`${KIND}/${String(MAJOR)}: ${url}`, () => {",
+                  "    pm.expect(file.kind, \"kind\").to.equal(KIND);",
+                  "    pm.expect(file.format, \"format\").to.match(",
+                  "      new RegExp(`^${KIND}/${String(MAJOR)}\\\\.\\\\d+$`),",
+                  "    );",
+                  "  });",
+                  "  const schema = `${pm.variables.get(\"baseUrl\")}/releases/${pm.variables.get(\"release\")}/schemas/${KIND}-${String(MAJOR)}.json`;",
+                  "  pm.sendRequest(schema, (error, response) => {",
+                  "    pm.test(`Matches schemas/${KIND}-${String(MAJOR)}.json`, () => {",
+                  "      pm.expect(error, \"schema request\").to.equal(null);",
+                  "      pm.expect(response.code, \"schema status\").to.equal(200);",
+                  "      const Ajv = require(\"ajv\");",
+                  "      const validate = new Ajv({ allErrors: true }).compile(",
+                  "        draft07(response.json()),",
+                  "      );",
+                  "      pm.expect(",
+                  "        validate(file),",
+                  "        JSON.stringify(validate.errors, null, 2),",
+                  "      ).to.equal(true);",
+                  "    });",
+                  "  });",
+                  "}",
+                  "",
+                  "const url = pm.request.url.toString();",
+                  "if (pm.response.code === 200) {",
+                  "  check(pm.response.json(), url);",
+                  "} else if (pm.response.code === 404 && SPLIT) {",
+                  "  // Not published whole: it may be split into <name>/0.json, <name>/1.json…",
+                  "  const shard = url.replace(/\\.json$/, \"/0.json\");",
+                  "  pm.sendRequest(shard, (error, response) => {",
+                  "    pm.test(\"Published whole or as shards\", () => {",
+                  "      pm.expect(error, \"shard request\").to.equal(null);",
+                  "      pm.expect(response.code, \"not published in this release\").to.equal(200);",
+                  "    });",
+                  "    if (error === null && response.code === 200) check(response.json(), shard);",
+                  "  });",
+                  "} else {",
+                  "  pm.test(\"Loads\", () => {",
+                  "    pm.expect(pm.response.code, \"not published in this release\").to.equal(200);",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/releases/{{release}}/places/{{placeKind}}.json",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "releases",
+                "{{release}}",
+                "places",
+                "{{placeKind}}.json"
+              ]
+            },
+            "description": "Every watershed, every ecoregion, or every national and state park and metro park system with results, with its species with a result (ODR-2026-043, ODR-2026-044). No place file holds a sensitive species. May be split into shards.\n\nPath: `releases/{{release}}/places/{{placeKind}}.json`. Format: `places/1`, schema `schemas/places-1.json`.\n- `{{placeKind}}`: `watersheds`, `ecoregions` or `parks`"
+          },
+          "response": [
+            {
+              "name": "Example (made up)",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/releases/{{release}}/places/{{placeKind}}.json",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "releases",
+                    "{{release}}",
+                    "places",
+                    "{{placeKind}}.json"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": \"releases/2026-01-05/places/parks.json\",\n  \"kind\": \"places\",\n  \"format\": \"places/1.0\",\n  \"provenance\": {\n    \"release\": \"2026-01-05\",\n    \"sources\": [\"example\"],\n    \"licences\": [\"CC-BY-4.0\"],\n    \"gbif_download_dois\": [\"10.0000/example\"],\n    \"method\": \"test-1\",\n    \"taxonomy\": \"test-taxonomy\",\n    \"boundaries\": \"test-boundaries\",\n    \"ranges\": null,\n    \"protection\": null,\n    \"code\": \"0.0.0\",\n    \"run\": \"run-1\"\n  },\n  \"data\": {\n    \"kind\": \"parks\",\n    \"places\": [\n      {\n        \"area\": \"park-example-state-park\",\n        \"level\": \"park\",\n        \"name\": \"Example State Park\",\n        \"slug\": \"example-state-park\",\n        \"code\": null,\n        \"states\": [\"us-zz\"],\n        \"continues_into\": [],\n        \"counties\": [\"99001\"],\n        \"species_keys\": [],\n        \"effort\": [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2],\n        \"best_weeks\": null,\n        \"park\": {\n          \"type\": \"state\",\n          \"agency\": \"Example Department of Parks\",\n          \"acres\": 270,\n          \"official_url\": null,\n          \"has_page\": false,\n          \"parks\": []\n        }\n      },\n      {\n        \"area\": \"parks-example-metro-parks\",\n        \"level\": \"park-system\",\n        \"name\": \"Example Metro Parks\",\n        \"slug\": \"example-metro-parks\",\n        \"code\": null,\n        \"states\": [\"us-zz\"],\n        \"continues_into\": [],\n        \"counties\": [\"99001\", \"99002\"],\n        \"species_keys\": [\"EX1\", \"EXP1\", \"EXP2\", \"EXP3\", \"EXP4\", \"EXP5\", \"EXP6\", \"EXP7\", \"EXP8\", \"EXP9\", \"EXP10\", \"EXP11\", \"EXP12\", \"EXP13\", \"EXP14\", \"EXP15\", \"EXP16\", \"EXP17\", \"EXP18\", \"EXP19\", \"EXP20\", \"EXP21\", \"EXP22\", \"EXP23\", \"EXP24\"],\n        \"effort\": [20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20],\n        \"best_weeks\": null,\n        \"park\": {\n          \"type\": \"park-system\",\n          \"agency\": \"Example Metro Parks\",\n          \"acres\": null,\n          \"official_url\": \"https://parks.example.test/\",\n          \"has_page\": true,\n          \"parks\": [\"Example Reservation\", \"Sample Woods\"]\n        }\n      }\n    ]\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Place outlines and park points",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const KIND = \"place-boundaries\";",
+                  "const MAJOR = 1;",
+                  "const SPLIT = true;",
+                  "function saved(file) {",
+                  "  // Nothing to save.",
+                  "}",
+                  "",
+                  "// The test every request in the Postman collection runs, in Postman's script",
+                  "// sandbox. scripts/postman.ts puts it after each request's `KIND`, `MAJOR`, `SPLIT`",
+                  "// and `saved(file)`, which saves values for later requests. It checks that",
+                  "// the file loads, is the expected kind and major format version, and matches",
+                  "// its JSON Schema, which it reads from the release's schemas/ folder. A file",
+                  "// split into shards is checked through its first shard.",
+                  "",
+                  "/**",
+                  " * Postman's validator reads JSON Schema draft-07, and these schemas are",
+                  " * 2020-12. The only 2020-12 keyword they use is `prefixItems`, which becomes",
+                  " * draft-07's tuple form: `items` as a list, and `additionalItems` for what",
+                  " * `items` said about the rest.",
+                  " */",
+                  "function draft07(node) {",
+                  "  if (Array.isArray(node)) return node.map(draft07);",
+                  "  if (node === null || typeof node !== \"object\") return node;",
+                  "  const out = {};",
+                  "  for (const [key, value] of Object.entries(node))",
+                  "    if (key !== \"$schema\" && key !== \"prefixItems\") out[key] = draft07(value);",
+                  "  if (\"prefixItems\" in node) {",
+                  "    out.items = draft07(node.prefixItems);",
+                  "    out.additionalItems = \"items\" in node ? draft07(node.items) : true;",
+                  "  }",
+                  "  return out;",
+                  "}",
+                  "",
+                  "function check(file, url) {",
+                  "  saved(file);",
+                  "  pm.test(`${KIND}/${String(MAJOR)}: ${url}`, () => {",
+                  "    pm.expect(file.kind, \"kind\").to.equal(KIND);",
+                  "    pm.expect(file.format, \"format\").to.match(",
+                  "      new RegExp(`^${KIND}/${String(MAJOR)}\\\\.\\\\d+$`),",
+                  "    );",
+                  "  });",
+                  "  const schema = `${pm.variables.get(\"baseUrl\")}/releases/${pm.variables.get(\"release\")}/schemas/${KIND}-${String(MAJOR)}.json`;",
+                  "  pm.sendRequest(schema, (error, response) => {",
+                  "    pm.test(`Matches schemas/${KIND}-${String(MAJOR)}.json`, () => {",
+                  "      pm.expect(error, \"schema request\").to.equal(null);",
+                  "      pm.expect(response.code, \"schema status\").to.equal(200);",
+                  "      const Ajv = require(\"ajv\");",
+                  "      const validate = new Ajv({ allErrors: true }).compile(",
+                  "        draft07(response.json()),",
+                  "      );",
+                  "      pm.expect(",
+                  "        validate(file),",
+                  "        JSON.stringify(validate.errors, null, 2),",
+                  "      ).to.equal(true);",
+                  "    });",
+                  "  });",
+                  "}",
+                  "",
+                  "const url = pm.request.url.toString();",
+                  "if (pm.response.code === 200) {",
+                  "  check(pm.response.json(), url);",
+                  "} else if (pm.response.code === 404 && SPLIT) {",
+                  "  // Not published whole: it may be split into <name>/0.json, <name>/1.json…",
+                  "  const shard = url.replace(/\\.json$/, \"/0.json\");",
+                  "  pm.sendRequest(shard, (error, response) => {",
+                  "    pm.test(\"Published whole or as shards\", () => {",
+                  "      pm.expect(error, \"shard request\").to.equal(null);",
+                  "      pm.expect(response.code, \"not published in this release\").to.equal(200);",
+                  "    });",
+                  "    if (error === null && response.code === 200) check(response.json(), shard);",
+                  "  });",
+                  "} else {",
+                  "  pm.test(\"Loads\", () => {",
+                  "    pm.expect(pm.response.code, \"not published in this release\").to.equal(200);",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/releases/{{release}}/places/{{placeKind}}/boundaries.json",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "releases",
+                "{{release}}",
+                "places",
+                "{{placeKind}}",
+                "boundaries.json"
+              ]
+            },
+            "description": "Watershed and ecoregion outlines, and park middles as points, for maps, as a GeoJSON FeatureCollection. For display only.\n\nPath: `releases/{{release}}/places/{{placeKind}}/boundaries.json`. Format: `place-boundaries/1`, schema `schemas/place-boundaries-1.json`.\n- `{{placeKind}}`: `watersheds`, `ecoregions` or `parks`"
+          },
+          "response": [
+            {
+              "name": "Example (made up)",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/releases/{{release}}/places/{{placeKind}}/boundaries.json",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "releases",
+                    "{{release}}",
+                    "places",
+                    "{{placeKind}}",
+                    "boundaries.json"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": \"releases/2026-01-05/places/watersheds/boundaries.json\",\n  \"kind\": \"place-boundaries\",\n  \"format\": \"place-boundaries/1.0\",\n  \"provenance\": {\n    \"release\": \"2026-01-05\",\n    \"sources\": [\"example\"],\n    \"licences\": [\"CC-BY-4.0\"],\n    \"gbif_download_dois\": [\"10.0000/example\"],\n    \"method\": \"test-1\",\n    \"taxonomy\": \"test-taxonomy\",\n    \"boundaries\": \"test-boundaries\",\n    \"ranges\": null,\n    \"protection\": null,\n    \"code\": \"0.0.0\",\n    \"run\": \"run-1\"\n  },\n  \"data\": {\n    \"type\": \"FeatureCollection\",\n    \"features\": [\n      {\n        \"type\": \"Feature\",\n        \"properties\": {\n          \"area\": \"huc8-99990001\",\n          \"name\": \"Example River\",\n          \"slug\": \"example-river-99990001\",\n          \"system\": null\n        },\n        \"geometry\": {\n          \"type\": \"MultiPolygon\",\n          \"coordinates\": [\n            [\n              [\n                [0, 0],\n                [2, 0],\n                [0, 2],\n                [0, 0]\n              ]\n            ]\n          ]\n        }\n      }\n    ]\n  }\n}"
             }
           ]
         },
@@ -2735,7 +3011,7 @@
                 "{{species}}.json"
               ]
             },
-            "description": "The sources behind a result.\n\nPath: `releases/{{release}}/attribution/{{state}}/{{species}}.json`. Format: `attribution/1`, schema `schemas/attribution-1.json`.\n- `{{state}}`: a state code, `us-` and the postal abbreviation\n- `{{species}}`: a species key, from the catalogue\n- For a county, add it before the species: `attribution/{{state}}/{{county}}/{{species}}.json`"
+            "description": "The sources behind a result.\n\nPath: `releases/{{release}}/attribution/{{state}}/{{species}}.json`. Format: `attribution/1`, schema `schemas/attribution-1.json`.\n- `{{state}}`: a state code, `us-` and the postal abbreviation\n- `{{species}}`: a species key, from the catalogue\n- For a county, add it before the species: `attribution/{{state}}/{{county}}/{{species}}.json`; for a place, `attribution/places/{{place}}/{{placeSpecies}}.json`"
           },
           "response": [
             {
@@ -2767,6 +3043,285 @@
                 }
               ],
               "body": "{\n  \"id\": \"releases/2026-01-05/attribution/us-zz/EX1.json\",\n  \"kind\": \"attribution\",\n  \"format\": \"attribution/1.0\",\n  \"provenance\": {\n    \"release\": \"2026-01-05\",\n    \"sources\": [\"example\"],\n    \"licences\": [\"CC-BY-4.0\"],\n    \"gbif_download_dois\": [\"10.0000/example\"],\n    \"method\": \"test-1\",\n    \"taxonomy\": \"test-taxonomy\",\n    \"boundaries\": \"test-boundaries\",\n    \"ranges\": null,\n    \"protection\": null,\n    \"code\": \"0.0.0\",\n    \"run\": \"run-1\"\n  },\n  \"data\": {\n    \"area\": \"us-zz\",\n    \"species_key\": \"EX1\",\n    \"datasets\": [\n      {\n        \"dataset_key\": \"d1\",\n        \"title\": \"Example dataset\",\n        \"publisher\": null,\n        \"citation\": null,\n        \"url\": null,\n        \"records\": 120\n      }\n    ],\n    \"gbif_download_dois\": [\"10.0000/example\"],\n    \"record_links\": null\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Place labels",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const KIND = \"place-labels\";",
+                  "const MAJOR = 1;",
+                  "const SPLIT = true;",
+                  "function saved(file) {",
+                  "  const first = file.data.species[0];",
+                  "  if (first) pm.collectionVariables.set(\"placeSpecies\", first.species_key);",
+                  "}",
+                  "",
+                  "// The test every request in the Postman collection runs, in Postman's script",
+                  "// sandbox. scripts/postman.ts puts it after each request's `KIND`, `MAJOR`, `SPLIT`",
+                  "// and `saved(file)`, which saves values for later requests. It checks that",
+                  "// the file loads, is the expected kind and major format version, and matches",
+                  "// its JSON Schema, which it reads from the release's schemas/ folder. A file",
+                  "// split into shards is checked through its first shard.",
+                  "",
+                  "/**",
+                  " * Postman's validator reads JSON Schema draft-07, and these schemas are",
+                  " * 2020-12. The only 2020-12 keyword they use is `prefixItems`, which becomes",
+                  " * draft-07's tuple form: `items` as a list, and `additionalItems` for what",
+                  " * `items` said about the rest.",
+                  " */",
+                  "function draft07(node) {",
+                  "  if (Array.isArray(node)) return node.map(draft07);",
+                  "  if (node === null || typeof node !== \"object\") return node;",
+                  "  const out = {};",
+                  "  for (const [key, value] of Object.entries(node))",
+                  "    if (key !== \"$schema\" && key !== \"prefixItems\") out[key] = draft07(value);",
+                  "  if (\"prefixItems\" in node) {",
+                  "    out.items = draft07(node.prefixItems);",
+                  "    out.additionalItems = \"items\" in node ? draft07(node.items) : true;",
+                  "  }",
+                  "  return out;",
+                  "}",
+                  "",
+                  "function check(file, url) {",
+                  "  saved(file);",
+                  "  pm.test(`${KIND}/${String(MAJOR)}: ${url}`, () => {",
+                  "    pm.expect(file.kind, \"kind\").to.equal(KIND);",
+                  "    pm.expect(file.format, \"format\").to.match(",
+                  "      new RegExp(`^${KIND}/${String(MAJOR)}\\\\.\\\\d+$`),",
+                  "    );",
+                  "  });",
+                  "  const schema = `${pm.variables.get(\"baseUrl\")}/releases/${pm.variables.get(\"release\")}/schemas/${KIND}-${String(MAJOR)}.json`;",
+                  "  pm.sendRequest(schema, (error, response) => {",
+                  "    pm.test(`Matches schemas/${KIND}-${String(MAJOR)}.json`, () => {",
+                  "      pm.expect(error, \"schema request\").to.equal(null);",
+                  "      pm.expect(response.code, \"schema status\").to.equal(200);",
+                  "      const Ajv = require(\"ajv\");",
+                  "      const validate = new Ajv({ allErrors: true }).compile(",
+                  "        draft07(response.json()),",
+                  "      );",
+                  "      pm.expect(",
+                  "        validate(file),",
+                  "        JSON.stringify(validate.errors, null, 2),",
+                  "      ).to.equal(true);",
+                  "    });",
+                  "  });",
+                  "}",
+                  "",
+                  "const url = pm.request.url.toString();",
+                  "if (pm.response.code === 200) {",
+                  "  check(pm.response.json(), url);",
+                  "} else if (pm.response.code === 404 && SPLIT) {",
+                  "  // Not published whole: it may be split into <name>/0.json, <name>/1.json…",
+                  "  const shard = url.replace(/\\.json$/, \"/0.json\");",
+                  "  pm.sendRequest(shard, (error, response) => {",
+                  "    pm.test(\"Published whole or as shards\", () => {",
+                  "      pm.expect(error, \"shard request\").to.equal(null);",
+                  "      pm.expect(response.code, \"not published in this release\").to.equal(200);",
+                  "    });",
+                  "    if (error === null && response.code === 200) check(response.json(), shard);",
+                  "  });",
+                  "} else {",
+                  "  pm.test(\"Loads\", () => {",
+                  "    pm.expect(pm.response.code, \"not published in this release\").to.equal(200);",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/releases/{{release}}/labels/{{place}}.json",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "releases",
+                "{{release}}",
+                "labels",
+                "{{place}}.json"
+              ]
+            },
+            "description": "A place's label for each species with a result there and each week. May be split into shards.\n\nPath: `releases/{{release}}/labels/{{place}}.json`. Format: `place-labels/1`, schema `schemas/place-labels-1.json`.\n- `{{place}}`: a place's area code: `huc8-` and a HUC8 code, `eco-` and an `ECO_ID`, or `park-` or `parks-` and an address slug\n\nSaves the first species with a result in `{{place}}` into `{{placeSpecies}}`, so the place result below exists."
+          },
+          "response": [
+            {
+              "name": "Example (made up)",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/releases/{{release}}/labels/{{place}}.json",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "releases",
+                    "{{release}}",
+                    "labels",
+                    "{{place}}.json"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": \"releases/2026-01-05/labels/parks-example-metro-parks.json\",\n  \"kind\": \"place-labels\",\n  \"format\": \"place-labels/1.0\",\n  \"provenance\": {\n    \"release\": \"2026-01-05\",\n    \"sources\": [\"example\"],\n    \"licences\": [\"CC-BY-4.0\"],\n    \"gbif_download_dois\": [\"10.0000/example\"],\n    \"method\": \"test-1\",\n    \"taxonomy\": \"test-taxonomy\",\n    \"boundaries\": \"test-boundaries\",\n    \"ranges\": null,\n    \"protection\": null,\n    \"code\": \"0.0.0\",\n    \"run\": \"run-1\"\n  },\n  \"data\": {\n    \"area\": \"parks-example-metro-parks\",\n    \"method\": \"test-1\",\n    \"evidence_through\": \"2025-12-31\",\n    \"effort\": [20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20],\n    \"species\": [\n      {\n        \"species_key\": \"EX1\",\n        \"group\": \"birds\",\n        \"labels\": \"rrrrrrrrrrrrrssssssssssrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr\",\n        \"records\": 30,\n        \"weekly\": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],\n        \"season\": [14, 22, 35],\n        \"season_withheld\": null\n      }\n    ]\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Place result",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const KIND = \"place-weekly\";",
+                  "const MAJOR = 1;",
+                  "const SPLIT = false;",
+                  "function saved(file) {",
+                  "  // Nothing to save.",
+                  "}",
+                  "",
+                  "// The test every request in the Postman collection runs, in Postman's script",
+                  "// sandbox. scripts/postman.ts puts it after each request's `KIND`, `MAJOR`, `SPLIT`",
+                  "// and `saved(file)`, which saves values for later requests. It checks that",
+                  "// the file loads, is the expected kind and major format version, and matches",
+                  "// its JSON Schema, which it reads from the release's schemas/ folder. A file",
+                  "// split into shards is checked through its first shard.",
+                  "",
+                  "/**",
+                  " * Postman's validator reads JSON Schema draft-07, and these schemas are",
+                  " * 2020-12. The only 2020-12 keyword they use is `prefixItems`, which becomes",
+                  " * draft-07's tuple form: `items` as a list, and `additionalItems` for what",
+                  " * `items` said about the rest.",
+                  " */",
+                  "function draft07(node) {",
+                  "  if (Array.isArray(node)) return node.map(draft07);",
+                  "  if (node === null || typeof node !== \"object\") return node;",
+                  "  const out = {};",
+                  "  for (const [key, value] of Object.entries(node))",
+                  "    if (key !== \"$schema\" && key !== \"prefixItems\") out[key] = draft07(value);",
+                  "  if (\"prefixItems\" in node) {",
+                  "    out.items = draft07(node.prefixItems);",
+                  "    out.additionalItems = \"items\" in node ? draft07(node.items) : true;",
+                  "  }",
+                  "  return out;",
+                  "}",
+                  "",
+                  "function check(file, url) {",
+                  "  saved(file);",
+                  "  pm.test(`${KIND}/${String(MAJOR)}: ${url}`, () => {",
+                  "    pm.expect(file.kind, \"kind\").to.equal(KIND);",
+                  "    pm.expect(file.format, \"format\").to.match(",
+                  "      new RegExp(`^${KIND}/${String(MAJOR)}\\\\.\\\\d+$`),",
+                  "    );",
+                  "  });",
+                  "  const schema = `${pm.variables.get(\"baseUrl\")}/releases/${pm.variables.get(\"release\")}/schemas/${KIND}-${String(MAJOR)}.json`;",
+                  "  pm.sendRequest(schema, (error, response) => {",
+                  "    pm.test(`Matches schemas/${KIND}-${String(MAJOR)}.json`, () => {",
+                  "      pm.expect(error, \"schema request\").to.equal(null);",
+                  "      pm.expect(response.code, \"schema status\").to.equal(200);",
+                  "      const Ajv = require(\"ajv\");",
+                  "      const validate = new Ajv({ allErrors: true }).compile(",
+                  "        draft07(response.json()),",
+                  "      );",
+                  "      pm.expect(",
+                  "        validate(file),",
+                  "        JSON.stringify(validate.errors, null, 2),",
+                  "      ).to.equal(true);",
+                  "    });",
+                  "  });",
+                  "}",
+                  "",
+                  "const url = pm.request.url.toString();",
+                  "if (pm.response.code === 200) {",
+                  "  check(pm.response.json(), url);",
+                  "} else if (pm.response.code === 404 && SPLIT) {",
+                  "  // Not published whole: it may be split into <name>/0.json, <name>/1.json…",
+                  "  const shard = url.replace(/\\.json$/, \"/0.json\");",
+                  "  pm.sendRequest(shard, (error, response) => {",
+                  "    pm.test(\"Published whole or as shards\", () => {",
+                  "      pm.expect(error, \"shard request\").to.equal(null);",
+                  "      pm.expect(response.code, \"not published in this release\").to.equal(200);",
+                  "    });",
+                  "    if (error === null && response.code === 200) check(response.json(), shard);",
+                  "  });",
+                  "} else {",
+                  "  pm.test(\"Loads\", () => {",
+                  "    pm.expect(pm.response.code, \"not published in this release\").to.equal(200);",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/releases/{{release}}/results/places/{{place}}/{{placeSpecies}}.json",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "releases",
+                "{{release}}",
+                "results",
+                "places",
+                "{{place}}",
+                "{{placeSpecies}}.json"
+              ]
+            },
+            "description": "A species' weekly result for a watershed, ecoregion, park or metro park system.\n\nPath: `releases/{{release}}/results/places/{{place}}/{{placeSpecies}}.json`. Format: `place-weekly/1`, schema `schemas/place-weekly-1.json`.\n- `{{place}}`: a place's area code: `huc8-` and a HUC8 code, `eco-` and an `ECO_ID`, or `park-` or `parks-` and an address slug\n- `{{placeSpecies}}`: a species key with a result in `{{place}}`, saved by Place labels"
+          },
+          "response": [
+            {
+              "name": "Example (made up)",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/releases/{{release}}/results/places/{{place}}/{{placeSpecies}}.json",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "releases",
+                    "{{release}}",
+                    "results",
+                    "places",
+                    "{{place}}",
+                    "{{placeSpecies}}.json"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": \"releases/2026-01-05/results/places/parks-example-metro-parks/EX1.json\",\n  \"kind\": \"place-weekly\",\n  \"format\": \"place-weekly/1.0\",\n  \"provenance\": {\n    \"release\": \"2026-01-05\",\n    \"sources\": [\"example\"],\n    \"licences\": [\"CC-BY-4.0\"],\n    \"gbif_download_dois\": [\"10.0000/example\"],\n    \"method\": \"test-1\",\n    \"taxonomy\": \"test-taxonomy\",\n    \"boundaries\": \"test-boundaries\",\n    \"ranges\": null,\n    \"protection\": null,\n    \"code\": \"0.0.0\",\n    \"run\": \"run-1\"\n  },\n  \"data\": {\n    \"area\": \"parks-example-metro-parks\",\n    \"species_key\": \"EX1\",\n    \"included_records\": 168,\n    \"contributing_years\": 4,\n    \"thresholds\": {\n      \"records\": 20,\n      \"years\": 5\n    },\n    \"weekly\": {\n      \"records\": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 9, 10, 10, 10, 10, 10, 10, 9, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],\n      \"years\": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 3, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]\n    },\n    \"season\": [14, 22, 35],\n    \"season_withheld\": null,\n    \"effort\": [40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40],\n    \"limits\": \"These results show when people recorded a species, not when or where it occurs.\"\n  }\n}"
             }
           ]
         }
@@ -2858,6 +3413,24 @@
       "value": "43215",
       "type": "string",
       "description": "A 5-digit ZIP code."
+    },
+    {
+      "key": "placeKind",
+      "value": "parks",
+      "type": "string",
+      "description": "A kind of place file."
+    },
+    {
+      "key": "place",
+      "value": "parks-cleveland-metroparks",
+      "type": "string",
+      "description": "A place's area code."
+    },
+    {
+      "key": "placeSpecies",
+      "value": "example-species",
+      "type": "string",
+      "description": "A species key with a place result."
     }
   ]
 }

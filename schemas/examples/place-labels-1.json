@@ -1,0 +1,35 @@
+{
+  "id": "releases/2026-01-05/labels/parks-example-metro-parks.json",
+  "kind": "place-labels",
+  "format": "place-labels/1.0",
+  "provenance": {
+    "release": "2026-01-05",
+    "sources": ["example"],
+    "licences": ["CC-BY-4.0"],
+    "gbif_download_dois": ["10.0000/example"],
+    "method": "test-1",
+    "taxonomy": "test-taxonomy",
+    "boundaries": "test-boundaries",
+    "ranges": null,
+    "protection": null,
+    "code": "0.0.0",
+    "run": "run-1"
+  },
+  "data": {
+    "area": "parks-example-metro-parks",
+    "method": "test-1",
+    "evidence_through": "2025-12-31",
+    "effort": [20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20],
+    "species": [
+      {
+        "species_key": "EX1",
+        "group": "birds",
+        "labels": "rrrrrrrrrrrrrssssssssssrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr",
+        "records": 30,
+        "weekly": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+        "season": [14, 22, 35],
+        "season_withheld": null
+      }
+    ]
+  }
+}

@@ -241,6 +241,71 @@ describe("files", () => {
     expect(() => release.postal("99")).toThrow(RangeError);
   });
 
+  test("reads watersheds, ecoregions and parks", async () => {
+    const server = await fakeServer();
+    const release = await createClient({
+      baseUrl: BASE,
+      fetch: server.fetch,
+    }).release();
+    const system = "parks-example-metro-parks";
+    const parks = await release.places("parks");
+    expect(parks?.data.places.map((p) => [p.level, p.park?.has_page])).toEqual([
+      ["park", false],
+      ["park-system", true],
+    ]);
+    expect(
+      (await release.places("watersheds"))?.data.places[0]?.continues_into,
+    ).toEqual(["us-yy"]);
+    expect(await release.places("ecoregions")).toBeNull();
+    const points = await release.placeBoundaries("parks");
+    expect(points?.data.features.map((f) => f.properties.system)).toEqual([
+      null,
+      system,
+    ]);
+    expect(
+      (await release.placeBoundaries("watersheds"))?.data.features[0]?.geometry
+        .type,
+    ).toBe("MultiPolygon");
+    const result = await release.placeResult(system, "EX1");
+    expect(result?.kind).toBe("place-weekly");
+    expect(result?.data.area).toBe(system);
+    expect(await release.placeResult("huc8-99990001", "EX1")).toBeNull();
+    expect(
+      (await release.placeLabels(system))?.data.species[0]?.labels,
+    ).toHaveLength(53);
+    expect(await release.placeLabels("eco-342")).toBeNull();
+    expect(
+      (await release.placeAttribution(system, "EX1"))?.data.record_links,
+    ).toEqual(["https://example.test/records/1"]);
+    expect(
+      server.requests.some((p) =>
+        p.endsWith(`releases/${RELEASE}/results/places/${system}/EX1.json`),
+      ),
+    ).toBe(true);
+  });
+
+  test("rejects place codes and kinds that could change the path", async () => {
+    const server = await fakeServer();
+    const release = await createClient({
+      baseUrl: BASE,
+      fetch: server.fetch,
+      release: RELEASE,
+    }).release();
+    await expect(release.places("lakes" as "parks")).rejects.toThrow(
+      RangeError,
+    );
+    expect(() => release.placeBoundaries("../parks" as "parks")).toThrow(
+      RangeError,
+    );
+    for (const code of ["us-zz", "39049", "huc8-0410", "park-../x", "eco-"]) {
+      expect(() => release.placeResult(code, "EX1"), code).toThrow(RangeError);
+    }
+    expect(() => release.placeLabels("parks-Example")).toThrow(RangeError);
+    expect(() => release.placeAttribution("eco-342", "a/b")).toThrow(
+      RangeError,
+    );
+  });
+
   test("a result that is not published is null", async () => {
     const server = await fakeServer();
     const release = await createClient({
@@ -327,6 +392,45 @@ describe("shards", () => {
       at("attribution/us-zz/EX9/0.json"),
       at("attribution/us-zz/EX9/1.json"),
       at("attribution/us-zz/EX9/2.json"),
+    ]);
+  });
+
+  test("joins a places file's shards", async () => {
+    const server = await fakeServer();
+    // Made-up ecoregions.
+    const ecoregion = (id: number) => ({
+      area: `eco-${String(id)}`,
+      level: "ecoregion",
+      name: `Example ecoregion ${String(id)}`,
+      slug: `example-ecoregion-${String(id)}`,
+      code: id,
+      states: ["us-zz"],
+      continues_into: [],
+      counties: ["99001"],
+      species_keys: ["EX1"],
+      effort: Array.from({ length: 53 }, () => 1),
+      best_weeks: null,
+      park: null,
+    });
+    for (const n of [0, 1]) {
+      const path = `places/ecoregions/${String(n)}.json`;
+      server.tamper(
+        at(path),
+        shard(path, "places", {
+          kind: "ecoregions",
+          places: [ecoregion(901 + n)],
+        }),
+      );
+    }
+    const release = await createClient({
+      baseUrl: BASE,
+      fetch: server.fetch,
+    }).release();
+    const file = await release.places("ecoregions");
+    expect(file?.data.kind).toBe("ecoregions");
+    expect(file?.data.places.map((p) => p.area)).toEqual([
+      "eco-901",
+      "eco-902",
     ]);
   });
 
@@ -682,11 +786,12 @@ describe("errors", () => {
   });
 });
 
-describe("weekly lists in Backyard and region files", () => {
+describe("weekly lists in Backyard, region and place files", () => {
   interface Data {
     effort: number[];
     species: [{ labels: string }];
     areas: [{ effort: number[] }];
+    places: [{ effort: number[] }];
   }
   const cases: [string, string, (data: Data) => void, RegExp][] = [
     [
@@ -721,6 +826,30 @@ describe("weekly lists in Backyard and region files", () => {
       },
       /areas\[0\]\.effort must be 53 numbers/,
     ],
+    [
+      "place effort for 52 weeks",
+      "places/parks.json",
+      (d) => {
+        d.places[0].effort.pop();
+      },
+      /places\[0\]\.effort must be 53 numbers/,
+    ],
+    [
+      "place labels effort for 52 weeks",
+      "labels/parks-example-metro-parks.json",
+      (d) => {
+        d.effort.pop();
+      },
+      /effort must be 53 numbers/,
+    ],
+    [
+      "place labels for 52 weeks",
+      "labels/parks-example-metro-parks.json",
+      (d) => {
+        d.species[0].labels = "r".repeat(52);
+      },
+      /species\[0\]\.labels must be 53 Backyard labels/,
+    ],
   ];
 
   test.each(cases)("rejects %s", async (_, path, change, message) => {
@@ -734,7 +863,11 @@ describe("weekly lists in Backyard and region files", () => {
     }).release();
     const read = path.startsWith("backyard")
       ? release.backyard("us-zz", "99001")
-      : release.region("us-zz");
+      : path.startsWith("labels")
+        ? release.placeLabels("parks-example-metro-parks")
+        : path.startsWith("places")
+          ? release.places("parks")
+          : release.region("us-zz");
     await expect(read).rejects.toThrow(message);
     await expect(read).rejects.toBeInstanceOf(FormatError);
   });

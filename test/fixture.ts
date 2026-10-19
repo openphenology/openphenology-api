@@ -93,6 +93,13 @@ const result = (area: string) => ({
     "These results show when people recorded a species, not when or where it occurs.",
 });
 
+/** A made-up metro park system with a page: 25 made-up species with a result there. */
+const SYSTEM = "parks-example-metro-parks";
+const systemSpecies = [
+  "EX1",
+  ...Array.from({ length: 24 }, (_, i) => `EXP${String(i + 1)}`),
+];
+
 const files: [string, string, unknown][] = [
   [
     "notes.json",
@@ -350,6 +357,184 @@ const files: [string, string, unknown][] = [
     },
   ],
   [
+    "places/parks.json",
+    "places",
+    {
+      kind: "parks",
+      // Made-up parks. The data rules do not yet set the layout of
+      // best_weeks, so neither shows one.
+      places: [
+        {
+          area: "park-example-state-park",
+          level: "park",
+          name: "Example State Park",
+          slug: "example-state-park",
+          code: null,
+          states: ["us-zz"],
+          continues_into: [],
+          counties: ["99001"],
+          species_keys: [],
+          effort: weeks(2),
+          best_weeks: null,
+          park: {
+            type: "state",
+            agency: "Example Department of Parks",
+            acres: 270,
+            official_url: null,
+            has_page: false,
+            parks: [],
+          },
+        },
+        {
+          area: SYSTEM,
+          level: "park-system",
+          name: "Example Metro Parks",
+          slug: "example-metro-parks",
+          code: null,
+          states: ["us-zz"],
+          continues_into: [],
+          counties: ["99001", "99002"],
+          species_keys: systemSpecies,
+          effort: weeks(20),
+          best_weeks: null,
+          park: {
+            type: "park-system",
+            agency: "Example Metro Parks",
+            acres: null,
+            official_url: "https://parks.example.test/",
+            has_page: true,
+            parks: ["Example Reservation", "Sample Woods"],
+          },
+        },
+      ],
+    },
+  ],
+  [
+    "places/watersheds.json",
+    "places",
+    {
+      kind: "watersheds",
+      // A made-up watershed that runs into a state not covered.
+      places: [
+        {
+          area: "huc8-99990001",
+          level: "watershed",
+          name: "Example River",
+          slug: "example-river-99990001",
+          code: "99990001",
+          states: ["us-zz"],
+          continues_into: ["us-yy"],
+          counties: ["99001", "99002"],
+          species_keys: ["EX1"],
+          effort: weeks(30),
+          best_weeks: null,
+          park: null,
+        },
+      ],
+    },
+  ],
+  [
+    "places/watersheds/boundaries.json",
+    "place-boundaries",
+    {
+      type: "FeatureCollection",
+      features: [
+        {
+          type: "Feature",
+          properties: {
+            area: "huc8-99990001",
+            name: "Example River",
+            slug: "example-river-99990001",
+            system: null,
+          },
+          geometry: {
+            type: "MultiPolygon",
+            coordinates: [
+              [
+                [
+                  [0, 0],
+                  [2, 0],
+                  [0, 2],
+                  [0, 0],
+                ],
+              ],
+            ],
+          },
+        },
+      ],
+    },
+  ],
+  [
+    "places/parks/boundaries.json",
+    "place-boundaries",
+    {
+      type: "FeatureCollection",
+      features: [
+        {
+          type: "Feature",
+          properties: {
+            area: "park-example-state-park",
+            name: "Example State Park",
+            slug: "example-state-park",
+            system: null,
+          },
+          geometry: { type: "Point", coordinates: [0.5, 0.25] },
+        },
+        {
+          type: "Feature",
+          properties: {
+            area: "park-example-reservation",
+            name: "Example Reservation",
+            slug: "example-reservation",
+            system: SYSTEM,
+          },
+          geometry: { type: "Point", coordinates: [0.25, 0.5] },
+        },
+      ],
+    },
+  ],
+  [
+    `labels/${SYSTEM}.json`,
+    "place-labels",
+    {
+      area: SYSTEM,
+      method: "test-1",
+      evidence_through: "2025-12-31",
+      effort: weeks(20),
+      species: [
+        {
+          species_key: "EX1",
+          group: "birds",
+          labels: "r".repeat(13) + "s".repeat(10) + "r".repeat(30),
+          records: 30,
+          weekly: weeks(1),
+          season: [14, 22, 35],
+          season_withheld: null,
+        },
+      ],
+    },
+  ],
+  [
+    `attribution/places/${SYSTEM}/EX1.json`,
+    "attribution",
+    {
+      area: SYSTEM,
+      species_key: "EX1",
+      datasets: [
+        {
+          dataset_key: "d1",
+          title: "Example dataset",
+          publisher: null,
+          citation: null,
+          url: null,
+          records: 30,
+        },
+      ],
+      gbif_download_dois: ["10.0000/example"],
+      record_links: ["https://example.test/records/1"],
+    },
+  ],
+  [
     "postal/us/999.json",
     "postal",
     {
@@ -373,6 +558,7 @@ export const releaseFiles: Record<string, unknown> =
       [
         ["results/us-zz/EX1.json", "state-weekly", "us-zz"],
         ["results/us-zz/99001/EX1.json", "county-weekly", "99001"],
+        [`results/places/${SYSTEM}/EX1.json`, "place-weekly", SYSTEM],
       ] as const
     ).map(([path, kind, area]): [string, unknown] => [
       path,
@@ -428,7 +614,7 @@ export async function fakeServer(): Promise<FakeServer> {
     JSON.stringify({
       id: `releases/${RELEASE}/manifest.json`,
       kind: "manifest",
-      format: "manifest/2.0",
+      format: "manifest/2.1",
       provenance,
       data: {
         release: RELEASE,
@@ -439,6 +625,7 @@ export async function fakeServer(): Promise<FakeServer> {
           species: 2,
           state_results: 1,
           county_results: 1,
+          place_results: 1,
           records: 120,
         },
       },

@@ -1,0 +1,36 @@
+{
+  "id": "releases/2026-01-05/results/places/parks-example-metro-parks/EX1.json",
+  "kind": "place-weekly",
+  "format": "place-weekly/1.0",
+  "provenance": {
+    "release": "2026-01-05",
+    "sources": ["example"],
+    "licences": ["CC-BY-4.0"],
+    "gbif_download_dois": ["10.0000/example"],
+    "method": "test-1",
+    "taxonomy": "test-taxonomy",
+    "boundaries": "test-boundaries",
+    "ranges": null,
+    "protection": null,
+    "code": "0.0.0",
+    "run": "run-1"
+  },
+  "data": {
+    "area": "parks-example-metro-parks",
+    "species_key": "EX1",
+    "included_records": 168,
+    "contributing_years": 4,
+    "thresholds": {
+      "records": 20,
+      "years": 5
+    },
+    "weekly": {
+      "records": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 9, 10, 10, 10, 10, 10, 10, 9, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      "years": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 3, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    },
+    "season": [14, 22, 35],
+    "season_withheld": null,
+    "effort": [40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40],
+    "limits": "These results show when people recorded a species, not when or where it occurs."
+  }
+}

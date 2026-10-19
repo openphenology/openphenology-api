@@ -474,6 +474,205 @@ describe("schemas", () => {
     expect(errors(file)).toEqual([]);
   });
 
+  test("region/1.8 watersheds and parks", async () => {
+    const file = structuredClone(
+      (await published()).get("releases/2026-01-05/regions/us-zz.json"),
+    );
+    if (!file) throw new Error("missing fixture");
+    const area = first(file.data.areas);
+    file.format = "region/1.8";
+    expect(errors(file)).not.toEqual([]);
+    area.watersheds = ["huc8-99990001"];
+    area.parks = ["parks-example-metro-parks", "park-example-state-park"];
+    expect(errors(file)).toEqual([]);
+    area.watersheds = [];
+    area.parks = [];
+    expect(errors(file)).toEqual([]);
+    area.watersheds = ["eco-342"];
+    expect(errors(file)).not.toEqual([]);
+    area.watersheds = [];
+    area.parks = ["huc8-99990001"];
+    expect(errors(file)).not.toEqual([]);
+    delete area.watersheds;
+    delete area.parks;
+    file.format = "region/1.7";
+    expect(errors(file)).toEqual([]);
+  });
+
+  test("species/1.16 place areas", async () => {
+    const file = structuredClone(
+      (await published()).get("releases/2026-01-05/species/EX1.json"),
+    );
+    if (!file) throw new Error("missing fixture");
+    file.format = "species/1.16";
+    file.data.concerns = [];
+    file.data.recorded_in = [];
+    file.data.part_photos = {};
+    const areas = file.data.areas as Record<string, unknown>[];
+    const state = first(areas);
+    for (const [level, code] of [
+      ["watershed", "huc8-99990001"],
+      ["ecoregion", "eco-342"],
+      ["park", "park-example-state-park"],
+      ["park-system", "parks-example-metro-parks"],
+    ] as const) {
+      file.data.areas = [state, { ...state, level, area: code }];
+      expect(errors(file), level).toEqual([]);
+    }
+    for (const [level, code] of [
+      ["park-system", "park-example-state-park"],
+      ["watershed", "eco-342"],
+      ["county", "huc8-99990001"],
+      ["city", "99001"],
+    ] as const) {
+      file.data.areas = [state, { ...state, level, area: code }];
+      expect(errors(file), `${level} ${code}`).not.toEqual([]);
+    }
+  });
+
+  test("manifest/2.1 counts place results", async () => {
+    const file = structuredClone(
+      (await published()).get("releases/2026-01-05/manifest.json"),
+    );
+    if (!file) throw new Error("missing fixture");
+    const counts = file.data.counts as Record<string, unknown>;
+    expect(errors(file)).toEqual([]);
+    delete counts.place_results;
+    expect(errors(file)).not.toEqual([]);
+    file.format = "manifest/2.0";
+    expect(errors(file)).toEqual([]);
+  });
+
+  test("places/1.0: each place's fields match its kind", async () => {
+    const files = await published();
+    const parks = (change: (places: Record<string, unknown>[]) => void) => {
+      const file = structuredClone(
+        files.get("releases/2026-01-05/places/parks.json"),
+      );
+      if (!file) throw new Error("missing fixture");
+      change(file.data.places as Record<string, unknown>[]);
+      return errors(file);
+    };
+    const park = (place: Record<string, unknown>) =>
+      place.park as Record<string, unknown>;
+    expect(parks(() => undefined)).toEqual([]);
+    // A system with a page lists at least 25 species, a park without none.
+    expect(
+      parks(([, system]) => {
+        (system?.species_keys as string[]).pop();
+      }),
+    ).not.toEqual([]);
+    expect(
+      parks(([state]) => {
+        if (state) state.species_keys = ["EX1"];
+      }),
+    ).not.toEqual([]);
+    expect(
+      parks(([, system]) => {
+        if (system) park(system).acres = 100;
+      }),
+    ).not.toEqual([]);
+    expect(
+      parks(([state]) => {
+        if (state) park(state).parks = ["Example"];
+      }),
+    ).not.toEqual([]);
+    expect(
+      parks(([state]) => {
+        if (state) park(state).type = "park-system";
+      }),
+    ).not.toEqual([]);
+    expect(
+      parks(([state]) => {
+        if (state) state.park = null;
+      }),
+    ).not.toEqual([]);
+    expect(
+      parks(([state]) => {
+        if (state) state.code = "99990001";
+      }),
+    ).not.toEqual([]);
+
+    const watersheds = structuredClone(
+      files.get("releases/2026-01-05/places/watersheds.json"),
+    );
+    if (!watersheds) throw new Error("missing fixture");
+    const watershed = first(watersheds.data.places);
+    expect(errors(watersheds)).toEqual([]);
+    watershed.code = 99990001;
+    expect(errors(watersheds)).not.toEqual([]);
+    watershed.code = "99990001";
+    watershed.best_weeks = [14, 30];
+    expect(errors(watersheds)).not.toEqual([]);
+    watershed.best_weeks = null;
+    watersheds.data.kind = "parks";
+    expect(errors(watersheds)).not.toEqual([]);
+    watersheds.data.kind = "ecoregions";
+    expect(errors(watersheds)).not.toEqual([]);
+    Object.assign(watershed, {
+      level: "ecoregion",
+      area: "eco-342",
+      code: 342,
+    });
+    expect(errors(watersheds)).toEqual([]);
+  });
+
+  test("place-boundaries/1.0: outlines for watersheds, points for parks", async () => {
+    const files = await published();
+    const points = structuredClone(
+      files.get("releases/2026-01-05/places/parks/boundaries.json"),
+    );
+    const outlines = structuredClone(
+      files.get("releases/2026-01-05/places/watersheds/boundaries.json"),
+    );
+    if (!points || !outlines) throw new Error("missing fixture");
+    expect(errors(points)).toEqual([]);
+    expect(errors(outlines)).toEqual([]);
+    const outline = first(outlines.data.features);
+    const point = first(points.data.features);
+    points.data.features = [{ ...point, geometry: outline.geometry }];
+    expect(errors(points)).not.toEqual([]);
+    outlines.data.features = [{ ...outline, geometry: point.geometry }];
+    expect(errors(outlines)).not.toEqual([]);
+    (outline.properties as Record<string, unknown>).system =
+      "parks-example-metro-parks";
+    outlines.data.features = [outline];
+    expect(errors(outlines)).not.toEqual([]);
+  });
+
+  test("place-labels/1.0 and place-weekly/1.0 are for places only", async () => {
+    const files = await published();
+    const labels = structuredClone(
+      files.get("releases/2026-01-05/labels/parks-example-metro-parks.json"),
+    );
+    const result = structuredClone(
+      files.get(
+        "releases/2026-01-05/results/places/parks-example-metro-parks/EX1.json",
+      ),
+    );
+    if (!labels || !result) throw new Error("missing fixture");
+    expect(errors(labels)).toEqual([]);
+    // Only the first three Backyard labels apply to a place.
+    first(labels.data.species).labels = `m${"r".repeat(52)}`;
+    expect(errors(labels)).not.toEqual([]);
+    expect(errors(result)).toEqual([]);
+    result.data.area = "99001";
+    expect(errors(result)).not.toEqual([]);
+  });
+
+  test("a place's attribution is under attribution/places", async () => {
+    const file = structuredClone(
+      (await published()).get(
+        "releases/2026-01-05/attribution/places/parks-example-metro-parks/EX1.json",
+      ),
+    );
+    if (!file) throw new Error("missing fixture");
+    expect(errors(file)).toEqual([]);
+    file.id =
+      "releases/2026-01-05/attribution/us-zz/parks-example-metro-parks/EX1.json";
+    expect(errors(file)).not.toEqual([]);
+  });
+
   test("a species/1.1 file needs no introductions", async () => {
     const file = structuredClone(
       (await published()).get("releases/2026-01-05/species/EX1.json"),

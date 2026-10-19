@@ -29,6 +29,11 @@ const IN_RELEASE = "releases/{{release}}";
 const STATE = "`{{state}}`: a state code, `us-` and the postal abbreviation";
 const COUNTY = "`{{county}}`: a county's 5-digit Census code (GEOID)";
 const SPECIES = "`{{species}}`: a species key, from the catalogue";
+const PLACE_KIND = "`{{placeKind}}`: `watersheds`, `ecoregions` or `parks`";
+const PLACE =
+  "`{{place}}`: a place's area code: `huc8-` and a HUC8 code, `eco-` and an `ECO_ID`, or `park-` or `parks-` and an address slug";
+const PLACE_SPECIES =
+  "`{{placeSpecies}}`: a species key with a result in `{{place}}`, saved by Place labels";
 
 const FOLDERS: readonly (readonly [string, string, readonly Request[]])[] = [
   [
@@ -93,7 +98,7 @@ const FOLDERS: readonly (readonly [string, string, readonly Request[]])[] = [
   ],
   [
     "4. Places",
-    "States, counties and ZIP codes.",
+    "States, counties, ZIP codes, and watersheds, ecoregions and parks.",
     [
       {
         kind: "region",
@@ -119,6 +124,18 @@ const FOLDERS: readonly (readonly [string, string, readonly Request[]])[] = [
         name: "Cities",
         path: `${IN_RELEASE}/places/{{state}}/cities.json`,
         codes: [STATE],
+      },
+      {
+        kind: "places",
+        name: "Places",
+        path: `${IN_RELEASE}/places/{{placeKind}}.json`,
+        codes: [PLACE_KIND],
+      },
+      {
+        kind: "place-boundaries",
+        name: "Place outlines and park points",
+        path: `${IN_RELEASE}/places/{{placeKind}}/boundaries.json`,
+        codes: [PLACE_KIND],
       },
       {
         kind: "postal",
@@ -160,8 +177,26 @@ const FOLDERS: readonly (readonly [string, string, readonly Request[]])[] = [
         codes: [
           STATE,
           SPECIES,
-          "For a county, add it before the species: `attribution/{{state}}/{{county}}/{{species}}.json`",
+          "For a county, add it before the species: `attribution/{{state}}/{{county}}/{{species}}.json`; for a place, `attribution/places/{{place}}/{{placeSpecies}}.json`",
         ],
+      },
+      {
+        kind: "place-labels",
+        name: "Place labels",
+        path: `${IN_RELEASE}/labels/{{place}}.json`,
+        codes: [PLACE],
+        saves: [
+          "const first = file.data.species[0];",
+          'if (first) pm.collectionVariables.set("placeSpecies", first.species_key);',
+        ].join("\n"),
+        savesNote:
+          "Saves the first species with a result in `{{place}}` into `{{placeSpecies}}`, so the place result below exists.",
+      },
+      {
+        kind: "place-weekly",
+        name: "Place result",
+        path: `${IN_RELEASE}/results/places/{{place}}/{{placeSpecies}}.json`,
+        codes: [PLACE, PLACE_SPECIES],
       },
     ],
   ],
@@ -175,6 +210,7 @@ const WHOLE = new Set([
   "methods",
   "state-weekly",
   "county-weekly",
+  "place-weekly",
 ]);
 
 const NOTES = `**Beta.** OpenPhenology is in beta: requests may change before 1.0.0, while published file formats change only by version.
@@ -187,7 +223,7 @@ Every file OpenPhenology publishes: when each species is recorded, week by week,
 - **Large files are split into shards.** When a file is too large, it is published as \`<name>/0.json\`, \`<name>/1.json\` and so on, and the unsplit file is not published. The Catalogue's saved example is shard 0. Each request's test checks shard 0 when the unsplit file isn't there.
 - **Licence:** CC BY-NC 4.0, for noncommercial use. \`terms.json\` says how to cite the data and credit its sources.
 
-**Variables.** \`baseUrl\` is the API. \`release\`, \`state\`, \`county\`, \`species\` and \`zip\` start with made-up but valid values. Run the collection from the top and it fills in \`release\` and \`species\` itself.
+**Variables.** \`baseUrl\` is the API. \`release\`, \`state\`, \`county\`, \`species\`, \`zip\`, \`placeKind\`, \`place\` and \`placeSpecies\` start with made-up but valid values. Run the collection from the top and it fills in \`release\`, \`species\` and \`placeSpecies\` itself.
 
 **Tests.** Each request checks that its file loads, is the expected kind and major format version, and matches its JSON Schema from the release's \`schemas/\` folder.`;
 
@@ -326,6 +362,9 @@ function collection() {
       ["county", "39049", "A county's 5-digit Census code."],
       ["species", "example-species", "A species key."],
       ["zip", "43215", "A 5-digit ZIP code."],
+      ["placeKind", "parks", "A kind of place file."],
+      ["place", "parks-cleveland-metroparks", "A place's area code."],
+      ["placeSpecies", "example-species", "A species key with a place result."],
     ].map(([key, value, description]) => ({
       key,
       value,

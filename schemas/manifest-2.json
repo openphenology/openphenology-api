@@ -276,6 +276,11 @@
               "type": "integer",
               "minimum": 0
             },
+            "place_results": {
+              "description": "Place results: watersheds, ecoregions, parks and metro park\nsystems. Added in `manifest/2.1`, so absent from earlier files.",
+              "type": "integer",
+              "minimum": 0
+            },
             "records": {
               "description": "Records counted.",
               "type": "integer",
@@ -285,5 +290,36 @@
         }
       }
     }
-  }
+  },
+  "allOf": [
+    {
+      "if": {
+        "type": "object",
+        "properties": {
+          "format": {
+            "const": "manifest/2.0"
+          }
+        }
+      },
+      "else": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "object",
+            "properties": {
+              "counts": {
+                "type": "object",
+                "properties": {
+                  "place_results": true
+                },
+                "required": [
+                  "place_results"
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
 }

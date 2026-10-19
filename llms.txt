@@ -1,6 +1,6 @@
 # @openphenology/api
 
-> TypeScript client for OpenPhenology's published data: when each species is recorded, week by week, in US counties and states. ESM only, no dependencies, Node.js 22+ and current browsers. Read-only; no keys or accounts. Data is published in dated releases that never change.
+> TypeScript client for OpenPhenology's published data: when each species is recorded, week by week, in US counties and states, and in watersheds, ecoregions, parks and metro park systems. ESM only, no dependencies, Node.js 22+ and current browsers. Read-only; no keys or accounts. Data is published in dated releases that never change.
 
 Beta: OpenPhenology and this package are in beta; the interface may change before 1.0.0, while published file formats change only by version.
 
@@ -23,6 +23,7 @@ if (key) {
 
 - State: `us-` + postal abbreviation, e.g. `us-oh`.
 - County: 5-digit Census code (GEOID), e.g. `39049`. List a state's counties with `release.region("us-oh")`; from a ZIP code use `release.zipCounties("43215")`, which returns `{ area, state, share }[]`, largest share first. `countyState("39049")` gives a county's state code (`us-oh`).
+- Place (`species/1.16`): a watershed `huc8-` + HUC8 code (`huc8-04100011`), an ecoregion `eco-` + RESOLVE `ECO_ID` (`eco-342`), a park `park-` + address slug (`park-hocking-hills-state-park`), a metro park system `parks-` + address slug (`parks-cleveland-metroparks`). List them with `release.places("watersheds" | "ecoregions" | "parks")`.
 - Species key: from `release.speciesBySlug(slug)`, `release.searchNames()` (`[name, kind, key]` triples) or `release.catalogue()`.
 - Release ID: its date, e.g. `2026-10-19`.
 
@@ -39,6 +40,7 @@ A malformed code is a `RangeError` before any request is made.
 - Species: `catalogue()` → `CatalogueEntry[]`; `species(key)`; `speciesBySlug(slug)` → key or `null`; `groups()`; `searchNames()` → `SearchName[]`.
 - Places: `region(state)`; `boundaries(state)` (GeoJSON county outlines, display only); `zipCounties(zip)` → `ZipCounty[]`; `postal(prefix)` (every ZIP code with a 3-digit prefix, for suggestions); `cities(state)` (cities, villages and CDPs with `area` and `also_in` counties; match typed names on the device, like ZIP codes, and never send them).
 - Results: `stateResult(state, species)`; `countyResult(state, county, species)`; `backyard(state, county)`; `attribution(state, species, county?)`.
+- Watersheds, ecoregions and parks (ODR-2026-043, ODR-2026-044): `places(kind)` (`PlacesFile`: per place `area`, `level`, `name`, `slug`, `code`, `states`, `continues_into`, `counties`, `species_keys`, `effort`, `best_weeks`, `park`); `placeBoundaries(kind)` (GeoJSON: watershed and ecoregion outlines, park middles as points, display only); `placeResult(area, species)` (`place-weekly`, the same fields as a county result); `placeLabels(area)` (`c`, `s` or `r` per week from the place's own result); `placeAttribution(area, species)`.
 - The release: `manifest()`; `notes()`; `methods()`; `sources()`.
 
 Every file is `{ id, kind, format, provenance, data }`; read `file.data`.
@@ -74,8 +76,10 @@ Every file is `{ id, kind, format, provenance, data }`; read `file.data`.
 - Species `concerns` (from `species/1.13`): Ohio's species of concern and special interest, each with its source. Not a listing and not a protection; show it on its own line, never as listed.
 - Species area `male`, `female`, `signs` and `heard` (from `species/1.15`): results from records reported as male, as female, from a sign (`gall`, `track` and so on) and with a sound recording, in the same form as `flowering`. Word them as "reported as male", "reported from galls", "reported with a sound recording", never as the sex, sign or sound alone. The state area also has `hours` (24 record counts by local hour: when people recorded it, never when it is active), `months_not_reported` (never absence or migration), `land_cover` (where records come from, never where it lives) and `look_alikes` ("Often confused with"; `chosen_by` `state` reads "Often confused in <state>"). `hours`, `heard.hours` and `land_cover` are `null` for a sensitive species. Species `part_photos`: a photo per stage, sex or sign, `{}` for a sensitive species.
 - Species `recorded_in` (from `species/1.14`): counties where the species was recorded but has too few records for a county result. Word it as recorded there, never as a result, a count or a season. `[]` where the species is sensitive.
+- Places: `level` is `watershed`, `ecoregion`, `park` or `park-system`, and species `areas[].level` may be one of these from `species/1.16`. A place running into a state not covered yet has results from its covered part only; `continues_into` names those states (say "Results here come from the Ohio part only"). A metro park system pools its parks' records. `park` (parks file only): `type` (`national`, `state`, `park-system`), `agency`, `acres` (`null` for a system), `official_url`, `has_page` (at least 25 species with a result; otherwise `species_keys` is `[]` and no other place file exists) and `parks` (a system's park names). `best_weeks` is `null` for watersheds and ecoregions; for parks its layout is not set yet. No place file holds a sensitive species. Say "recorded", never "found" or "lives here".
+- Region area `watersheds` and `parks` (from `region/1.8`): the area codes of the watersheds, and of the parks and metro park systems with a page, that it touches; possibly `[]`.
 - Region area `full_name` (from `region/1.7`): the name to show, such as `Franklin County` or `Orleans Parish`; `name` is the short name (`Franklin`).
-- Manifest (`manifest/2.0`): `data.parts` is how many parts it has. A large manifest is split on `files`: `manifest.json`, then `manifest/1.json` and so on. `manifest()` joins them, so `data.files` is always complete. `manifest/1.0` has no `parts` and is still read.
+- Manifest (`manifest/2.0`): `data.parts` is how many parts it has. `data.counts.place_results` (from `manifest/2.1`) counts place results. A large manifest is split on `files`: `manifest.json`, then `manifest/1.json` and so on. `manifest()` joins them, so `data.files` is always complete. `manifest/1.0` has no `parts` and is still read.
 - `archive.tar.gz`: every file of a release except the manifest's parts, in one download. The manifest lists it with `format` `null`; check it against its `sha256`.
 
 ## Errors
@@ -92,7 +96,7 @@ Branch on `error.code`; messages may change.
 - `schemas/<kind>-<major>.json`: JSON Schema 2020-12 for each format, every field described. The major is 1, except `manifest-2.json`.
 - `schemas/all-1.json`: every schema in one file, by kind.
 - `schemas/examples/<kind>-<major>.json`: one made-up example file per format.
-- Kinds: current, releases, terms, manifest, notes, catalogue, species, slugs, groups, search, region, state-weekly, county-weekly, attribution, backyard, methods, sources, boundaries, cities, postal.
+- Kinds: current, releases, terms, manifest, notes, catalogue, species, slugs, groups, search, region, state-weekly, county-weekly, attribution, backyard, methods, sources, boundaries, cities, postal, places, place-boundaries, place-weekly, place-labels.
 - `README.md`: the same, with more examples.
 
 Outside the package, the repository's `postman/openphenology.postman_collection.json` is a Postman collection with one request per file kind, with descriptions, examples and schema tests; `postman/README.md` explains it.

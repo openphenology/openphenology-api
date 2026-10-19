@@ -7,6 +7,8 @@ import { ApiError, FormatError } from "./errors.ts";
 import { checkLabels, checkWeeks, parseFile } from "./parse.ts";
 import {
   countyCode,
+  placeCode,
+  placeKind,
   releaseId,
   speciesKey,
   stateCode,
@@ -26,6 +28,11 @@ import type {
   ManifestFile,
   MethodsFile,
   NotesFile,
+  PlaceBoundariesFile,
+  PlaceKind,
+  PlaceLabelsFile,
+  PlaceResultFile,
+  PlacesFile,
   PostalFile,
   PublishedFile,
   RegionFile,
@@ -93,6 +100,9 @@ const SPLIT: Readonly<Record<string, readonly string[]>> = {
   backyard: ["species"],
   sources: ["sources"],
   boundaries: ["features"],
+  places: ["places"],
+  "place-boundaries": ["features"],
+  "place-labels": ["species"],
   cities: ["cities"],
   postal: ["zips"],
   releases: ["releases"],
@@ -379,8 +389,9 @@ function decode(path: string, bytes: ArrayBuffer): unknown {
  * is fetched at most once.
  *
  * Places are named by code: `us-oh` for a state, a 5-digit Census code such
- * as `39049` for a county. Species are named by their key, from
- * {@link Release.catalogue}, {@link Release.speciesBySlug} or
+ * as `39049` for a county, and `huc8-`, `eco-`, `park-` or `parks-` codes for
+ * watersheds, ecoregions, parks and metro park systems. Species are named by
+ * their key, from {@link Release.catalogue}, {@link Release.speciesBySlug} or
  * {@link Release.searchNames}.
  *
  * - A malformed code is a `RangeError`, before any request is made, so a
@@ -604,6 +615,23 @@ export class Release {
   }
 
   /**
+   * A species' weekly result for a watershed, ecoregion, park or metro park
+   * system. A place that runs into a state not covered yet has results from
+   * its covered part only.
+   *
+   * @param area The place's area code, such as `huc8-04100011`, `eco-342`,
+   *   `park-hocking-hills-state-park` or `parks-cleveland-metroparks`.
+   * @param species The species key.
+   * @returns The result, or `null` when none is published. A sensitive
+   *   species never has a place result.
+   * @throws {RangeError} When a code is malformed.
+   */
+  placeResult(area: string, species: string): Promise<PlaceResultFile | null> {
+    const path = `results/places/${placeCode(area)}/${speciesKey(species)}.json`;
+    return this.#result<PlaceResultFile>(path, "place-weekly");
+  }
+
+  /**
    * The sources behind a result: datasets, GBIF download DOIs, and links to
    * the records (`null` for a sensitive species).
    *
@@ -629,6 +657,25 @@ export class Release {
   }
 
   /**
+   * The sources behind a place result: datasets, GBIF download DOIs and
+   * links to the records.
+   *
+   * @param area The place's area code, such as `huc8-04100011`.
+   * @param species The species key.
+   * @returns The attribution, or `null` when not published.
+   * @throws {RangeError} When a code is malformed.
+   */
+  placeAttribution(
+    area: string,
+    species: string,
+  ): Promise<AttributionFile | null> {
+    return this.#file<AttributionFile>(
+      `attribution/places/${placeCode(area)}/${speciesKey(species)}.json`,
+      "attribution",
+    );
+  }
+
+  /**
    * A county's Backyard labels: for each species, one letter per week saying
    * how it is reported there at that time of year.
    *
@@ -637,16 +684,26 @@ export class Release {
    * @returns The labels, or `null` when not published.
    * @throws {RangeError} When a code is malformed.
    */
-  async backyard(state: string, county: string): Promise<BackyardFile | null> {
-    const path = `backyard/${stateCode(state)}/${countyCode(county)}.json`;
-    const file = await this.#file<BackyardFile>(path, "backyard");
-    if (file) {
-      checkWeeks(path, "effort", file.data.effort);
-      file.data.species.forEach((species, i) => {
-        checkLabels(path, `species[${String(i)}].labels`, species.labels);
-      });
-    }
-    return file;
+  backyard(state: string, county: string): Promise<BackyardFile | null> {
+    return this.#labels<BackyardFile>(
+      `backyard/${stateCode(state)}/${countyCode(county)}.json`,
+      "backyard",
+    );
+  }
+
+  /**
+   * A place's labels: for each species with a result there, one letter per
+   * week, read from the place's own result (`c`, `s` or `r`).
+   *
+   * @param area The place's area code, such as `parks-cleveland-metroparks`.
+   * @returns The labels, or `null` when not published.
+   * @throws {RangeError} When the code is malformed.
+   */
+  placeLabels(area: string): Promise<PlaceLabelsFile | null> {
+    return this.#labels<PlaceLabelsFile>(
+      `labels/${placeCode(area)}.json`,
+      "place-labels",
+    );
   }
 
   /**
@@ -700,6 +757,39 @@ export class Release {
   }
 
   /**
+   * Every watershed, every ecoregion, or every national and state park and
+   * metro park system with results, each with its species with a result
+   * (ODR-2026-043, ODR-2026-044).
+   *
+   * @param kind `watersheds`, `ecoregions` or `parks`.
+   * @returns The places, or `null` when not published.
+   * @throws {RangeError} When the kind is not one of them.
+   */
+  async places(kind: PlaceKind): Promise<PlacesFile | null> {
+    const path = `places/${placeKind(kind)}.json`;
+    const file = await this.#file<PlacesFile>(path, "places");
+    file?.data.places.forEach((place, i) => {
+      checkWeeks(path, `places[${String(i)}].effort`, place.effort);
+    });
+    return file;
+  }
+
+  /**
+   * Watershed or ecoregion outlines, or park middles as points, for maps, as
+   * GeoJSON. Simplified for display only.
+   *
+   * @param kind `watersheds`, `ecoregions` or `parks`.
+   * @returns The features, or `null` when not published.
+   * @throws {RangeError} When the kind is not one of them.
+   */
+  placeBoundaries(kind: PlaceKind): Promise<PlaceBoundariesFile | null> {
+    return this.#file<PlaceBoundariesFile>(
+      `places/${placeKind(kind)}/boundaries.json`,
+      "place-boundaries",
+    );
+  }
+
+  /**
    * Every ZIP code that starts with a 3-digit prefix, with its counties and
    * their shares of its land; for lists such as ZIP code suggestions. To look
    * up one ZIP code, use {@link Release.zipCounties}.
@@ -737,16 +827,36 @@ export class Release {
   }
 
   /**
-   * Reads a result and checks its weekly lists.
+   * Reads a Backyard or place labels file and checks its effort and labels.
    *
    * @param path The file's path inside the release.
-   * @param kind `state-weekly` or `county-weekly`.
-   * @returns The result, or `null` when not published.
+   * @param kind `backyard` or `place-labels`.
+   * @returns The file, or `null` when not published.
    */
-  async #result<File extends CountyResultFile | StateResultFile>(
+  async #labels<File extends BackyardFile | PlaceLabelsFile>(
     path: string,
     kind: File["kind"],
   ): Promise<File | null> {
+    const file = await this.#file<File>(path, kind);
+    if (file) {
+      checkWeeks(path, "effort", file.data.effort);
+      file.data.species.forEach((species, i) => {
+        checkLabels(path, `species[${String(i)}].labels`, species.labels);
+      });
+    }
+    return file;
+  }
+
+  /**
+   * Reads a result and checks its weekly lists.
+   *
+   * @param path The file's path inside the release.
+   * @param kind `state-weekly`, `county-weekly` or `place-weekly`.
+   * @returns The result, or `null` when not published.
+   */
+  async #result<
+    File extends CountyResultFile | StateResultFile | PlaceResultFile,
+  >(path: string, kind: File["kind"]): Promise<File | null> {
     const file = await this.#file<File>(path, kind);
     if (file) {
       for (const [name, list] of [

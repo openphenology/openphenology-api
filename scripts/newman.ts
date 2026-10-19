@@ -64,6 +64,8 @@ async function run(files: ReadonlyMap<string, string>): Promise<Summary> {
             { key: "state", value: "us-zz" },
             { key: "county", value: "99001" },
             { key: "zip", value: "99901" },
+            { key: "placeKind", value: "parks" },
+            { key: "place", value: "parks-example-metro-parks" },
           ],
           reporters: files === fixture.files ? ["cli"] : [],
         },

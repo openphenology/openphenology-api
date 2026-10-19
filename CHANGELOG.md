@@ -8,6 +8,23 @@ All notable changes to this package are recorded here. The format follows
 
 ### Added
 
+- Data rules 1.29–1.31 (ODR-2026-043, ODR-2026-044): watersheds,
+  ecoregions, parks and metro park systems ("places"), named by area codes
+  `huc8-<HUC8>`, `eco-<ECO_ID>`, `park-<slug>` and `parks-<slug>`. New
+  formats and readers: `places/1.0` (`release.places(kind)`,
+  `places/<kind>.json` for `watersheds`, `ecoregions` and `parks`, with each
+  park's `park` details), `place-boundaries/1.0`
+  (`release.placeBoundaries(kind)`: outlines, and park middles as points),
+  `place-weekly/1.0` (`release.placeResult(area, species)`), `place-labels/1.0`
+  (`release.placeLabels(area)`) and place attribution files
+  (`release.placeAttribution(area, species)`). `species/1.16`: an area's
+  `level` may also be `watershed`, `ecoregion`, `park` or `park-system`.
+  `region/1.8`: each area carries `watersheds` and `parks` (area codes).
+  `manifest/2.1`: `counts.place_results`. Types `PlaceLevel`, `PlaceKind`,
+  `Place`, `Park`, `PlacesFile`, `PlaceBoundariesFile`, `PlaceResultFile` and
+  `PlaceLabelsFile`. `best_weeks` is not typed further until the data rules
+  set its layout.
+
 - Data rules 1.61 (ODR-2026-042): `species/1.15`. Each area carries
   `male`, `female`, `signs` (per kind of sign) and `heard` (with `hours`),
   in the same form as `flowering`; the state area also carries `hours`,

@@ -1,0 +1,65 @@
+{
+  "id": "releases/2026-01-05/places/parks.json",
+  "kind": "places",
+  "format": "places/1.0",
+  "provenance": {
+    "release": "2026-01-05",
+    "sources": ["example"],
+    "licences": ["CC-BY-4.0"],
+    "gbif_download_dois": ["10.0000/example"],
+    "method": "test-1",
+    "taxonomy": "test-taxonomy",
+    "boundaries": "test-boundaries",
+    "ranges": null,
+    "protection": null,
+    "code": "0.0.0",
+    "run": "run-1"
+  },
+  "data": {
+    "kind": "parks",
+    "places": [
+      {
+        "area": "park-example-state-park",
+        "level": "park",
+        "name": "Example State Park",
+        "slug": "example-state-park",
+        "code": null,
+        "states": ["us-zz"],
+        "continues_into": [],
+        "counties": ["99001"],
+        "species_keys": [],
+        "effort": [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2],
+        "best_weeks": null,
+        "park": {
+          "type": "state",
+          "agency": "Example Department of Parks",
+          "acres": 270,
+          "official_url": null,
+          "has_page": false,
+          "parks": []
+        }
+      },
+      {
+        "area": "parks-example-metro-parks",
+        "level": "park-system",
+        "name": "Example Metro Parks",
+        "slug": "example-metro-parks",
+        "code": null,
+        "states": ["us-zz"],
+        "continues_into": [],
+        "counties": ["99001", "99002"],
+        "species_keys": ["EX1", "EXP1", "EXP2", "EXP3", "EXP4", "EXP5", "EXP6", "EXP7", "EXP8", "EXP9", "EXP10", "EXP11", "EXP12", "EXP13", "EXP14", "EXP15", "EXP16", "EXP17", "EXP18", "EXP19", "EXP20", "EXP21", "EXP22", "EXP23", "EXP24"],
+        "effort": [20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20],
+        "best_weeks": null,
+        "park": {
+          "type": "park-system",
+          "agency": "Example Metro Parks",
+          "acres": null,
+          "official_url": "https://parks.example.test/",
+          "has_page": true,
+          "parks": ["Example Reservation", "Sample Woods"]
+        }
+      }
+    ]
+  }
+}
