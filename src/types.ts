@@ -280,10 +280,13 @@ export interface CatalogueEntry extends Classification {
    */
   readonly photo?: SpeciesPhoto | null;
   /**
-   * The states in `states` where the species' records are sensitive because
-   * of the species itself (a government list or iNaturalist's location
-   * protection). Describes the species, never a location. Added in
-   * `catalogue/1.3`, so absent from earlier files.
+   * The states where the species' records are sensitive because of the
+   * species itself (a government list or iNaturalist's location protection).
+   * Describes the species, never a location. From `catalogue/1.6`, every
+   * state the release covers, whether or not the species has a result there;
+   * earlier, only states in `states`. A page treats a species as protected in
+   * a state when this or `listed_in` names it. Added in `catalogue/1.3`, so
+   * absent from earlier files.
    */
   readonly sensitive_in?: readonly Area[];
   /**
@@ -291,14 +294,17 @@ export interface CatalogueEntry extends Classification {
    * its iNaturalist protection could not be confirmed (no single iNaturalist
    * match) and no government list applies. Its records are withheld there
    * exactly as in any other state in `sensitive_in`; pages report it as
-   * protection unconfirmed, not as protected. Added in `catalogue/1.5`, so
+   * protection unconfirmed, not as protected. From `catalogue/1.6`, whether
+   * or not the species has a result there. Added in `catalogue/1.5`, so
    * absent from earlier files.
    */
   readonly protection_unconfirmed_in?: readonly Area[];
   /**
-   * The states in `states` where one of the species' `statuses` listings
-   * applies: every state for a federal listing, its own state for a state
-   * listing. Added in `catalogue/1.3`, so absent from earlier files.
+   * The states where one of the species' `statuses` listings applies: every
+   * state the release covers for a federal listing, its own state for a
+   * state listing. From `catalogue/1.6`, whether or not the species has a
+   * result there; earlier, only states in `states`. Added in `catalogue/1.3`,
+   * so absent from earlier files.
    */
   readonly listed_in?: readonly Area[];
   /**

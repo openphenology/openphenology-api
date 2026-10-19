@@ -384,7 +384,7 @@
                 ]
               },
               "sensitive_in": {
-                "description": "The states in `states` where the species' records are sensitive because\nof the species itself (a government list or iNaturalist's location\nprotection). Describes the species, never a location. Added in\n`catalogue/1.3`, so absent from earlier files.",
+                "description": "The states where the species' records are sensitive because of the\nspecies itself (a government list or iNaturalist's location protection).\nDescribes the species, never a location. From `catalogue/1.6`, every\nstate the release covers, whether or not the species has a result there;\nearlier, only states in `states`. A page treats a species as protected in\na state when this or `listed_in` names it. Added in `catalogue/1.3`, so\nabsent from earlier files.",
                 "type": "array",
                 "items": {
                   "type": "string",
@@ -392,7 +392,7 @@
                 }
               },
               "protection_unconfirmed_in": {
-                "description": "The states in `sensitive_in` where the species is sensitive only because\nits iNaturalist protection could not be confirmed (no single iNaturalist\nmatch) and no government list applies. Its records are withheld there\nexactly as in any other state in `sensitive_in`; pages report it as\nprotection unconfirmed, not as protected. Added in `catalogue/1.5`, so\nabsent from earlier files.",
+                "description": "The states in `sensitive_in` where the species is sensitive only because\nits iNaturalist protection could not be confirmed (no single iNaturalist\nmatch) and no government list applies. Its records are withheld there\nexactly as in any other state in `sensitive_in`; pages report it as\nprotection unconfirmed, not as protected. From `catalogue/1.6`, whether\nor not the species has a result there. Added in `catalogue/1.5`, so\nabsent from earlier files.",
                 "type": "array",
                 "items": {
                   "type": "string",
@@ -400,7 +400,7 @@
                 }
               },
               "listed_in": {
-                "description": "The states in `states` where one of the species' `statuses` listings\napplies: every state for a federal listing, its own state for a state\nlisting. Added in `catalogue/1.3`, so absent from earlier files.",
+                "description": "The states where one of the species' `statuses` listings applies: every\nstate the release covers for a federal listing, its own state for a\nstate listing. From `catalogue/1.6`, whether or not the species has a\nresult there; earlier, only states in `states`. Added in `catalogue/1.3`,\nso absent from earlier files.",
                 "type": "array",
                 "items": {
                   "type": "string",
