@@ -592,6 +592,18 @@ describe("schemas", () => {
         if (state) state.code = "99990001";
       }),
     ).not.toEqual([]);
+    // Best weeks are spans of weeks 1 to 53, overall and by group.
+    for (const best_weeks of [
+      [16, 22],
+      { all: [16, 54], groups: {} },
+      { all: [16, 22], groups: { Birds: [17, 20] } },
+      { all: [16, 22] },
+    ])
+      expect(
+        parks(([, system]) => {
+          if (system) system.best_weeks = best_weeks;
+        }),
+      ).not.toEqual([]);
 
     const watersheds = structuredClone(
       files.get("releases/2026-01-05/places/watersheds.json"),

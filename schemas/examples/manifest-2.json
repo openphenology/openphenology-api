@@ -106,9 +106,9 @@
       },
       {
         "path": "places/parks.json",
-        "sha256": "1091b4e91fef51d2c9b3e702461fa2ba6a2dbc108b32258eb77e9bbfe563fce3",
+        "sha256": "e24064ec5f6ec2238f29f0edb753b0be95b4a6fb015b84b4819fd4c0a2c8301d",
         "format": "places/1.0",
-        "bytes": 1609
+        "bytes": 1647
       },
       {
         "path": "places/watersheds.json",

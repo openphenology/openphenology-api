@@ -361,8 +361,7 @@ const files: [string, string, unknown][] = [
     "places",
     {
       kind: "parks",
-      // Made-up parks. The data rules do not yet set the layout of
-      // best_weeks, so neither shows one.
+      // Made-up parks. Only the system has results, so only it has best weeks.
       places: [
         {
           area: "park-example-state-park",
@@ -396,7 +395,7 @@ const files: [string, string, unknown][] = [
           counties: ["99001", "99002"],
           species_keys: systemSpecies,
           effort: weeks(20),
-          best_weeks: null,
+          best_weeks: { all: [16, 22], groups: { birds: [17, 20] } },
           park: {
             type: "park-system",
             agency: "Example Metro Parks",

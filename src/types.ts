@@ -1349,15 +1349,24 @@ export interface Place {
   /** Records of all species counted in the place, weeks 1 to 53. */
   readonly effort: readonly number[];
   /**
-   * For a park or metro park system, the weeks in which the most species are
-   * recorded there, overall and per group with results, each as
-   * `[first, last]` weeks (data rules `seasonal.md`, Best weeks to visit a
-   * park); `null` for a watershed or ecoregion. The data rules do not yet
-   * set this value's layout, so it is not typed further.
+   * For a park or metro park system with results, the weeks in which the
+   * most species are recorded there (data rules `seasonal.md`, Best weeks to
+   * visit a park); `null` otherwise, and always for a watershed or ecoregion.
    */
-  readonly best_weeks: unknown;
+  readonly best_weeks: BestWeeks | null;
   /** A park's or metro park system's details; `null` for a watershed or ecoregion. */
   readonly park: Park | null;
+}
+
+/** A first and last week, 1 to 53. */
+export type WeekSpan = readonly [first: number, last: number];
+
+/** A park's best weeks (formats.md 1.32): overall and per group with a span. */
+export interface BestWeeks {
+  /** The span over all species with a result there. */
+  readonly all: WeekSpan;
+  /** The span per `group`; groups with no span are left out. */
+  readonly groups: Readonly<Record<string, WeekSpan>>;
 }
 
 /**

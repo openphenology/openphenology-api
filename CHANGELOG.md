@@ -22,8 +22,8 @@ All notable changes to this package are recorded here. The format follows
   `region/1.8`: each area carries `watersheds` and `parks` (area codes).
   `manifest/2.1`: `counts.place_results`. Types `PlaceLevel`, `PlaceKind`,
   `Place`, `Park`, `PlacesFile`, `PlaceBoundariesFile`, `PlaceResultFile` and
-  `PlaceLabelsFile`. `best_weeks` is not typed further until the data rules
-  set its layout.
+  `PlaceLabelsFile`. A park's `best_weeks` is `BestWeeks` (formats 1.32):
+  `all` and `groups`, each a `WeekSpan`.
 
 - Data rules 1.61 (ODR-2026-042): `species/1.15`. Each area carries
   `male`, `female`, `signs` (per kind of sign) and `heard` (with `hours`),

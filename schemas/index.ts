@@ -1398,8 +1398,17 @@ export const schemas = {
               counties: list(county),
               species_keys: list(speciesKey),
               effort: weekly,
-              // Its layout is not yet set by the data rules.
-              best_weeks: {},
+              // formats.md 1.32.
+              best_weeks: nullable(
+                object({
+                  all: tuple(week, week),
+                  groups: {
+                    type: "object",
+                    propertyNames: group,
+                    additionalProperties: tuple(week, week),
+                  },
+                }),
+              ),
               park: nullable(
                 object({
                   type: { enum: ["national", "state", "park-system"] },
