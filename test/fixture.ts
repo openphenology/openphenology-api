@@ -26,11 +26,14 @@ const MINOR: Readonly<Record<string, number>> = {
   backyard: 1,
 };
 
+/** Formats the made-up release publishes at a major version above 1. */
+const MAJOR: Readonly<Record<string, number>> = { attribution: 2 };
+
 /** Wraps data as the release file at `path`. */
 export const wrap = (path: string, kind: string, data: unknown) => ({
   id: `releases/${RELEASE}/${path}`,
   kind,
-  format: `${kind}/1.${String(MINOR[kind] ?? 0)}`,
+  format: `${kind}/${String(MAJOR[kind] ?? 1)}.${String(MINOR[kind] ?? 0)}`,
   provenance,
   data,
 });
@@ -259,7 +262,7 @@ const files: [string, string, unknown][] = [
         },
       ],
       gbif_download_dois: ["10.0000/example"],
-      record_links: null,
+      records: null,
     },
   ],
   [
@@ -530,7 +533,10 @@ const files: [string, string, unknown][] = [
         },
       ],
       gbif_download_dois: ["10.0000/example"],
-      record_links: ["https://example.test/records/1"],
+      records: [
+        { link: "https://www.inaturalist.org/observations/{id}", ids: [7] },
+        { link: "https://www.gbif.org/occurrence/{id}", ids: [100, 5] },
+      ],
     },
   ],
   [

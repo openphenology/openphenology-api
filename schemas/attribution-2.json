@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "OpenPhenology attribution/1",
+  "title": "OpenPhenology attribution/2",
   "description": "The sources behind a result.",
   "type": "object",
   "required": [
@@ -23,7 +23,7 @@
     "format": {
       "description": "Format name and version, for example `county-weekly/1.0`.",
       "type": "string",
-      "pattern": "^attribution/1\\.\\d+$"
+      "pattern": "^attribution/2\\.\\d+$"
     },
     "provenance": {
       "description": "Where the content came from.",
@@ -161,7 +161,7 @@
         "species_key",
         "datasets",
         "gbif_download_dois",
-        "record_links"
+        "records"
       ],
       "properties": {
         "area": {
@@ -265,14 +265,33 @@
             "minLength": 1
           }
         },
-        "record_links": {
-          "description": "Links to the records behind the result; `null` for a sensitive species.",
+        "records": {
+          "description": "`attribution/2.0`: the records behind the result, one entry per kind\nof link; `null` for a sensitive species (ODR-2026-052). Use\n`recordLinks()` for full links.",
           "anyOf": [
             {
               "type": "array",
               "items": {
-                "type": "string",
-                "minLength": 1
+                "type": "object",
+                "required": [
+                  "link",
+                  "ids"
+                ],
+                "properties": {
+                  "link": {
+                    "description": "The record page's address, with `{id}` in place of the record's number.",
+                    "type": "string",
+                    "pattern": "^https://[^\\s]*\\{id\\}[^\\s]*$"
+                  },
+                  "ids": {
+                    "description": "The records' numbers in ascending order: the first as itself, each later\none as its difference from the one before.",
+                    "type": "array",
+                    "items": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "minItems": 1
+                  }
+                }
               }
             },
             {

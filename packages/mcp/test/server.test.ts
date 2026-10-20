@@ -63,12 +63,13 @@ test("reports its package version", async () => {
   expect(SERVER_INFO.version).toBe(pkg.version);
 });
 
-test("lists the five tools, each read-only", async () => {
+test("lists the six tools, each read-only", async () => {
   const { client } = await connect();
   const { tools } = await client.listTools();
   expect(tools.map((tool) => tool.name).sort()).toEqual([
     "find_county",
     "find_species",
+    "get_records",
     "get_season",
     "get_terms",
     "this_week",
@@ -81,6 +82,7 @@ describe("every answer", () => {
     ["find_species", { name: "example" }],
     ["find_county", { zip: "99901" }],
     ["get_season", { species_key: "EX1", state: "us-zz" }],
+    ["get_records", { species_key: "EX1", state: "us-zz" }],
     ["this_week", { county: "99001", state: "us-zz" }],
     ["get_terms", {}],
   ])("%s carries the release, limits and terms", async (name, args) => {
@@ -210,6 +212,59 @@ describe("find_county with only a prefix, for a hosted server", () => {
     const { call } = await connect(undefined, "prefix");
     const answer = (await call("find_county", { zip_prefix: "123" })).answer();
     expect(answer.zips).toEqual([]);
+  });
+});
+
+describe("get_records", () => {
+  test("gives a sensitive species' datasets, with no links", async () => {
+    const { call } = await connect();
+    const answer = (
+      await call("get_records", { species_key: "EX1", state: "us-zz" })
+    ).answer();
+    expect(answer).toMatchObject({
+      species_key: "EX1",
+      state: "us-zz",
+      records: 120,
+      datasets: [{ title: "Example dataset", records: 120 }],
+      gbif_download_dois: ["10.0000/example"],
+      links: null,
+    });
+  });
+
+  test("gives the first links, and where the rest are", async () => {
+    const path = "attribution/us-zz/EX1.json";
+    const file = releaseFiles[path] as { data: object };
+    const { call, tamper } = await connect();
+    tamper(
+      `releases/${RELEASE}/${path}`,
+      JSON.stringify(
+        wrap(path, "attribution", {
+          ...file.data,
+          records: [
+            {
+              link: "https://www.gbif.org/occurrence/{id}",
+              ids: [5, ...Array.from({ length: 24 }, () => 1)],
+            },
+          ],
+        }),
+      ),
+    );
+    const answer = (
+      await call("get_records", { species_key: "EX1", state: "us-zz" })
+    ).answer();
+    expect(answer.links).toHaveLength(20);
+    expect((answer.links as string[])[1]).toBe(
+      "https://www.gbif.org/occurrence/6",
+    );
+    expect(answer.note).toMatch(/^The first 20 of 25 links\./);
+  });
+
+  test("says when no result is published", async () => {
+    const { call } = await connect();
+    const answer = (
+      await call("get_records", { species_key: "NONE", state: "us-zz" })
+    ).answer();
+    expect(answer).toMatchObject({ records: null });
   });
 });
 

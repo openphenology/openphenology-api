@@ -141,6 +141,25 @@ export function createServer(options: ServerOptions = {}): McpServer {
   );
 
   server.registerTool(
+    "get_records",
+    {
+      title: "Get the records behind a result",
+      description:
+        "The records behind a species' result in a state or county: how many, the datasets they came from, and links to the first of them, each to its own observation or GBIF page. A sensitive species has no record links. Give a county for a county's result.",
+      inputSchema: z.object({
+        species_key: z
+          .string()
+          .describe("The species key, from `find_species`."),
+        state: state.optional(),
+        county: county.optional(),
+      }),
+      annotations,
+    },
+    async ({ species_key, state, county }) =>
+      reply(await reader.records(species_key, state, county)),
+  );
+
+  server.registerTool(
     "this_week",
     {
       title: "What's recorded this week",

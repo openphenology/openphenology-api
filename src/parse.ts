@@ -6,13 +6,14 @@ import { WEEKS, type PublishedFile } from "./types.ts";
 
 /**
  * Format major versions this package reads, by kind: 1, and for `manifest`
- * also 2, which may be split into parts (data rules 1.30).
+ * also 2, which may be split into parts (data rules 1.30), and for
+ * `attribution` also 2, compact record links (data rules 1.76).
  *
  * @param kind The file's kind.
  * @returns The major versions read.
  */
 const supported = (kind: string): readonly number[] =>
-  kind === "manifest" ? [1, 2] : [1];
+  kind === "manifest" || kind === "attribution" ? [1, 2] : [1];
 
 type Json = Record<string, unknown>;
 

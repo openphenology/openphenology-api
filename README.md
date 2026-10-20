@@ -197,6 +197,10 @@ try {
 
 The data is licensed CC BY-NC 4.0, for noncommercial use. `client.terms()` says how to cite it, and
 `release.attribution(...)` lists the sources behind each result.
+`recordLinks(file)` gives the link to every record behind it, each to its
+own observation or GBIF page, and `recordsCsv(file)` the same as a CSV file;
+both are `null` for a sensitive species, whose records are credited by
+dataset only.
 
 ## JSON Schemas
 

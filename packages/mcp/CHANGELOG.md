@@ -13,6 +13,10 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `get_terms`. Every answer carries the release, the note on what results do
   not show, and how to cite and credit the data.
 - `openphenology-mcp`, to run it over standard input and output.
+- `get_records` (ODR-2026-052): the records behind a state's or county's
+  result: how many, their datasets and GBIF download DOIs, and the first 20
+  links, each to its own observation or GBIF page; no links for a sensitive
+  species.
 - `@openphenology/mcp/http`: `createHttpHandler`, to host it over HTTP, with
   `find_county` taking only a ZIP code's first three digits.
 - `@openphenology/api` is a peer dependency, so the server shares the host's
