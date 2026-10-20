@@ -275,6 +275,18 @@ export interface CatalogueEntry extends Classification {
    */
   readonly seasons?: Readonly<Record<Area, SeasonWeeks>>;
   /**
+   * Each state in `states` mapped to the state result's two windows, exactly
+   * as the species file gives them: `null` unless its season is withheld as
+   * `two-seasons`. Added in `catalogue/1.7`, so absent from earlier files.
+   */
+  readonly windows?: Readonly<Record<Area, readonly SeasonWindow[] | null>>;
+  /**
+   * Each state in `states` mapped to the state result's conditions on its
+   * record days, exactly as the species file gives them. Added in
+   * `catalogue/1.7`, so absent from earlier files.
+   */
+  readonly conditions?: Readonly<Record<Area, Conditions>>;
+  /**
    * The species' photo, exactly as its species file gives it, or `null`.
    * Added in `catalogue/1.2`, so absent from earlier files.
    */
@@ -1176,6 +1188,18 @@ export type BackyardFile = PublishedFile<
       readonly season?: SeasonWeeks;
       /** Why the county result's season is withheld, or `null`. Added in `backyard/1.1`. */
       readonly season_withheld?: Withheld | null;
+      /**
+       * The county result's two windows, exactly as the species file gives
+       * them, or `null` without a county result or when its season is not
+       * withheld as `two-seasons`. Added in `backyard/1.3`.
+       */
+      readonly windows?: readonly SeasonWindow[] | null;
+      /**
+       * The county result's conditions on its record days, exactly as the
+       * species file gives them, or `null` without a county result. Added in
+       * `backyard/1.3`.
+       */
+      readonly conditions?: Conditions | null;
       /**
        * The county result's stage seasons, `{}` without a county result or
        * stages. Added in `backyard/1.2`.

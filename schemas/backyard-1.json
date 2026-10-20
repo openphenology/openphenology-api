@@ -326,6 +326,174 @@
                   }
                 ]
               },
+              "windows": {
+                "description": "The county result's two windows, exactly as the species file gives\nthem, or `null` without a county result or when its season is not\nwithheld as `two-seasons`. Added in `backyard/1.3`.",
+                "anyOf": [
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": [
+                        "records",
+                        "season",
+                        "season_withheld"
+                      ],
+                      "properties": {
+                        "records": {
+                          "description": "The window's records.",
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "season": {
+                          "description": "Early, middle and late weeks, or empty.",
+                          "type": "array",
+                          "items": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 53
+                          },
+                          "maxItems": 3
+                        },
+                        "season_withheld": {
+                          "description": "Why `season` is empty, or `null`.",
+                          "anyOf": [
+                            {
+                              "enum": [
+                                "too-few-records",
+                                "year-round",
+                                "two-seasons",
+                                "one-year",
+                                "precision"
+                              ]
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      },
+                      "allOf": [
+                        {
+                          "anyOf": [
+                            {
+                              "type": "object",
+                              "properties": {
+                                "season": {
+                                  "type": "array",
+                                  "minItems": 3
+                                },
+                                "season_withheld": {
+                                  "type": "null"
+                                }
+                              }
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "season": {
+                                  "type": "array",
+                                  "maxItems": 0
+                                },
+                                "season_withheld": {
+                                  "enum": [
+                                    "too-few-records",
+                                    "year-round",
+                                    "two-seasons",
+                                    "one-year",
+                                    "precision"
+                                  ]
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    "minItems": 2,
+                    "maxItems": 2
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "conditions": {
+                "description": "The county result's conditions on its record days, exactly as the\nspecies file gives them, or `null` without a county result. Added in\n`backyard/1.3`.",
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "required": [
+                      "sunrise",
+                      "sunset",
+                      "high",
+                      "low",
+                      "midpoint"
+                    ],
+                    "properties": {
+                      "sunrise": {
+                        "description": "Median sunrise, local clock time `HH:MM`, calculated with NOAA's solar calculation.",
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "sunset": {
+                        "description": "Median sunset, local clock time `HH:MM`, calculated with NOAA's solar calculation.",
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "high": {
+                        "description": "Median daily high in °C, from NOAA nClimGrid-Daily; lower 48 states only.",
+                        "anyOf": [
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "low": {
+                        "description": "Median daily low in °C, from NOAA nClimGrid-Daily; lower 48 states only.",
+                        "anyOf": [
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "midpoint": {
+                        "description": "Median midpoint of the day's high and low in °C (NOAA's `tavg`); not an\naverage of temperatures through the day. Lower 48 states only.",
+                        "anyOf": [
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
               "stages": {
                 "description": "The county result's stage seasons, `{}` without a county result or\nstages. Added in `backyard/1.2`.",
                 "type": "object",
@@ -487,6 +655,44 @@
                   },
                   "required": [
                     "stages"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "type": "object",
+        "properties": {
+          "format": {
+            "enum": [
+              "backyard/1.0",
+              "backyard/1.1",
+              "backyard/1.2"
+            ]
+          }
+        }
+      },
+      "else": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "object",
+            "properties": {
+              "species": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "windows": true,
+                    "conditions": true
+                  },
+                  "required": [
+                    "windows",
+                    "conditions"
                   ]
                 }
               }

@@ -8,6 +8,11 @@ All notable changes to this package are recorded here. The format follows
 
 ### Added
 
+- Data rules 1.72: `catalogue/1.7` adds `windows` and `conditions`, each
+  state's result's as the species file gives them; `backyard/1.3` adds the
+  county result's `windows` and `conditions` (`null` without a county
+  result). Lists and cards can show a two-season result's windows and the
+  conditions line without reading every species file.
 - Data rules 1.66: `catalogue/1.6`. `sensitive_in`,
   `protection_unconfirmed_in` and `listed_in` name every state the release
   covers where they apply, whether or not the species has a result there, so

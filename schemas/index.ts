@@ -275,6 +275,15 @@ const windowsOnlyForTwoSeasons: Schema = {
   },
   then: { properties: { season_withheld: { const: "two-seasons" } } },
 };
+/** Medians on a result's record days (ODR-2026-028). */
+const conditions: Schema = object({
+  sunrise: nullable(clock),
+  sunset: nullable(clock),
+  high: nullable(celsius),
+  low: nullable(celsius),
+  midpoint: nullable(celsius),
+});
+
 /** A two-season result's two windows (data rules `seasonal.md`), or null. */
 const windows: Schema = nullable(
   list(
@@ -850,6 +859,16 @@ export const schemas = {
                 propertyNames: state,
                 additionalProperties: stageSeasons,
               },
+              windows: {
+                type: "object",
+                propertyNames: state,
+                additionalProperties: windows,
+              },
+              conditions: {
+                type: "object",
+                propertyNames: state,
+                additionalProperties: conditions,
+              },
               seasons: {
                 type: "object",
                 propertyNames: state,
@@ -873,6 +892,7 @@ export const schemas = {
     }),
     sinceMinor("catalogue", 4, { species: ["stage_seasons", "invasive_in"] }),
     sinceMinor("catalogue", 5, { species: ["protection_unconfirmed_in"] }),
+    sinceMinor("catalogue", 7, { species: ["windows", "conditions"] }),
   ),
 
   species: withRules(
@@ -915,13 +935,7 @@ export const schemas = {
               latest_month: nullable(month),
               season,
               season_withheld: seasonWithheld,
-              conditions: object({
-                sunrise: nullable(clock),
-                sunset: nullable(clock),
-                high: nullable(celsius),
-                low: nullable(celsius),
-                midpoint: nullable(celsius),
-              }),
+              conditions,
               windows,
               flowering: stageResult,
               fruiting: stageResult,
@@ -1279,6 +1293,8 @@ export const schemas = {
               weekly: nullable(weekly),
               season,
               season_withheld: seasonWithheld,
+              windows,
+              conditions: nullable(conditions),
               stages: stageSeasons,
             },
           ),
@@ -1289,6 +1305,7 @@ export const schemas = {
       species: ["records", "weekly", "season", "season_withheld"],
     }),
     sinceMinor("backyard", 2, { species: ["stages"] }),
+    sinceMinor("backyard", 3, { species: ["windows", "conditions"] }),
   ),
 
   methods: file(
