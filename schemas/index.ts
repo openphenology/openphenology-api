@@ -575,7 +575,7 @@ const placeMatchesLevel: Schema = {
     },
   ],
 };
-/** A park with a page has at least 25 species with a result; one without has none listed. */
+/** A park with a page has at least 5 species with a result (data rules 1.74); one without has none listed. */
 const pageMatchesSpecies = (hasPage: boolean, keys: Schema): Schema => ({
   if: {
     type: "object",
@@ -1439,7 +1439,7 @@ export const schemas = {
             },
             areaMatchesLevel,
             placeMatchesLevel,
-            pageMatchesSpecies(true, { type: "array", minItems: 25 }),
+            pageMatchesSpecies(true, { type: "array", minItems: 5 }),
             pageMatchesSpecies(false, { type: "array", maxItems: 0 }),
           ),
         ),

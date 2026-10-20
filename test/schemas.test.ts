@@ -556,7 +556,7 @@ describe("schemas", () => {
     const park = (place: Record<string, unknown>) =>
       place.park as Record<string, unknown>;
     expect(parks(() => undefined)).toEqual([]);
-    // A system with a page lists at least 25 species, a park without none.
+    // A system with a page lists at least 5 species, a park without none.
     expect(
       parks(([, system]) => {
         (system?.species_keys as string[]).pop();

@@ -9646,7 +9646,7 @@
                   }
                 },
                 "species_keys": {
-                  "description": "Species with a result there. Empty for a park or metro park system below\nthe minimum of 25 species, which has no other place file.",
+                  "description": "Species with a result there. Empty for a park or metro park system below\nthe minimum of 5 species, which has no other place file.",
                   "type": "array",
                   "items": {
                     "type": "string",
@@ -9775,7 +9775,7 @@
                           ]
                         },
                         "has_page": {
-                          "description": "True when at least 25 species have a result there, so it has a page.",
+                          "description": "True when at least 5 species have a result there, so it has a page.",
                           "type": "boolean"
                         },
                         "parks": {
@@ -9987,7 +9987,7 @@
                     "properties": {
                       "species_keys": {
                         "type": "array",
-                        "minItems": 25
+                        "minItems": 5
                       }
                     }
                   }
