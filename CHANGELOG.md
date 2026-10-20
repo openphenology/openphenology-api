@@ -8,6 +8,16 @@ All notable changes to this package are recorded here. The format follows
 
 ### Added
 
+- Data rules 1.72: `catalogue/1.7` adds `windows` and `conditions`, each
+  state's result's as the species file gives them; `backyard/1.3` adds the
+  county result's `windows` and `conditions` (`null` without a county
+  result). Lists and cards can show a two-season result's windows and the
+  conditions line without reading every species file.
+- Data rules 1.66: `catalogue/1.6`. `sensitive_in`,
+  `protection_unconfirmed_in` and `listed_in` name every state the release
+  covers where they apply, whether or not the species has a result there, so
+  a page treats every protected species as protected. Earlier files name only
+  states in `states`. No field is added.
 - Data rules 1.29–1.31 (ODR-2026-043, ODR-2026-044): watersheds,
   ecoregions, parks and metro park systems ("places"), named by area codes
   `huc8-<HUC8>`, `eco-<ECO_ID>`, `park-<slug>` and `parks-<slug>`. New

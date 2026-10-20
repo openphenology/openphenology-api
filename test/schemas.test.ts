@@ -980,6 +980,73 @@ describe("schemas", () => {
     expect(errors(file)).toEqual([]);
   });
 
+  test("catalogue/1.7 windows and conditions (data rules 1.72)", async () => {
+    const file = structuredClone(
+      (await published()).get("releases/2026-01-05/catalogue/0.json"),
+    );
+    if (!file) throw new Error("missing fixture");
+    const species = first(file.data.species);
+    // Made-up values.
+    file.format = "catalogue/1.7";
+    species.invasive_in = [];
+    species.stage_seasons = {};
+    species.protection_unconfirmed_in = [];
+    species.windows = {
+      "us-zz": [
+        { records: 40, season: [14, 17, 20], season_withheld: null },
+        { records: 12, season: [], season_withheld: "too-few-records" },
+      ],
+    };
+    const medians = {
+      sunrise: "06:24",
+      sunset: "20:01",
+      high: 25.6,
+      low: 12.1,
+      midpoint: null,
+    };
+    species.conditions = { "us-zz": medians };
+    expect(errors(file)).toEqual([]);
+    species.windows = { "us-zz": null };
+    expect(errors(file)).toEqual([]);
+    species.conditions = { "99001": medians };
+    expect(errors(file)).not.toEqual([]);
+    // Required from 1.7, absent from earlier files.
+    delete species.conditions;
+    expect(errors(file)).not.toEqual([]);
+    delete species.windows;
+    file.format = "catalogue/1.6";
+    expect(errors(file)).toEqual([]);
+  });
+
+  test("backyard/1.3 windows and conditions (data rules 1.72)", async () => {
+    const file = structuredClone(
+      (await published()).get("releases/2026-01-05/backyard/us-zz/99001.json"),
+    );
+    if (!file) throw new Error("missing fixture");
+    const species = first(file.data.species);
+    // Made-up values.
+    file.format = "backyard/1.3";
+    species.stages = {};
+    species.windows = null;
+    species.conditions = {
+      sunrise: "06:24",
+      sunset: null,
+      high: 25.6,
+      low: 12.1,
+      midpoint: 18.9,
+    };
+    expect(errors(file)).toEqual([]);
+    species.conditions = null;
+    expect(errors(file)).toEqual([]);
+    species.conditions = { sunrise: "6am" };
+    expect(errors(file)).not.toEqual([]);
+    delete species.conditions;
+    expect(errors(file)).not.toEqual([]);
+    delete species.windows;
+    file.format = "backyard/1.2";
+    expect(errors(file)).toEqual([]);
+  });
+
   test("a species/1.2 file needs no iNaturalist taxon ID", async () => {
     const file = structuredClone(
       (await published()).get("releases/2026-01-05/species/EX1.json"),
