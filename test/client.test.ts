@@ -1,5 +1,10 @@
 import { describe, expect, test } from "vitest";
-import { ApiError, createClient, FormatError } from "../src/index.ts";
+import {
+  ApiError,
+  createClient,
+  FormatError,
+  recordLinks,
+} from "../src/index.ts";
 import {
   fakeServer,
   RELEASE,
@@ -203,7 +208,7 @@ describe("files", () => {
     }).release();
     const attribution = await release.attribution("us-zz", "EX1");
     expect(attribution?.data.datasets[0]?.records).toBe(120);
-    expect(attribution?.data.record_links).toBeNull();
+    expect(attribution?.data.records).toBeNull();
     expect(await release.attribution("us-zz", "EX1", "99001")).toBeNull();
     expect(
       server.requests.some((p) =>
@@ -275,8 +280,8 @@ describe("files", () => {
     ).toHaveLength(53);
     expect(await release.placeLabels("eco-342")).toBeNull();
     expect(
-      (await release.placeAttribution(system, "EX1"))?.data.record_links,
-    ).toEqual(["https://example.test/records/1"]);
+      (await release.placeAttribution(system, "EX1"))?.data.records,
+    ).toHaveLength(2);
     expect(
       server.requests.some((p) =>
         p.endsWith(`releases/${RELEASE}/results/places/${system}/EX1.json`),
@@ -362,9 +367,11 @@ describe("shards", () => {
       url: null,
       records: 1,
     });
-    for (const [n, key, link] of [
-      [0, "d1", "https://example.test/1"],
-      [1, "d2", "https://example.test/2"],
+    // A long ids list runs on into the next shard, starting again from a
+    // record's own number (formats.md 1.38).
+    for (const [n, key, ids] of [
+      [0, "d1", [10, 2]],
+      [1, "d2", [15, 1]],
     ] as const) {
       const path = `attribution/us-zz/EX9/${String(n)}.json`;
       server.tamper(
@@ -372,7 +379,7 @@ describe("shards", () => {
         shard(path, "attribution", {
           ...area,
           datasets: [dataset(key)],
-          record_links: [link],
+          records: [{ link: "https://www.gbif.org/occurrence/{id}", ids }],
         }),
       );
     }
@@ -382,9 +389,11 @@ describe("shards", () => {
     }).release();
     const file = await release.attribution("us-zz", "EX9");
     expect(file?.data.datasets.map((d) => d.dataset_key)).toEqual(["d1", "d2"]);
-    expect(file?.data.record_links).toEqual([
-      "https://example.test/1",
-      "https://example.test/2",
+    expect(file && recordLinks(file)).toEqual([
+      "https://www.gbif.org/occurrence/10",
+      "https://www.gbif.org/occurrence/12",
+      "https://www.gbif.org/occurrence/15",
+      "https://www.gbif.org/occurrence/16",
     ]);
     expect(file?.data.area).toBe("us-zz");
     expect(server.requests.filter((p) => p.includes("EX9"))).toEqual([
@@ -455,7 +464,7 @@ describe("shards", () => {
         species_key: "EX8",
         datasets: [],
         gbif_download_dois: [],
-        record_links: null,
+        records: null,
       }),
     );
     const release = await createClient({
@@ -465,7 +474,7 @@ describe("shards", () => {
     expect(await release.speciesBySlug("second")).toBe("EX2");
     expect(await release.speciesBySlug("first")).toBe("EX1");
     expect(
-      (await release.attribution("us-zz", "EX8"))?.data.record_links,
+      (await release.attribution("us-zz", "EX8"))?.data.records,
     ).toBeNull();
   });
 

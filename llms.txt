@@ -40,6 +40,7 @@ A malformed code is a `RangeError` before any request is made.
 - Species: `catalogue()` → `CatalogueEntry[]`; `species(key)`; `speciesBySlug(slug)` → key or `null`; `groups()`; `searchNames()` → `SearchName[]`.
 - Places: `region(state)`; `boundaries(state)` (GeoJSON county outlines, display only); `zipCounties(zip)` → `ZipCounty[]`; `postal(prefix)` (every ZIP code with a 3-digit prefix, for suggestions); `cities(state)` (cities, villages and CDPs with `area` and `also_in` counties; match typed names on the device, like ZIP codes, and never send them).
 - Results: `stateResult(state, species)`; `countyResult(state, county, species)`; `backyard(state, county)`; `attribution(state, species, county?)`.
+- Record links: `recordLinks(attributionFile)` (every record's link, or `null` for a sensitive species); `recordsCsv(attributionFile)` (a CSV file of them).
 - Watersheds, ecoregions and parks (ODR-2026-043, ODR-2026-044): `places(kind)` (`PlacesFile`: per place `area`, `level`, `name`, `slug`, `code`, `states`, `continues_into`, `counties`, `species_keys`, `effort`, `best_weeks`, `park`); `placeBoundaries(kind)` (GeoJSON: watershed and ecoregion outlines, park middles as points, display only); `placeResult(area, species)` (`place-weekly`, the same fields as a county result); `placeLabels(area)` (`c`, `s` or `r` per week from the place's own result); `placeAttribution(area, species)`.
 - The release: `manifest()`; `notes()`; `methods()`; `sources()`.
 

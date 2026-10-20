@@ -96,7 +96,7 @@ const SPLIT: Readonly<Record<string, readonly string[]>> = {
   slugs: ["species", "redirects"],
   groups: ["groups"],
   region: ["areas"],
-  attribution: ["datasets", "record_links"],
+  attribution: ["datasets", "records", "record_links"],
   backyard: ["species"],
   sources: ["sources"],
   boundaries: ["features"],
@@ -141,6 +141,8 @@ async function readSplit<File extends PublishedFile<string, unknown>>(
     const parts = shards.map(
       (shard) => (shard.data as Record<string, unknown>)[field],
     );
+    // A field another format version uses instead is absent from all.
+    if (parts.every((part) => part === undefined)) continue;
     if (parts.every(Array.isArray)) data[field] = parts.flat();
     else if (parts.every((part) => part !== null))
       data[field] = Object.assign({}, ...parts) as unknown;

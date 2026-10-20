@@ -15,6 +15,7 @@ the full usage guide on data.openphenology.com are coming; see
 | `find_species` | Species whose names contain some text, with their species keys                       |
 | `find_county`  | The counties a ZIP code falls in, largest share of its land first                    |
 | `get_season`   | When people recorded a species in a state or county: early, middle and late weeks    |
+| `get_records`  | The records behind a result: how many, their datasets, and links to the first 20     |
 | `this_week`    | How each species is reported in a county in one week, from its Backyard labels       |
 | `get_terms`    | The licence, how to cite and credit the data, the disclaimer and the contact address |
 

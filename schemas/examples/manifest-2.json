@@ -70,9 +70,9 @@
       },
       {
         "path": "attribution/us-zz/EX1.json",
-        "sha256": "807fc40d386fcf0fdefb2ff4db5e3e1fe6e8c3a74b2ec45cf79d26e316115fce",
-        "format": "attribution/1.0",
-        "bytes": 589
+        "sha256": "96ac91f200fe737adb9bd03b086985e577918839041402ce03282e5b7f622760",
+        "format": "attribution/2.0",
+        "bytes": 584
       },
       {
         "path": "backyard/us-zz/99001.json",
@@ -136,9 +136,9 @@
       },
       {
         "path": "attribution/places/parks-example-metro-parks/EX1.json",
-        "sha256": "6e15647f759316b6599593f302f7569068eeccf7a062a77461b72b92ecf07fc8",
-        "format": "attribution/1.0",
-        "bytes": 665
+        "sha256": "ede4a9d7efadecea9709851de361383661c3406753eace11752303fbbafca1a1",
+        "format": "attribution/2.0",
+        "bytes": 756
       },
       {
         "path": "postal/us/999.json",

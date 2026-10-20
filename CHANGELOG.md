@@ -8,6 +8,14 @@ All notable changes to this package are recorded here. The format follows
 
 ### Added
 
+- Data rules 1.76 (ODR-2026-052): `attribution/2.0`, compact record links.
+  `records` holds one entry per kind of link, `link` with `{id}` in place
+  of the record's number and `ids` as differences, in place of 1.0's
+  `record_links`. `recordLinks(file)` rebuilds every full link from either
+  version, `idLinks(entry)` one entry's, and `recordsCsv(file)` a CSV file
+  with one row per record; each is `null` for a sensitive species. Split
+  attribution files join `records` across shards. The published schema is
+  `schemas/attribution-2.json`.
 - Data rules 1.72: `catalogue/1.7` adds `windows` and `conditions`, each
   state's result's as the species file gives them; `backyard/1.3` adds the
   county result's `windows` and `conditions` (`null` without a county

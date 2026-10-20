@@ -1136,10 +1136,30 @@ export type AttributionFile = PublishedFile<
     }[];
     /** The GBIF downloads the records came from, as DOIs. */
     readonly gbif_download_dois: readonly string[];
-    /** Links to the records behind the result; `null` for a sensitive species. */
-    readonly record_links: readonly string[] | null;
+    /**
+     * `attribution/2.0`: the records behind the result, one entry per kind
+     * of link; `null` for a sensitive species (ODR-2026-052). Use
+     * `recordLinks()` for full links.
+     */
+    readonly records?: readonly RecordIds[] | null;
+    /**
+     * `attribution/1.0`: links to the records behind the result; `null` for
+     * a sensitive species. Replaced by `records` in 2.0.
+     */
+    readonly record_links?: readonly string[] | null;
   }
 >;
+
+/** One kind of record link and the records' numbers (`attribution/2.0`). */
+export interface RecordIds {
+  /** The record page's address, with `{id}` in place of the record's number. */
+  readonly link: string;
+  /**
+   * The records' numbers in ascending order: the first as itself, each later
+   * one as its difference from the one before.
+   */
+  readonly ids: readonly number[];
+}
 
 /**
  * Backyard labels, one letter per week: `c` commonly reported this time of

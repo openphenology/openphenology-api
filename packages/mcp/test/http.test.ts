@@ -29,7 +29,7 @@ async function connect() {
 test("serves the tools over HTTP", async () => {
   const { client, data } = await connect();
   const { tools } = await client.listTools();
-  expect(tools).toHaveLength(5);
+  expect(tools).toHaveLength(6);
   const result = await client.callTool({
     name: "get_season",
     arguments: { species_key: "EX1", state: "us-zz" },

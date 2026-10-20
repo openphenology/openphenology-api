@@ -3,7 +3,9 @@
 import { readFileSync, readdirSync } from "node:fs";
 import { gzipSync } from "node:zlib";
 
-const BUDGET = 5 * 1024;
+// 5.5 KB from 2026-10-20, owner-approved for the record-link readers
+// (ODR-2026-052); the site keeps its own byte ceiling and speed tests.
+const BUDGET = 5.5 * 1024;
 const source = readdirSync("dist")
   .filter((name) => name.endsWith(".js"))
   .map((name) => readFileSync(`dist/${name}`))

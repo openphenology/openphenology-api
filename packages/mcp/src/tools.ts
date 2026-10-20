@@ -5,6 +5,7 @@ import {
   backyardLabel,
   BACKYARD_LABELS,
   countyState,
+  recordLinks,
   weekOf,
   type BackyardLabel,
   type Client,
@@ -35,6 +36,13 @@ const REFRESH_MS = 60 * 60 * 1000;
 
 /** The most species `find_species` returns. */
 const MATCHES = 10;
+
+/** The most record links `get_records` returns. */
+const LINKS = 20;
+
+/** Where every record's link is, for a reader that needs them all. */
+const ALL_LINKS =
+  "Every record's link is in the result's attribution file; `recordLinks()` and `recordsCsv()` in `@openphenology/api` read them all.";
 
 /** The cite, credit and licence every answer carries. */
 export interface Credit {
@@ -322,6 +330,53 @@ export class Reader {
       },
       data.limits,
     );
+  }
+
+  /**
+   * The records behind a species' result in a state or county: how many,
+   * the datasets they came from, and the first links to them (ODR-2026-052).
+   * A sensitive species has no links, only its datasets.
+   *
+   * @param species The species key.
+   * @param state The state code; found from the county when left out.
+   * @param county The county's 5-digit Census code, for a county result.
+   * @returns The records' count, datasets, GBIF download DOIs and links.
+   * @throws {RangeError} When a code is malformed or no state is known.
+   * @throws {ApiError} Rejects when a file cannot be read.
+   */
+  async records(species: string, state?: string, county?: string) {
+    const area = state ?? (county ? countyState(county) : null);
+    if (!area)
+      throw new RangeError(
+        county
+          ? `Give the state of county ${county}`
+          : "Give a state, a county, or both",
+      );
+    const release = await this.release();
+    const file = await release.attribution(area, species, county);
+    const place = { species_key: species, state: area, county: county ?? null };
+    if (!file)
+      return this.answer(release, { ...place, records: null, note: NO_RESULT });
+    const links = recordLinks(file);
+    const { data } = file;
+    return this.answer(release, {
+      ...place,
+      records: data.datasets.reduce((n, d) => n + d.records, 0),
+      datasets: data.datasets.map((d) => ({
+        title: d.title,
+        publisher: d.publisher,
+        records: d.records,
+        url: d.url,
+      })),
+      gbif_download_dois: data.gbif_download_dois,
+      links: links?.slice(0, LINKS) ?? null,
+      note:
+        links === null
+          ? "This species is sensitive, so links to its records are not published; its datasets and GBIF downloads credit them."
+          : links.length > LINKS
+            ? `The first ${String(LINKS)} of ${String(links.length)} links. ${ALL_LINKS}`
+            : ALL_LINKS,
+    });
   }
 
   /**

@@ -59,9 +59,11 @@ export type Schema = Readonly<Record<string, unknown>>;
 
 /**
  * The major format version these schemas describe, by kind: 1, except
- * `manifest/2.0` (data rules 1.30), which may be split into parts.
+ * `manifest/2.0` (data rules 1.30), which may be split into parts, and
+ * `attribution/2.0` (data rules 1.76), with compact record links.
  */
-export const majorOf = (kind: string): number => (kind === "manifest" ? 2 : 1);
+export const majorOf = (kind: string): number =>
+  kind === "manifest" || kind === "attribution" ? 2 : 1;
 
 const string: Schema = { type: "string" };
 const text: Schema = { type: "string", minLength: 1 };
@@ -1265,7 +1267,17 @@ export const schemas = {
         }),
       ),
       gbif_download_dois: list(text),
-      record_links: nullable(list(text)),
+      // One entry per kind of link: the address with `{id}` in place of the
+      // number, and the numbers ascending, each but the first as the
+      // difference from the one before (formats.md 1.38).
+      records: nullable(
+        list(
+          object({
+            link: pattern("^https://[^\\s]*\\{id\\}[^\\s]*$"),
+            ids: list(count, { minItems: 1 }),
+          }),
+        ),
+      ),
     }),
   ),
 

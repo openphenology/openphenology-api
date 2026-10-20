@@ -1,7 +1,7 @@
 {
   "id": "releases/2026-01-05/attribution/us-zz/EX1.json",
   "kind": "attribution",
-  "format": "attribution/1.0",
+  "format": "attribution/2.0",
   "provenance": {
     "release": "2026-01-05",
     "sources": ["example"],
@@ -29,6 +29,6 @@
       }
     ],
     "gbif_download_dois": ["10.0000/example"],
-    "record_links": null
+    "records": null
   }
 }
