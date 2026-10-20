@@ -1340,7 +1340,7 @@ export interface Park {
   readonly acres: number | null;
   /** Its page on its managing agency's official site, or `null` when it has none. */
   readonly official_url: string | null;
-  /** True when at least 25 species have a result there, so it has a page. */
+  /** True when at least 5 species have a result there, so it has a page. */
   readonly has_page: boolean;
   /** A metro park system's park names; empty for a park. */
   readonly parks: readonly string[];
@@ -1373,7 +1373,7 @@ export interface Place {
   readonly counties: readonly Area[];
   /**
    * Species with a result there. Empty for a park or metro park system below
-   * the minimum of 25 species, which has no other place file.
+   * the minimum of 5 species, which has no other place file.
    */
   readonly species_keys: readonly string[];
   /** Records of all species counted in the place, weeks 1 to 53. */

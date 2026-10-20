@@ -93,11 +93,11 @@ const result = (area: string) => ({
     "These results show when people recorded a species, not when or where it occurs.",
 });
 
-/** A made-up metro park system with a page: 25 made-up species with a result there. */
+/** A made-up metro park system with a page: 5 made-up species with a result there. */
 const SYSTEM = "parks-example-metro-parks";
 const systemSpecies = [
   "EX1",
-  ...Array.from({ length: 24 }, (_, i) => `EXP${String(i + 1)}`),
+  ...Array.from({ length: 4 }, (_, i) => `EXP${String(i + 1)}`),
 ];
 
 const files: [string, string, unknown][] = [
