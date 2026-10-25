@@ -216,6 +216,8 @@ County`, `Orleans Parish`, `Richmond city`), a state's name. `name` stays
 - `catalogue/1.1`: each catalogue species has `seasons`, its season weeks in
   each state with a result (data rules 1.20). `catalogue/1.0` files, which lack
   it, still read.
+- The README and `llms.txt` link to the MCP server, `@openphenology/mcp`,
+  and its guide, Use with AI assistants, on data.openphenology.com.
 
 ## [0.1.0] - 2026-10-13
 

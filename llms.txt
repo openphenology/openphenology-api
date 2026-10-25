@@ -93,6 +93,11 @@ Branch on `error.code`; messages may change.
 - `FormatError` (has `path`): `not-json`, `wrong-kind`, `unsupported-version`, `malformed`, `checksum`.
 - `RangeError`: a malformed code.
 
+## AI assistants
+
+- `@openphenology/mcp` (source: https://github.com/openphenology/openphenology-api/tree/main/packages/mcp) is an MCP server built on this client: every answer carries its release, `limits` and terms. Setup: https://data.openphenology.com/ai-assistants
+- Not live yet: the hosted server runs on staging at `https://mcp-staging.openphenology.com` (behind access control) and opens at `https://mcp.openphenology.com` at launch. The package is not on npm yet.
+
 ## Files in this package
 
 - `dist/index.d.ts`: every type and method, with doc comments.
