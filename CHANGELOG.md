@@ -8,6 +8,11 @@ All notable changes to this package are recorded here. The format follows
 
 ### Added
 
+- Data rules 1.88 (`formats.md` 1.39, ODR-2026-062): `region/1.10`. An
+  area's `warmth` may carry `past_typical_year`, `true` when `normal` is 50
+  or more and this year's `degree_days` are above the normal's 31 December
+  total, so no calendar day of a typical year reaches them; `days_ahead` is
+  then `null`. Absent from earlier files.
 - Data rules 1.76 (ODR-2026-052): `attribution/2.0`, compact record links.
   `records` holds one entry per kind of link, `link` with `{id}` in place
   of the record's number and `ids` as differences, in place of 1.0's

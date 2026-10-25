@@ -514,7 +514,7 @@
                         "minimum": 0
                       },
                       "days_ahead": {
-                        "description": "Days from `through` to the first calendar day on which the normal\nreaches `degree_days`: positive ahead of normal, negative behind;\n`null` while `normal` is below 50.",
+                        "description": "Days from `through` to the first calendar day on which the normal\nreaches `degree_days`: positive ahead of normal, negative behind;\n`null` while `normal` is below 50 or when `past_typical_year` is `true`.",
                         "anyOf": [
                           {
                             "type": "integer"
@@ -523,6 +523,10 @@
                             "type": "null"
                           }
                         ]
+                      },
+                      "past_typical_year": {
+                        "description": "True when `normal` is 50 or more and the normal through 31 December is\nbelow `degree_days`, so no calendar day reaches it; otherwise false.\nAdded in `region/1.10`, so absent from earlier files.",
+                        "type": "boolean"
                       },
                       "provisional": {
                         "description": "True when any day counted comes from a preliminary NOAA file.",

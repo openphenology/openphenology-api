@@ -474,6 +474,54 @@ describe("schemas", () => {
     expect(errors(file)).toEqual([]);
   });
 
+  test("region/1.10 warmth past a typical year", async () => {
+    const file = structuredClone(
+      (await published()).get("releases/2026-01-05/regions/us-zz.json"),
+    );
+    if (!file) throw new Error("missing fixture");
+    const area = first(file.data.areas);
+    file.format = "region/1.10";
+    area.watersheds = [];
+    area.parks = [];
+    // Made-up figures.
+    area.warmth = {
+      through: "2026-10-21",
+      degree_days: 3769,
+      normal: 3360,
+      days_ahead: null,
+      past_typical_year: true,
+      provisional: true,
+    };
+    expect(errors(file)).toEqual([]);
+    area.warmth = {
+      through: "2026-10-12",
+      degree_days: 3412,
+      normal: 3290,
+      days_ahead: 6,
+      past_typical_year: false,
+      provisional: false,
+    };
+    expect(errors(file)).toEqual([]);
+    area.warmth = {
+      through: "2026-10-12",
+      degree_days: 3412,
+      normal: 3290,
+      days_ahead: 6,
+      past_typical_year: "yes",
+      provisional: false,
+    };
+    expect(errors(file)).not.toEqual([]);
+    area.warmth = {
+      through: "2026-10-12",
+      degree_days: 3412,
+      normal: 3290,
+      days_ahead: 6,
+      provisional: false,
+    };
+    file.format = "region/1.9";
+    expect(errors(file)).toEqual([]);
+  });
+
   test("region/1.8 watersheds and parks", async () => {
     const file = structuredClone(
       (await published()).get("releases/2026-01-05/regions/us-zz.json"),
