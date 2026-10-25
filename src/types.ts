@@ -963,9 +963,15 @@ export interface Warmth {
   /**
    * Days from `through` to the first calendar day on which the normal
    * reaches `degree_days`: positive ahead of normal, negative behind;
-   * `null` while `normal` is below 50.
+   * `null` while `normal` is below 50 or when `past_typical_year` is `true`.
    */
   readonly days_ahead: number | null;
+  /**
+   * True when `normal` is 50 or more and the normal through 31 December is
+   * below `degree_days`, so no calendar day reaches it; otherwise false.
+   * Added in `region/1.10`, so absent from earlier files.
+   */
+  readonly past_typical_year?: boolean;
   /** True when any day counted comes from a preliminary NOAA file. */
   readonly provisional: boolean;
 }

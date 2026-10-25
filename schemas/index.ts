@@ -1130,7 +1130,8 @@ export const schemas = {
           // `land_cover` and `elevation` in region/1.4, `warmth` and `frost`
           // in region/1.5, `green_up` in region/1.6 and `full_name` in
           // region/1.7, and `watersheds` and `parks` in region/1.8, so absent
-          // from earlier files.
+          // from earlier files.`warmth.past_typical_year` added in
+          // region/1.10.
           properties: {
             area,
             level: { enum: ["state", "county"] },
@@ -1200,15 +1201,25 @@ export const schemas = {
                 max: { type: "integer" },
               }),
             ),
-            warmth: nullable(
-              object({
+            warmth: nullable({
+              ...object({
                 through: date,
                 degree_days: { type: "integer", minimum: 0 },
                 normal: { type: "integer", minimum: 0 },
                 days_ahead: nullable({ type: "integer" }),
                 provisional: { type: "boolean" },
               }),
-            ),
+              // Optional: `past_typical_year` added in region/1.10, so absent
+              // from earlier files.
+              properties: {
+                through: date,
+                degree_days: { type: "integer", minimum: 0 },
+                normal: { type: "integer", minimum: 0 },
+                days_ahead: nullable({ type: "integer" }),
+                past_typical_year: { type: "boolean" },
+                provisional: { type: "boolean" },
+              },
+            }),
             frost: nullable(
               object({
                 last_spring: nullable(monthDay),
