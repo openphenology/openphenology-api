@@ -214,6 +214,18 @@ import schema from "@openphenology/api/schemas/county-weekly-1.json" with { type
 import example from "@openphenology/api/schemas/examples/county-weekly-1.json" with { type: "json" };
 ```
 
+## Use with AI assistants
+
+[`@openphenology/mcp`](packages/mcp/README.md) is an MCP server that lets AI
+assistants answer from the published data, with each answer's release,
+limits and credit.
+[Use with AI assistants](https://data.openphenology.com/ai-assistants)
+explains how to add it.
+
+> **Not live yet.** The hosted server runs on staging,
+> `https://mcp-staging.openphenology.com`, behind access control, and opens
+> at `https://mcp.openphenology.com` at launch. The package isn't on npm yet.
+
 ## Try it in Postman
 
 [`postman/`](postman/README.md) has a Postman collection with a request for
