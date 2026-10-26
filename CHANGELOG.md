@@ -8,6 +8,12 @@ All notable changes to this package are recorded here. The format follows
 
 ### Added
 
+- Data rules 1.63 (`formats.md`, ODR-2026-047, ODR-2026-048): `region/1.9`.
+  The state's area gives `record_land_cover`, the land cover of all its
+  counted records within 100 m that are not obscured, in the form of a
+  species' `land_cover`, and `record_hours`, those that give a time by hour
+  of local time, 24 counts. Both leave out species sensitive in the state
+  and are `null` for a county. Absent from earlier files.
 - Data rules 1.90 (`formats.md` 1.41, ODR-2026-067): `places/1.1`. Each
   place has `continues_into_countries`, the countries other than the United
   States it continues into as lowercase two-letter codes, such as `ca`,

@@ -481,8 +481,12 @@ describe("schemas", () => {
     if (!file) throw new Error("missing fixture");
     const area = first(file.data.areas);
     file.format = "region/1.10";
-    area.watersheds = [];
-    area.parks = [];
+    for (const each of file.data.areas as Record<string, unknown>[]) {
+      each.watersheds = [];
+      each.parks = [];
+      each.record_land_cover = null;
+      each.record_hours = null;
+    }
     // Made-up figures.
     area.warmth = {
       through: "2026-10-21",
@@ -519,6 +523,64 @@ describe("schemas", () => {
       provisional: false,
     };
     file.format = "region/1.9";
+    expect(errors(file)).toEqual([]);
+  });
+
+  test("region/1.9 land cover and hours of the state's records", async () => {
+    const file = structuredClone(
+      (await published()).get("releases/2026-01-05/regions/us-zz.json"),
+    );
+    if (!file) throw new Error("missing fixture");
+    const areas = file.data.areas as Record<string, unknown>[];
+    const county = areas.find((a) => a.level === "county");
+    if (!county) throw new Error("missing fixture area");
+    // A made-up state beside the fixture's county.
+    const state: Record<string, unknown> = {
+      ...structuredClone(county),
+      area: "us-zz",
+      level: "state",
+    };
+    areas.unshift(state);
+    for (const each of areas) {
+      each.watersheds = [];
+      each.parks = [];
+    }
+    file.format = "region/1.9";
+    // Required from 1.9.
+    expect(errors(file)).not.toEqual([]);
+    for (const each of areas) {
+      each.record_land_cover = null;
+      each.record_hours = null;
+    }
+    expect(errors(file)).toEqual([]);
+    // Made-up figures.
+    state.record_land_cover = {
+      records: 1200,
+      groups: [
+        { group: "forest", share: 61.5 },
+        { group: "water", share: 2.1 },
+      ],
+    };
+    state.record_hours = Array.from({ length: 24 }, (_, h) => h * 3);
+    expect(errors(file)).toEqual([]);
+    state.record_hours = [1, 2, 3];
+    expect(errors(file)).not.toEqual([]);
+    state.record_hours = null;
+    state.record_land_cover = {
+      records: 10,
+      groups: [{ group: "ocean", share: 1 }],
+    };
+    expect(errors(file)).not.toEqual([]);
+    state.record_land_cover = null;
+    // State only: a county gives null.
+    county.record_hours = Array.from({ length: 24 }, () => 1);
+    expect(errors(file)).not.toEqual([]);
+    county.record_hours = null;
+    for (const each of areas) {
+      delete each.record_land_cover;
+      delete each.record_hours;
+    }
+    file.format = "region/1.8";
     expect(errors(file)).toEqual([]);
   });
 

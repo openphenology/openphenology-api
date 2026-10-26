@@ -187,6 +187,19 @@ const areaMatchesLevel: Schema = {
   })),
 };
 
+/** A county gives `null` for facts about the state's records only (region/1.9). */
+const stateOnly = (...fields: string[]): Schema => ({
+  if: {
+    type: "object",
+    required: ["level"],
+    properties: { level: { const: "county" } },
+  },
+  then: {
+    type: "object",
+    properties: Object.fromEntries(fields.map((f) => [f, { type: "null" }])),
+  },
+});
+
 /** `season` is three weeks with no reason withheld, or empty with the reason. */
 const seasonMatchesWithheld: Schema = {
   anyOf: [
@@ -1128,13 +1141,15 @@ export const schemas = {
               effort: weekly,
             },
             areaMatchesLevel,
+            stateOnly("record_land_cover", "record_hours"),
           ),
           // Optional: `ecoregions` added in region/1.1, `daylight` in
           // region/1.2, `temperature` in region/1.3, `precipitation`,
           // `land_cover` and `elevation` in region/1.4, `warmth` and `frost`
           // in region/1.5, `green_up` in region/1.6 and `full_name` in
-          // region/1.7, and `watersheds` and `parks` in region/1.8, so absent
-          // from earlier files.`warmth.past_typical_year` added in
+          // region/1.7, `watersheds` and `parks` in region/1.8, and
+          // `record_land_cover` and `record_hours` in region/1.9, so absent
+          // from earlier files. `warmth.past_typical_year` added in
           // region/1.10.
           properties: {
             area,
@@ -1246,11 +1261,14 @@ export const schemas = {
             ),
             watersheds: list(watershed),
             parks: list({ anyOf: [park, parkSystem] }),
+            record_land_cover: recordLandCover,
+            record_hours: nullable(hours24),
           },
         }),
       }),
     ),
     sinceMinor("region", 8, { areas: ["watersheds", "parks"] }),
+    sinceMinor("region", 9, { areas: ["record_land_cover", "record_hours"] }),
   ),
 
   "state-weekly": file(

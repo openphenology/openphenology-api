@@ -930,6 +930,23 @@ export interface RegionArea {
    * files.
    */
   readonly parks?: readonly Area[];
+  /**
+   * State only: the land cover of all the state's counted records within
+   * 100 m that are not obscured, leaving out species sensitive in the state,
+   * in the same form as a species' `land_cover`; `null` for a county or
+   * below the method's minimum. It says where people record, never what the
+   * state's land is (ODR-2026-047). Added in `region/1.9`, so absent from
+   * earlier files.
+   */
+  readonly record_land_cover?: RecordLandCover | null;
+  /**
+   * State only: all the state's counted records that give a time, leaving
+   * out species sensitive in the state, by hour of local time, 24 counts for
+   * hours 0 to 23, as a species' `hours`; `null` for a county or below the
+   * method's minimum (ODR-2026-048). Added in `region/1.9`, so absent from
+   * earlier files.
+   */
+  readonly record_hours?: readonly number[] | null;
 }
 
 /** An area's spring green-up (`region/1.6`). */
