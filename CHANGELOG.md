@@ -8,6 +8,11 @@ All notable changes to this package are recorded here. The format follows
 
 ### Added
 
+- Data rules 1.90 (`formats.md` 1.41, ODR-2026-067): `places/1.1`. Each
+  place has `continues_into_countries`, the countries other than the United
+  States it continues into as lowercase two-letter codes, such as `ca`,
+  named when at least 5% of the area lies there; always `[]` for a park or
+  metro park system. Absent from `places/1.0` files.
 - Data rules 1.88 (`formats.md` 1.39, ODR-2026-062): `region/1.10`. An
   area's `warmth` may carry `past_typical_year`, `true` when `normal` is 50
   or more and this year's `degree_days` are above the normal's 31 December
