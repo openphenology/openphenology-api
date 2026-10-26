@@ -9815,6 +9815,14 @@
                       "type": "null"
                     }
                   ]
+                },
+                "continues_into_countries": {
+                  "description": "The countries other than the United States it continues into, as\ntwo-letter codes in lowercase, such as `ca`, possibly none; always empty\nfor a park or metro park system. Named from Natural Earth when at least\n5% of the area lies there (ODR-2026-067). Added in `places/1.1`, so\nabsent from earlier files.",
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "pattern": "^(?!us$)[a-z]{2}$"
+                  }
                 }
               },
               "allOf": [
@@ -9941,6 +9949,10 @@
                         "code": {
                           "type": "null"
                         },
+                        "continues_into_countries": {
+                          "type": "array",
+                          "maxItems": 0
+                        },
                         "park": {
                           "type": "object",
                           "properties": {
@@ -9969,6 +9981,10 @@
                         },
                         "code": {
                           "type": "null"
+                        },
+                        "continues_into_countries": {
+                          "type": "array",
+                          "maxItems": 0
                         },
                         "park": {
                           "type": "object",
@@ -10122,6 +10138,40 @@
                 }
               }
             ]
+          }
+        }
+      },
+      {
+        "if": {
+          "type": "object",
+          "properties": {
+            "format": {
+              "enum": [
+                "places/1.0"
+              ]
+            }
+          }
+        },
+        "else": {
+          "type": "object",
+          "properties": {
+            "data": {
+              "type": "object",
+              "properties": {
+                "places": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "continues_into_countries": true
+                    },
+                    "required": [
+                      "continues_into_countries"
+                    ]
+                  }
+                }
+              }
+            }
           }
         }
       }

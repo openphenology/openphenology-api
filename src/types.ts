@@ -1395,6 +1395,14 @@ export interface Place {
    * results come from its covered part only.
    */
   readonly continues_into: readonly Area[];
+  /**
+   * The countries other than the United States it continues into, as
+   * two-letter codes in lowercase, such as `ca`, possibly none; always empty
+   * for a park or metro park system. Named from Natural Earth when at least
+   * 5% of the area lies there (ODR-2026-067). Added in `places/1.1`, so
+   * absent from earlier files.
+   */
+  readonly continues_into_countries?: readonly string[];
   /** The county codes it touches. */
   readonly counties: readonly Area[];
   /**

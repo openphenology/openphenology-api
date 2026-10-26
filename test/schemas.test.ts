@@ -677,6 +677,40 @@ describe("schemas", () => {
     expect(errors(watersheds)).toEqual([]);
   });
 
+  test("places/1.1 continues_into_countries", async () => {
+    const files = await published();
+    const watersheds = structuredClone(
+      files.get("releases/2026-01-05/places/watersheds.json"),
+    );
+    const parks = structuredClone(
+      files.get("releases/2026-01-05/places/parks.json"),
+    );
+    if (!watersheds || !parks) throw new Error("missing fixture");
+    const watershed = first(watersheds.data.places);
+    watersheds.format = "places/1.1";
+    // Required from 1.1.
+    expect(errors(watersheds)).not.toEqual([]);
+    watershed.continues_into_countries = ["ca"];
+    expect(errors(watersheds)).toEqual([]);
+    watershed.continues_into_countries = [];
+    expect(errors(watersheds)).toEqual([]);
+    for (const codes of [["us"], ["CA"], ["can"]]) {
+      watershed.continues_into_countries = codes;
+      expect(errors(watersheds)).not.toEqual([]);
+    }
+    // Always empty for a park or metro park system.
+    parks.format = "places/1.1";
+    for (const place of parks.data.places as Record<string, unknown>[])
+      place.continues_into_countries = [];
+    expect(errors(parks)).toEqual([]);
+    first(parks.data.places).continues_into_countries = ["ca"];
+    expect(errors(parks)).not.toEqual([]);
+    // Absent from 1.0 files.
+    delete watershed.continues_into_countries;
+    watersheds.format = "places/1.0";
+    expect(errors(watersheds)).toEqual([]);
+  });
+
   test("place-boundaries/1.0: outlines for watersheds, points for parks", async () => {
     const files = await published();
     const points = structuredClone(

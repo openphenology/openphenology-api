@@ -108,6 +108,8 @@ const SLUG = "[a-z0-9]+(-[a-z0-9]+)*";
 /** A place's area code (formats.md 1.29): a watershed, ecoregion, park or metro park system. */
 const PLACE = `(huc8-\\d{8}|eco-\\d+|parks?-${SLUG})`;
 const state = pattern(`^${STATE}$`);
+/** A country other than the United States, lowercase ISO 3166-1 alpha-2 (places/1.1). */
+const country = pattern("^(?!us$)[a-z]{2}$");
 const county = pattern(`^${COUNTY}$`);
 const watershed = pattern("^huc8-\\d{8}$");
 const ecoregion = pattern("^eco-\\d+$");
@@ -551,6 +553,7 @@ const placeMatchesLevel: Schema = {
       properties: {
         level: { const: "park" },
         code: { type: "null" },
+        continues_into_countries: { type: "array", maxItems: 0 },
         park: {
           type: "object",
           properties: {
@@ -566,6 +569,7 @@ const placeMatchesLevel: Schema = {
       properties: {
         level: { const: "park-system" },
         code: { type: "null" },
+        continues_into_countries: { type: "array", maxItems: 0 },
         park: {
           type: "object",
           properties: {
@@ -1420,55 +1424,60 @@ export const schemas = {
       object({
         kind: { enum: ["watersheds", "ecoregions", "parks"] },
         places: list(
-          object(
-            {
-              area: place,
-              level: { enum: [...PLACE_LEVELS] },
-              name: text,
-              slug,
-              code: {
-                anyOf: [
-                  pattern("^\\d{8}$"),
-                  { type: "integer", minimum: 1 },
-                  { type: "null" },
-                ],
+          withOptional(
+            object(
+              {
+                area: place,
+                level: { enum: [...PLACE_LEVELS] },
+                name: text,
+                slug,
+                code: {
+                  anyOf: [
+                    pattern("^\\d{8}$"),
+                    { type: "integer", minimum: 1 },
+                    { type: "null" },
+                  ],
+                },
+                states: list(state),
+                continues_into: list(state),
+                counties: list(county),
+                species_keys: list(speciesKey),
+                effort: weekly,
+                // formats.md 1.32.
+                best_weeks: nullable(
+                  object({
+                    all: tuple(week, week),
+                    groups: {
+                      type: "object",
+                      propertyNames: group,
+                      additionalProperties: tuple(week, week),
+                    },
+                  }),
+                ),
+                park: nullable(
+                  object({
+                    type: { enum: ["national", "state", "park-system"] },
+                    agency: text,
+                    acres: nullable({ type: "number", minimum: 0 }),
+                    official_url: nullable(text),
+                    has_page: { type: "boolean" },
+                    parks: list(text),
+                  }),
+                ),
               },
-              states: list(state),
-              continues_into: list(state),
-              counties: list(county),
-              species_keys: list(speciesKey),
-              effort: weekly,
-              // formats.md 1.32.
-              best_weeks: nullable(
-                object({
-                  all: tuple(week, week),
-                  groups: {
-                    type: "object",
-                    propertyNames: group,
-                    additionalProperties: tuple(week, week),
-                  },
-                }),
-              ),
-              park: nullable(
-                object({
-                  type: { enum: ["national", "state", "park-system"] },
-                  agency: text,
-                  acres: nullable({ type: "number", minimum: 0 }),
-                  official_url: nullable(text),
-                  has_page: { type: "boolean" },
-                  parks: list(text),
-                }),
-              ),
-            },
-            areaMatchesLevel,
-            placeMatchesLevel,
-            pageMatchesSpecies(true, { type: "array", minItems: 5 }),
-            pageMatchesSpecies(false, { type: "array", maxItems: 0 }),
+              areaMatchesLevel,
+              placeMatchesLevel,
+              pageMatchesSpecies(true, { type: "array", minItems: 5 }),
+              pageMatchesSpecies(false, { type: "array", maxItems: 0 }),
+            ),
+            // Added in places/1.1 (ODR-2026-067), so absent from 1.0 files.
+            { continues_into_countries: list(country) },
           ),
         ),
       }),
     ),
     { type: "object", properties: { data: placesMatchKind } },
+    sinceMinor("places", 1, { places: ["continues_into_countries"] }),
   ),
 
   "place-boundaries": file(
