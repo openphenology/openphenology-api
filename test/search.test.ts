@@ -218,7 +218,7 @@ describe("Advanced", () => {
           { group: "birds", name: "Birds", count: 1 },
           { group: "butterflies", name: "Butterflies and moths", count: 1 },
           { group: "plants", name: "Flowering plants", count: 5 },
-          { group: null, name: "Other", count: 1 },
+          { group: "other", name: "Other", count: 1 },
         ],
         stages: [
           { stage: "in-flower", label: "Reported in flower", count: 3 },
@@ -464,6 +464,18 @@ describe("stage and status", () => {
       (await search({ place: "park-oak-hollow-state-park", stage: "adults" }))
         .species,
     ).toEqual([]);
+  });
+
+  test("chooses Other, the species with no listed group, as `other`", async () => {
+    const result = await search({ place: "us-oh", group: "other" });
+    expect(result.species.map((s) => [s.key, s.groupName])).toEqual([
+      ["JJJJJ", "Other"],
+    ]);
+    expect(result.advanced?.options.groups).toContainEqual({
+      group: "other",
+      name: "Other",
+      count: 1,
+    });
   });
 
   test("searches anywhere with a stage or status alone", async () => {

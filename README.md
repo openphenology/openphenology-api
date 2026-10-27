@@ -147,7 +147,8 @@ which never means native.
 
 With a place or Anywhere, `advanced.options` gives the group, stage and
 status options of the shared filter (ODR-2026-037), each with how many
-species it would leave with the other filters in force. A kind that would
+species it would leave with the other filters in force; Other, the species
+with no listed group, has the key `other`, which `group` takes. A kind that would
 not split the list is empty. The site shows the filter only on a list of
 more than 20 species, but the package applies the filters to any list.
 

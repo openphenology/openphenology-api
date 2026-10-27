@@ -67,7 +67,11 @@ export interface SearchInput {
   readonly from?: string;
   /** The last day, `MM-DD`, with no year; it may come before `from`, running over the year end. */
   readonly to?: string;
-  /** Only species in this browse group, by its key from `groups.json`, such as `birds`. */
+  /**
+   * Only species in this browse group, by its key from `groups.json`, such
+   * as `birds`; `other` for Other, the species with no group or one
+   * `groups.json` does not list.
+   */
   readonly group?: string;
   /** Only species reported at this stage there. */
   readonly stage?: SearchStage;
@@ -159,8 +163,8 @@ export interface SearchStateSeason {
 export interface SearchOptions {
   /** By name. */
   readonly groups: readonly {
-    /** The group's key, for `group`; `null` for Other, which no input chooses. */
-    readonly group: string | null;
+    /** The group's key, for `group`; `other` for Other. */
+    readonly group: string;
     /** Its name, such as `Birds`, or `Other`. */
     readonly name: string;
     /** The species it would leave. */
@@ -694,7 +698,10 @@ export async function search(
       (r) => passes(r, f) && (f.stage === null || fits(stageOf(r, f.stage))),
     );
   const filter: Filter = {
-    group: group === undefined ? null : (base.names.get(group) ?? ""),
+    group:
+      group === undefined
+        ? null
+        : (base.names.get(group) ?? (group === "other" ? "Other" : "")),
     stage,
     status,
   };
@@ -737,7 +744,7 @@ export async function search(
     groups:
       groupNames.length > 1
         ? groupNames.map((name) => ({
-            group: keys.get(name) ?? null,
+            group: keys.get(name) ?? "other",
             name,
             count: leaves({ group: name }),
           }))

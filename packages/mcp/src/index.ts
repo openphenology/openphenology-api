@@ -110,7 +110,9 @@ export function createServer(options: ServerOptions = {}): McpServer {
         group: z
           .string()
           .optional()
-          .describe("Only species in this browse group, such as `birds`."),
+          .describe(
+            "Only species in this browse group, such as `birds`, or `other` for species with no listed group.",
+          ),
         stage: z
           .enum(["in-flower", "in-fruit", "adults", "larvae"])
           .optional()
@@ -219,7 +221,9 @@ export function createServer(options: ServerOptions = {}): McpServer {
         group: z
           .string()
           .optional()
-          .describe("Only species in this browse group, such as `birds`."),
+          .describe(
+            "Only species in this browse group, such as `birds`, or `other` for species with no listed group.",
+          ),
         stage: z
           .enum(["in-flower", "in-fruit", "adults", "larvae"])
           .optional()

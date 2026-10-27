@@ -31,6 +31,8 @@ const GROUPS = [
   ["plants", "Flowering plants"],
   ["butterflies", "Butterflies and moths"],
 ] as const;
+/** The groups a search can choose: Other too, the species with no listed group. */
+const CHOICES = [...GROUPS, ["other", "Other"]] as const;
 const WORDS = ["oak", "aster", "robin", "moth", "fern", "Élan", "sedge"];
 
 /** A small seeded generator (mulberry32), so a failure can be replayed. */
@@ -224,7 +226,7 @@ describe("against the site's Advanced search", () => {
           return { month, day: r.int(28) + 1 };
         };
         const range = r.chance(0.5) ? { from: day(), to: day() } : null;
-        const group = r.chance(0.4) ? r.pick(GROUPS) : null;
+        const group = r.chance(0.4) ? r.pick(CHOICES) : null;
         const stage = r.chance(0.4) ? r.pick(STAGES) : null;
         const status: FilterStatus | null = r.chance(0.3)
           ? r.pick(["introduced", "invasive"] as const)
@@ -305,6 +307,7 @@ describe("against the site's Advanced search", () => {
           shown: site.shown.length,
           options: {
             groups: site.options.groups.map((o) => ({
+              group: CHOICES.find(([, n]) => n === o.value)?.[0],
               name: o.value,
               count: o.count,
             })),

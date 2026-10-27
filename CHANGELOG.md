@@ -46,7 +46,8 @@ All notable changes to this package are recorded here. The format follows
   native), and with a stage its `stageSeason` and `stageLabel`, worded as
   ODR-2026-032 sets out, "Reported as a caterpillar" for a butterfly or
   moth. With a place or Anywhere, `advanced.options` gives how many species
-  each group, stage and status option would leave. A test compares the
+  each group, stage and status option would leave; `group: "other"` chooses
+  Other, the species with no listed group, as the site's filter does. A test compares the
   results with the site's own code on made-up releases drawn at random.
   Types `SearchStage`, `SearchStatus`, `SearchOptions` and
   `SearchStateSeason`.
