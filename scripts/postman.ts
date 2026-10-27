@@ -165,9 +165,9 @@ const FOLDERS: readonly (readonly [string, string, readonly Request[]])[] = [
         codes: [STATE, COUNTY, SPECIES],
       },
       {
-        kind: "backyard",
-        name: "Backyard",
-        path: `${IN_RELEASE}/backyard/{{state}}/{{county}}.json`,
+        kind: "nearby",
+        name: "Nearby",
+        path: `${IN_RELEASE}/nearby/{{state}}/{{county}}.json`,
         codes: [STATE, COUNTY],
       },
       {

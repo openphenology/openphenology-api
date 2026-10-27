@@ -808,7 +808,7 @@ describe("schemas", () => {
     );
     if (!labels || !result) throw new Error("missing fixture");
     expect(errors(labels)).toEqual([]);
-    // Only the first three Backyard labels apply to a place.
+    // Only the first three Nearby labels apply to a place.
     first(labels.data.species).labels = `m${"r".repeat(52)}`;
     expect(errors(labels)).not.toEqual([]);
     expect(errors(result)).toEqual([]);
@@ -1107,23 +1107,6 @@ describe("schemas", () => {
     expect(errors(file)).toEqual([]);
   });
 
-  test("backyard/1.2 stage seasons (ODR-2026-037)", async () => {
-    const file = structuredClone(
-      (await published()).get("releases/2026-01-05/backyard/us-zz/99001.json"),
-    );
-    if (!file) throw new Error("missing fixture");
-    const species = first(file.data.species);
-    file.format = "backyard/1.2";
-    species.stages = { adult: [22, 26, 30], larva: [] };
-    expect(errors(file)).toEqual([]);
-    species.stages = { pupa: [22, 26, 30] };
-    expect(errors(file)).not.toEqual([]);
-    delete species.stages;
-    expect(errors(file)).not.toEqual([]);
-    file.format = "backyard/1.1";
-    expect(errors(file)).toEqual([]);
-  });
-
   test("catalogue/1.7 windows and conditions (data rules 1.72)", async () => {
     const file = structuredClone(
       (await published()).get("releases/2026-01-05/catalogue/0.json"),
@@ -1162,14 +1145,17 @@ describe("schemas", () => {
     expect(errors(file)).toEqual([]);
   });
 
-  test("backyard/1.3 windows and conditions (data rules 1.72)", async () => {
+  test("nearby/1.0 stages, windows and conditions (ODR-2026-069)", async () => {
     const file = structuredClone(
-      (await published()).get("releases/2026-01-05/backyard/us-zz/99001.json"),
+      (await published()).get("releases/2026-01-05/nearby/us-zz/99001.json"),
     );
     if (!file) throw new Error("missing fixture");
     const species = first(file.data.species);
     // Made-up values.
-    file.format = "backyard/1.3";
+    species.stages = { adult: [22, 26, 30], larva: [] };
+    expect(errors(file)).toEqual([]);
+    species.stages = { pupa: [22, 26, 30] };
+    expect(errors(file)).not.toEqual([]);
     species.stages = {};
     species.windows = null;
     species.conditions = {
@@ -1184,11 +1170,28 @@ describe("schemas", () => {
     expect(errors(file)).toEqual([]);
     species.conditions = { sunrise: "6am" };
     expect(errors(file)).not.toEqual([]);
-    delete species.conditions;
-    expect(errors(file)).not.toEqual([]);
-    delete species.windows;
-    file.format = "backyard/1.2";
+  });
+
+  test.each([
+    "records",
+    "weekly",
+    "season",
+    "season_withheld",
+    "windows",
+    "conditions",
+    "stages",
+  ])("a nearby/1.0 species needs %s", async (field) => {
+    const file = structuredClone(
+      (await published()).get("releases/2026-01-05/nearby/us-zz/99001.json"),
+    );
+    if (!file) throw new Error("missing fixture");
+    expect(file.format).toBe("nearby/1.0");
     expect(errors(file)).toEqual([]);
+    const species = Object.entries(first(file.data.species));
+    file.data.species = [
+      Object.fromEntries(species.filter(([name]) => name !== field)),
+    ];
+    expect(errors(file)).not.toEqual([]);
   });
 
   test("a species/1.2 file needs no iNaturalist taxon ID", async () => {
@@ -1201,23 +1204,9 @@ describe("schemas", () => {
     expect(errors(file)).toEqual([]);
   });
 
-  test("a backyard/1.0 file needs no county records or seasons", async () => {
+  test("a Nearby species without a county result has null records and weeks", async () => {
     const file = structuredClone(
-      (await published()).get("releases/2026-01-05/backyard/us-zz/99001.json"),
-    );
-    if (!file) throw new Error("missing fixture");
-    file.format = "backyard/1.0";
-    const species = first(file.data.species);
-    delete species.records;
-    delete species.weekly;
-    delete species.season;
-    delete species.season_withheld;
-    expect(errors(file)).toEqual([]);
-  });
-
-  test("a Backyard species without a county result has null records and weeks", async () => {
-    const file = structuredClone(
-      (await published()).get("releases/2026-01-05/backyard/us-zz/99001.json"),
+      (await published()).get("releases/2026-01-05/nearby/us-zz/99001.json"),
     );
     if (!file) throw new Error("missing fixture");
     Object.assign(first(file.data.species), {
@@ -1391,15 +1380,15 @@ describe("schemas reject", () => {
       },
     ],
     [
-      "a backyard/1.1 species without its county records",
-      "releases/2026-01-05/backyard/us-zz/99001.json",
+      "a Nearby species without its county records",
+      "releases/2026-01-05/nearby/us-zz/99001.json",
       (f) => {
         delete first(f.data.species).records;
       },
     ],
     [
-      "a Backyard species with weekly records that are not 53 weeks",
-      "releases/2026-01-05/backyard/us-zz/99001.json",
+      "a Nearby species with weekly records that are not 53 weeks",
+      "releases/2026-01-05/nearby/us-zz/99001.json",
       (f) => {
         first(f.data.species).weekly = [1, 2, 3];
       },
@@ -1450,15 +1439,15 @@ describe("schemas reject", () => {
       },
     ],
     [
-      "Backyard labels for 52 weeks",
-      "releases/2026-01-05/backyard/us-zz/99001.json",
+      "Nearby labels for 52 weeks",
+      "releases/2026-01-05/nearby/us-zz/99001.json",
       (f) => {
         first(f.data.species).labels = "n".repeat(52);
       },
     ],
     [
-      "an unknown Backyard label",
-      "releases/2026-01-05/backyard/us-zz/99001.json",
+      "an unknown Nearby label",
+      "releases/2026-01-05/nearby/us-zz/99001.json",
       (f) => {
         first(f.data.species).labels = `x${"n".repeat(52)}`;
       },

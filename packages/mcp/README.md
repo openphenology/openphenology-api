@@ -16,7 +16,7 @@ the full usage guide on data.openphenology.com are coming; see
 | `find_county`  | The counties a ZIP code falls in, largest share of its land first                    |
 | `get_season`   | When people recorded a species in a state or county: early, middle and late weeks    |
 | `get_records`  | The records behind a result: how many, their datasets, and links to the first 20     |
-| `this_week`    | How each species is reported in a county in one week, from its Backyard labels       |
+| `this_week`    | How each species is reported in a county in one week, from its Nearby labels         |
 | `get_terms`    | The licence, how to cite and credit the data, the disclaimer and the contact address |
 
 Every answer is JSON with three more fields:
@@ -30,7 +30,7 @@ Every answer is JSON with three more fields:
 The server also gives assistants instructions to pass `limits` on and credit
 the data.
 
-Fixed wording comes from the published data rules word for word: the Backyard
+Fixed wording comes from the published data rules word for word: the Nearby
 labels, why season weeks are withheld, and what a missing result means. A
 species under "Within its mapped range" comes with the range's source and
 seasons.

@@ -23,7 +23,6 @@ const MINOR: Readonly<Record<string, number>> = {
   catalogue: 3,
   species: 11,
   search: 1,
-  backyard: 1,
 };
 
 /** Formats the made-up release publishes at a major version above 1. */
@@ -266,8 +265,8 @@ const files: [string, string, unknown][] = [
     },
   ],
   [
-    "backyard/us-zz/99001.json",
-    "backyard",
+    "nearby/us-zz/99001.json",
+    "nearby",
     {
       area: "99001",
       method: "test-1",
@@ -283,6 +282,9 @@ const files: [string, string, unknown][] = [
           weekly: weeks(1),
           season: [14, 22, 35],
           season_withheld: null,
+          windows: null,
+          conditions: null,
+          stages: {},
         },
       ],
     },

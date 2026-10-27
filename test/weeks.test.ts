@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { BACKYARD_LABELS, WEEKS, backyardLabel, weekOf } from "../src/index.ts";
+import { NEARBY_LABELS, WEEKS, nearbyLabel, weekOf } from "../src/index.ts";
 
 describe("weeks", () => {
   test("week 1 is 1 to 7 January, week 2 starts on 8 January", () => {
@@ -20,24 +20,24 @@ describe("weeks", () => {
   });
 });
 
-describe("Backyard labels", () => {
+describe("Nearby labels", () => {
   const labels = `${"n".repeat(10)}c${"s".repeat(41)}m`;
 
   test("reads a week's label and names it", () => {
-    expect(backyardLabel(labels, 11)).toBe("c");
-    expect(BACKYARD_LABELS[backyardLabel(labels, 11)]).toBe(
+    expect(nearbyLabel(labels, 11)).toBe("c");
+    expect(NEARBY_LABELS[nearbyLabel(labels, 11)]).toBe(
       "Commonly reported this time of year",
     );
-    expect(backyardLabel(labels, 53)).toBe("m");
+    expect(nearbyLabel(labels, 53)).toBe("m");
   });
 
   test("an unknown letter reads as not enough evidence", () => {
-    expect(backyardLabel("x".repeat(53), 1)).toBe("n");
+    expect(nearbyLabel("x".repeat(53), 1)).toBe("n");
   });
 
   test("refuses a week outside 1 to 53", () => {
-    expect(() => backyardLabel(labels, 0)).toThrow(RangeError);
-    expect(() => backyardLabel(labels, 54)).toThrow(RangeError);
-    expect(() => backyardLabel(labels, 1.5)).toThrow(RangeError);
+    expect(() => nearbyLabel(labels, 0)).toThrow(RangeError);
+    expect(() => nearbyLabel(labels, 54)).toThrow(RangeError);
+    expect(() => nearbyLabel(labels, 1.5)).toThrow(RangeError);
   });
 });

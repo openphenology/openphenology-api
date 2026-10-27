@@ -16,7 +16,6 @@ import {
 } from "./paths.ts";
 import type {
   AttributionFile,
-  BackyardFile,
   BoundariesFile,
   CitiesFile,
   CatalogueEntry,
@@ -27,6 +26,7 @@ import type {
   ManifestEntry,
   ManifestFile,
   MethodsFile,
+  NearbyFile,
   NotesFile,
   PlaceBoundariesFile,
   PlaceKind,
@@ -97,7 +97,7 @@ const SPLIT: Readonly<Record<string, readonly string[]>> = {
   groups: ["groups"],
   region: ["areas"],
   attribution: ["datasets", "records", "record_links"],
-  backyard: ["species"],
+  nearby: ["species"],
   sources: ["sources"],
   boundaries: ["features"],
   places: ["places"],
@@ -678,7 +678,7 @@ export class Release {
   }
 
   /**
-   * A county's Backyard labels: for each species, one letter per week saying
+   * A county's Nearby labels: for each species, one letter per week saying
    * how it is reported there at that time of year.
    *
    * @param state The state code, such as `us-oh`.
@@ -686,10 +686,10 @@ export class Release {
    * @returns The labels, or `null` when not published.
    * @throws {RangeError} When a code is malformed.
    */
-  backyard(state: string, county: string): Promise<BackyardFile | null> {
-    return this.#labels<BackyardFile>(
-      `backyard/${stateCode(state)}/${countyCode(county)}.json`,
-      "backyard",
+  nearby(state: string, county: string): Promise<NearbyFile | null> {
+    return this.#labels<NearbyFile>(
+      `nearby/${stateCode(state)}/${countyCode(county)}.json`,
+      "nearby",
     );
   }
 
@@ -816,7 +816,7 @@ export class Release {
    * @throws {RangeError} When the ZIP code is malformed.
    * @example
    * const [first] = await release.zipCounties("43215");
-   * if (first?.state) await release.backyard(first.state, first.area);
+   * if (first?.state) await release.nearby(first.state, first.area);
    */
   async zipCounties(zip: string): Promise<ZipCounty[]> {
     const code = zipCode(zip);
@@ -829,13 +829,13 @@ export class Release {
   }
 
   /**
-   * Reads a Backyard or place labels file and checks its effort and labels.
+   * Reads a Nearby or place labels file and checks its effort and labels.
    *
    * @param path The file's path inside the release.
-   * @param kind `backyard` or `place-labels`.
+   * @param kind `nearby` or `place-labels`.
    * @returns The file, or `null` when not published.
    */
-  async #labels<File extends BackyardFile | PlaceLabelsFile>(
+  async #labels<File extends NearbyFile | PlaceLabelsFile>(
     path: string,
     kind: File["kind"],
   ): Promise<File | null> {

@@ -2,13 +2,13 @@
 // from, the note on what results do not show, and how to cite and credit the
 // data, so an assistant passes them on with the facts.
 import {
-  backyardLabel,
-  BACKYARD_LABELS,
   countyState,
+  nearbyLabel,
+  NEARBY_LABELS,
   recordLinks,
   weekOf,
-  type BackyardLabel,
   type Client,
+  type NearbyLabel,
   type Release,
   type SeasonWeeks,
   type TermsFile,
@@ -380,7 +380,7 @@ export class Reader {
   }
 
   /**
-   * How each species is reported in a county in one week, from its Backyard
+   * How each species is reported in a county in one week, from its Nearby
    * labels; species without enough evidence that week are left out.
    *
    * @param county The county's 5-digit Census code.
@@ -406,13 +406,13 @@ export class Reader {
     const week = weekOf(day);
     const release = await this.release();
     const [file, names] = await Promise.all([
-      release.backyard(area, county),
+      release.nearby(area, county),
       release.searchNames(),
     ]);
-    const labels: Partial<Record<BackyardLabel, object[]>> = {};
+    const labels: Partial<Record<NearbyLabel, object[]>> = {};
     for (const species of file?.data.species ?? []) {
       if (group !== undefined && species.group !== group) continue;
-      const label = backyardLabel(species.labels, week);
+      const label = nearbyLabel(species.labels, week);
       if (label === "n") continue;
       (labels[label] ??= []).push({
         species_key: species.species_key,
@@ -430,7 +430,7 @@ export class Reader {
       published: file !== null,
       labels: Object.entries(labels).map(([label, species]) => ({
         label,
-        means: BACKYARD_LABELS[label as BackyardLabel],
+        means: NEARBY_LABELS[label as NearbyLabel],
         species,
       })),
     });
