@@ -53,7 +53,7 @@ Every read takes codes, not names:
 | You have                       | Get the code with                                                                                                                                      |
 | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | A species' page slug           | `release.speciesBySlug("northern-cardinal")`                                                                                                           |
-| A name someone typed           | `release.searchNames()`: every common, scientific and former name                                                                                      |
+| A name someone typed           | `release.search({ text })`: species and places whose names match, as the site finds them                                                               |
 | Nothing yet                    | `release.catalogue()`: every species with a result                                                                                                     |
 | A state                        | `us-` and its postal abbreviation, such as `us-oh`                                                                                                     |
 | A county                       | `release.region("us-oh")` lists each county's 5-digit Census code                                                                                      |
@@ -104,6 +104,66 @@ if (county?.state) {
 }
 ```
 
+### Search, as the site does
+
+`release.search()` is the site's search (ODR-2026-070 as amended by
+ODR-2026-071). Every input is optional, and they combine:
+
+```ts
+// By name: species by any of their names, best match first, and places.
+const byName = await release.search({ text: "aster" });
+for (const s of byName.species) console.log(s.key, s.note); // "Formerly …"
+for (const p of byName.places) console.log(p.kind, p.area, p.name, p.species);
+
+// A place and dates: species whose season there overlaps them.
+const fall = await release.search({
+  place: "39049", // `anywhere`, a state, a county, or a park's code
+  from: "09-01", // MM-DD, no year; give both or neither
+  to: "10-15",
+  group: "plants",
+  sort: "season", // or "name", "records", "group"
+});
+console.log(fall.advanced?.inSeason, fall.species[0]?.season);
+
+// A stage and a status, with what each filter option would leave.
+const flowering = await release.search({
+  place: "us-oh",
+  stage: "in-flower", // or "in-fruit", "adults", "larvae"
+  status: "introduced", // or "invasive"
+});
+for (const s of flowering.species) console.log(s.stageLabel, s.stageSeason);
+for (const o of flowering.advanced?.options.stages ?? [])
+  console.log(o.label, o.count); // "Reported in flower" 12
+```
+
+A `stage` keeps the species reported at that stage there, sorted and matched
+to the dates by that stage's season. Each is worded as ODR-2026-032 sets out
+(`stageLabel`): "Reported in flower", "Reported in fruit", "Reported as an
+adult", "Reported as a larva", and "Reported as a caterpillar" for a
+butterfly or moth; never the stage alone. A `status` keeps the species
+US-RIIS lists there (`data/status.md`): `introduced` takes invasive ones too,
+and `invasive` only those. A species with no listing has `status: null`,
+which never means native.
+
+With a place or Anywhere, `advanced.options` gives the group, stage and
+status options of the shared filter (ODR-2026-037), each with how many
+species it would leave with the other filters in force; Other, the species
+with no listed group, has the key `other`, which `group` takes. A kind that would
+not split the list is empty. The site shows the filter only on a list of
+more than 20 species, but the package applies the filters to any list.
+
+Under Anywhere, a species covered in more than one state is listed once
+(owner, 2026-10-27). Its `seasons` lists its result in each covered state,
+and its other fields are the state's that comes first in the sort. Dates, a
+stage or a status keep it when any state's result passes. Elsewhere,
+`seasons` is `null`. The site does not show a species' other states yet.
+
+Text with a place or dates keeps the species whose names contain it. Text
+that is a ZIP code matches nothing: the result is `{ zip: true }`, and ZIP
+code lookup stays with `zipCounties()`. Search reads only the published
+files, through the release's reader, and never sends the text anywhere. It
+loads from `@openphenology/api/search` when first called.
+
 ### A county map
 
 ```ts
@@ -137,6 +197,7 @@ From a release (`await client.release()`):
 | Topic         | Methods                                                                                                                                |
 | ------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
 | Species       | `catalogue()`, `species(key)`, `speciesBySlug(slug)`, `groups()`, `searchNames()`                                                      |
+| Search        | `search(input)`: species and places by name, and a place's species between two dates, by group, stage and status                       |
 | Places        | `region(state)`, `boundaries(state)`, `cities(state)`, `zipCounties(zip)`, `places(kind)`, `placeBoundaries(kind)`                     |
 | Results       | `stateResult(state, species)`, `countyResult(state, county, species)`, `nearby(state, county)`, `attribution(state, species, county?)` |
 | Place results | `placeResult(area, species)`, `placeLabels(area)`, `placeAttribution(area, species)`                                                   |

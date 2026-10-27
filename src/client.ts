@@ -14,6 +14,7 @@ import {
   stateCode,
   zipCode,
 } from "./paths.ts";
+import type { SearchInput, SearchResult } from "./search.ts";
 import type {
   AttributionFile,
   BoundariesFile,
@@ -561,6 +562,37 @@ export class Release {
   async searchNames(): Promise<SearchName[]> {
     const file = await this.#file<SearchFile>("search/index.json", "search");
     return [...(file?.data.names ?? [])];
+  }
+
+  /**
+   * Searches the published files (ODR-2026-070 as amended by ODR-2026-071),
+   * as the site does. Every input is optional, and they combine: text alone
+   * finds species and places by name; a place, dates, a group, a stage or a
+   * status search as the site's Advanced search does, with how many species
+   * each group, stage and status option would leave; text with them keeps
+   * the species whose names contain it. Only the
+   * files that search needs are read; typed text is never sent anywhere,
+   * and a ZIP code matches nothing. Loads `@openphenology/api/search` when
+   * first called.
+   *
+   * @param input What to search for.
+   * @returns What was found. A place whose list is not published has
+   *   `advanced.published` set to `false`.
+   * @throws {RangeError} Rejects when an input is malformed, only one date
+   *   is given, or the place is not one search offers.
+   * @throws {ApiError} Rejects when a file cannot be read.
+   * @throws {FormatError} Rejects when a file is malformed.
+   * @example
+   * const { species } = await release.search({
+   *   text: "aster",
+   *   place: "39049",
+   *   from: "09-01",
+   *   to: "10-15",
+   *   stage: "in-flower",
+   * });
+   */
+  async search(input?: SearchInput): Promise<SearchResult> {
+    return (await import("./search.ts")).search(this, input);
   }
 
   /**
