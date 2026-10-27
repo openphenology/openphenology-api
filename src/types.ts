@@ -1185,14 +1185,14 @@ export interface RecordIds {
 }
 
 /**
- * Backyard labels, one letter per week: `c` commonly reported this time of
+ * Nearby labels, one letter per week: `c` commonly reported this time of
  * year, `s` seasonally reported, `r` reported in your area, `m` within its
  * mapped range, `n` not enough evidence.
  */
-export type BackyardLabel = "c" | "s" | "r" | "m" | "n";
-/** `backyard/<state>/<county>.json`: a county's Backyard labels. */
-export type BackyardFile = PublishedFile<
-  "backyard",
+export type NearbyLabel = "c" | "s" | "r" | "m" | "n";
+/** `nearby/<state>/<county>.json`: a county's Nearby labels. */
+export type NearbyFile = PublishedFile<
+  "nearby",
   {
     /** The county's 5-digit Census code. */
     readonly area: Area;
@@ -1219,35 +1219,34 @@ export type BackyardFile = PublishedFile<
       } | null;
       /**
        * The county result's records counted, or `null` without a county
-       * result. Added in `backyard/1.1`, so absent from `backyard/1.0` files.
+       * result.
        */
-      readonly records?: number | null;
+      readonly records: number | null;
       /**
        * The county result's weekly records, weeks 1 to 53, or `null` without
-       * a county result. Added in `backyard/1.1`.
+       * a county result.
        */
-      readonly weekly?: readonly number[] | null;
-      /** The county result's season weeks, or empty. Added in `backyard/1.1`. */
-      readonly season?: SeasonWeeks;
-      /** Why the county result's season is withheld, or `null`. Added in `backyard/1.1`. */
-      readonly season_withheld?: Withheld | null;
+      readonly weekly: readonly number[] | null;
+      /** The county result's season weeks, or empty. */
+      readonly season: SeasonWeeks;
+      /** Why the county result's season is withheld, or `null`. */
+      readonly season_withheld: Withheld | null;
       /**
        * The county result's two windows, exactly as the species file gives
        * them, or `null` without a county result or when its season is not
-       * withheld as `two-seasons`. Added in `backyard/1.3`.
+       * withheld as `two-seasons`.
        */
-      readonly windows?: readonly SeasonWindow[] | null;
+      readonly windows: readonly SeasonWindow[] | null;
       /**
        * The county result's conditions on its record days, exactly as the
-       * species file gives them, or `null` without a county result. Added in
-       * `backyard/1.3`.
+       * species file gives them, or `null` without a county result.
        */
-      readonly conditions?: Conditions | null;
+      readonly conditions: Conditions | null;
       /**
        * The county result's stage seasons, `{}` without a county result or
-       * stages. Added in `backyard/1.2`.
+       * stages.
        */
-      readonly stages?: StageSeasons;
+      readonly stages: StageSeasons;
     }[];
   }
 >;

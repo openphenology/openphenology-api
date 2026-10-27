@@ -23,10 +23,10 @@ export {
 export * from "./types.ts";
 export { idLinks, recordLinks, recordsCsv } from "./records.ts";
 export {
-  BACKYARD_LABELS,
+  NEARBY_LABELS,
   PRODUCTION_URL,
   STAGING_URL,
-  backyardLabel,
   countyState,
+  nearbyLabel,
   weekOf,
 } from "./format.ts";

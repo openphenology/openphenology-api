@@ -164,7 +164,7 @@ export function createServer(options: ServerOptions = {}): McpServer {
     {
       title: "What's recorded this week",
       description:
-        "How each species is reported in a county in one week, from its Backyard labels: commonly reported, seasonally reported, reported in the area, or within its mapped range. Species without enough evidence that week are left out.",
+        "How each species is reported in a county in one week, from its Nearby labels: commonly reported, seasonally reported, reported in the area, or within its mapped range. Species without enough evidence that week are left out.",
       inputSchema: z.object({
         county,
         state: state.optional(),

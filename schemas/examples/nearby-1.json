@@ -1,7 +1,7 @@
 {
-  "id": "releases/2026-01-05/backyard/us-zz/99001.json",
-  "kind": "backyard",
-  "format": "backyard/1.1",
+  "id": "releases/2026-01-05/nearby/us-zz/99001.json",
+  "kind": "nearby",
+  "format": "nearby/1.0",
   "provenance": {
     "release": "2026-01-05",
     "sources": ["example"],
@@ -29,7 +29,10 @@
         "records": 40,
         "weekly": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
         "season": [14, 22, 35],
-        "season_withheld": null
+        "season_withheld": null,
+        "windows": null,
+        "conditions": null,
+        "stages": {}
       }
     ]
   }

@@ -3,7 +3,6 @@
 // date.
 import type {
   AttributionFile,
-  BackyardFile,
   BoundariesFile,
   CitiesFile,
   CatalogueFile,
@@ -12,6 +11,7 @@ import type {
   GroupsFile,
   ManifestFile,
   MethodsFile,
+  NearbyFile,
   NotesFile,
   PlaceBoundariesFile,
   PlaceLabelsFile,
@@ -30,7 +30,6 @@ import type {
 
 export type Kind = (
   | AttributionFile
-  | BackyardFile
   | BoundariesFile
   | CatalogueFile
   | CitiesFile
@@ -39,6 +38,7 @@ export type Kind = (
   | GroupsFile
   | ManifestFile
   | MethodsFile
+  | NearbyFile
   | NotesFile
   | PlaceBoundariesFile
   | PlaceLabelsFile
@@ -680,7 +680,7 @@ const paths: Record<Kind, string> = {
   "state-weekly": `${RELEASE}results/${STATE}/${KEY}`,
   "county-weekly": `${RELEASE}results/${STATE}/${COUNTY}/${KEY}`,
   attribution: `${RELEASE}attribution/(${STATE}(/${COUNTY})?|places/${PLACE})/${KEY}`,
-  backyard: `${RELEASE}backyard/${STATE}/${COUNTY}`,
+  nearby: `${RELEASE}nearby/${STATE}/${COUNTY}`,
   methods: `${RELEASE}methods`,
   sources: `${RELEASE}sources`,
   boundaries: `${RELEASE}places/${STATE}/boundaries`,
@@ -1314,43 +1314,32 @@ export const schemas = {
     }),
   ),
 
-  backyard: withRules(
-    file(
-      "backyard",
-      "A county's Backyard label for each species and week.",
-      object({
-        area: county,
-        method: text,
-        evidence_through: nullable(date),
-        effort: weekly,
-        species: list(
-          withOptional(
-            object({
-              species_key: speciesKey,
-              group: nullable(group),
-              labels: pattern("^[csrmn]{53}$"),
-              range: nullable(
-                object({ source: nullable(string), seasons: rangeSeasons }),
-              ),
-            }),
-            {
-              records: nullable(count),
-              weekly: nullable(weekly),
-              season,
-              season_withheld: seasonWithheld,
-              windows,
-              conditions: nullable(conditions),
-              stages: stageSeasons,
-            },
+  nearby: file(
+    "nearby",
+    "A county's Nearby label for each species and week.",
+    object({
+      area: county,
+      method: text,
+      evidence_through: nullable(date),
+      effort: weekly,
+      species: list(
+        object({
+          species_key: speciesKey,
+          group: nullable(group),
+          labels: pattern("^[csrmn]{53}$"),
+          range: nullable(
+            object({ source: nullable(string), seasons: rangeSeasons }),
           ),
-        ),
-      }),
-    ),
-    sinceMinor("backyard", 1, {
-      species: ["records", "weekly", "season", "season_withheld"],
+          records: nullable(count),
+          weekly: nullable(weekly),
+          season,
+          season_withheld: seasonWithheld,
+          windows,
+          conditions: nullable(conditions),
+          stages: stageSeasons,
+        }),
+      ),
     }),
-    sinceMinor("backyard", 2, { species: ["stages"] }),
-    sinceMinor("backyard", 3, { species: ["windows", "conditions"] }),
   ),
 
   methods: file(

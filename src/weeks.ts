@@ -1,7 +1,7 @@
-// Weeks and Backyard labels as the data rules define them (data rules
+// Weeks and Nearby labels as the data rules define them (data rules
 // published.md and formats.md), so every reader counts weeks and names labels
 // the same way the data was made.
-import { WEEKS, type BackyardLabel } from "./types.ts";
+import { WEEKS, type NearbyLabel } from "./types.ts";
 
 /**
  * The week a date falls in, counted in UTC: week 1 is 1 to 7 January, week 2
@@ -19,8 +19,8 @@ export function weekOf(date: Date): number {
   return Math.min(WEEKS, Math.floor(day / 7) + 1);
 }
 
-/** What each Backyard label letter means, in the data rules' words. */
-export const BACKYARD_LABELS: Readonly<Record<BackyardLabel, string>> = {
+/** What each Nearby label letter means, in the data rules' words. */
+export const NEARBY_LABELS: Readonly<Record<NearbyLabel, string>> = {
   c: "Commonly reported this time of year",
   s: "Seasonally reported",
   r: "Reported in your area",
@@ -29,18 +29,18 @@ export const BACKYARD_LABELS: Readonly<Record<BackyardLabel, string>> = {
 };
 
 /**
- * A species' Backyard label in one week.
+ * A species' Nearby label in one week.
  *
- * @param labels The species' `labels` string from a Backyard file.
+ * @param labels The species' `labels` string from a Nearby file.
  * @param week The week, from 1 to 53.
  * @returns The label letter.
  * @throws {RangeError} When the week is outside 1 to 53.
  * @example
- * BACKYARD_LABELS[backyardLabel(species.labels, weekOf(new Date()))];
+ * NEARBY_LABELS[nearbyLabel(species.labels, weekOf(new Date()))];
  */
-export function backyardLabel(labels: string, week: number): BackyardLabel {
+export function nearbyLabel(labels: string, week: number): NearbyLabel {
   if (!Number.isInteger(week) || week < 1 || week > WEEKS)
     throw new RangeError(`Invalid week: ${String(week)}`);
   const letter = labels.charAt(week - 1);
-  return letter in BACKYARD_LABELS ? (letter as BackyardLabel) : "n";
+  return letter in NEARBY_LABELS ? (letter as NearbyLabel) : "n";
 }

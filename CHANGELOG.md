@@ -6,6 +6,18 @@ All notable changes to this package are recorded here. The format follows
 
 ## [Unreleased]
 
+### Changed
+
+- **Breaking.** Data rules 1.95 (`formats.md` 1.43, ODR-2026-069): the
+  county file of Nearby labels is `nearby/<state>/<county>.json`, format
+  `nearby/1.0`, with the fields of `backyard/1.3`, all of them required.
+  `release.backyard(state, county)` is now `release.nearby(state, county)`,
+  `BackyardFile` is `NearbyFile`, `BackyardLabel` is `NearbyLabel`,
+  `BACKYARD_LABELS` is `NEARBY_LABELS` and `backyardLabel` is
+  `nearbyLabel`. The published schema is `schemas/nearby-1.json`. The
+  `backyard` path, format, schema and names are removed, not kept beside
+  them, as no production release has been published with them.
+
 ### Added
 
 - Data rules 1.63 (`formats.md`, ODR-2026-047, ODR-2026-048): `region/1.9`.

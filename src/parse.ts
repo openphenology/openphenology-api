@@ -96,7 +96,7 @@ export function checkWeeks(path: string, name: string, list: unknown): void {
 }
 
 /**
- * Checks that Backyard labels are one letter per week: `c`, `s`, `r`, `m` or `n`.
+ * Checks that Nearby labels are one letter per week: `c`, `s`, `r`, `m` or `n`.
  *
  * @param path The file's path, for errors.
  * @param name The field, for errors.
@@ -105,6 +105,6 @@ export function checkWeeks(path: string, name: string, list: unknown): void {
  */
 export function checkLabels(path: string, name: string, labels: unknown): void {
   if (typeof labels !== "string" || !/^[csrmn]{53}$/.test(labels)) {
-    fail(path, `${name} must be ${String(WEEKS)} Backyard labels`);
+    fail(path, `${name} must be ${String(WEEKS)} Nearby labels`);
   }
 }

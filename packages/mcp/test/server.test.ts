@@ -377,7 +377,7 @@ describe("this_week", () => {
   });
 
   test("lists species under each label, filtered by group", async () => {
-    const path = "backyard/us-zz/99001.json";
+    const path = "nearby/us-zz/99001.json";
     const file = releaseFiles[path] as { data: { species: object[] } };
     const [species] = file.data.species as Record<string, unknown>[];
     // Commonly reported in week 14 only.
@@ -386,7 +386,7 @@ describe("this_week", () => {
     tamper(
       `releases/${RELEASE}/${path}`,
       JSON.stringify(
-        wrap(path, "backyard", {
+        wrap(path, "nearby", {
           ...file.data,
           species: [
             { ...species, labels },
@@ -419,7 +419,7 @@ describe("this_week", () => {
   });
 
   test("shows a range label with its source and seasons", async () => {
-    const path = "backyard/us-zz/99001.json";
+    const path = "nearby/us-zz/99001.json";
     const file = releaseFiles[path] as { data: { species: object[] } };
     const [species] = file.data.species as Record<string, unknown>[];
     const range = { source: "example-range", seasons: ["year-round"] };
@@ -427,7 +427,7 @@ describe("this_week", () => {
     tamper(
       `releases/${RELEASE}/${path}`,
       JSON.stringify(
-        wrap(path, "backyard", {
+        wrap(path, "nearby", {
           ...file.data,
           species: [{ ...species, labels: "m".repeat(53), range }],
         }),

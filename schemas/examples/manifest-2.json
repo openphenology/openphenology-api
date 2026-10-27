@@ -75,10 +75,10 @@
         "bytes": 584
       },
       {
-        "path": "backyard/us-zz/99001.json",
-        "sha256": "376554c40305f481624346c89b853ed7fc36a0acec84ccda28bf62a96d12fc76",
-        "format": "backyard/1.1",
-        "bytes": 904
+        "path": "nearby/us-zz/99001.json",
+        "sha256": "15af0d8ac15a78814dd0e2f0655bf0a93dada4a55853b8c73af55d7cb2388a7e",
+        "format": "nearby/1.0",
+        "bytes": 943
       },
       {
         "path": "methods.json",

@@ -200,7 +200,7 @@ describe("files", () => {
     expect((await client.terms()).data.licence).toBe("CC-BY-NC-4.0");
   });
 
-  test("reads attribution and Backyard labels", async () => {
+  test("reads attribution and Nearby labels", async () => {
     const server = await fakeServer();
     const release = await createClient({
       baseUrl: BASE,
@@ -215,8 +215,8 @@ describe("files", () => {
         p.endsWith("attribution/us-zz/99001/EX1.json"),
       ),
     ).toBe(true);
-    const backyard = await release.backyard("us-zz", "99001");
-    expect(backyard?.data.species[0]?.labels).toHaveLength(53);
+    const nearby = await release.nearby("us-zz", "99001");
+    expect(nearby?.data.species[0]?.labels).toHaveLength(53);
   });
 
   test("reads map outlines and ZIP code counties", async () => {
@@ -795,7 +795,7 @@ describe("errors", () => {
   });
 });
 
-describe("weekly lists in Backyard, region and place files", () => {
+describe("weekly lists in Nearby, region and place files", () => {
   interface Data {
     effort: number[];
     species: [{ labels: string }];
@@ -804,28 +804,28 @@ describe("weekly lists in Backyard, region and place files", () => {
   }
   const cases: [string, string, (data: Data) => void, RegExp][] = [
     [
-      "Backyard effort for 52 weeks",
-      "backyard/us-zz/99001.json",
+      "Nearby effort for 52 weeks",
+      "nearby/us-zz/99001.json",
       (d) => {
         d.effort.pop();
       },
       /effort must be 53 numbers/,
     ],
     [
-      "Backyard labels for 52 weeks",
-      "backyard/us-zz/99001.json",
+      "Nearby labels for 52 weeks",
+      "nearby/us-zz/99001.json",
       (d) => {
         d.species[0].labels = "n".repeat(52);
       },
-      /species\[0\]\.labels must be 53 Backyard labels/,
+      /species\[0\]\.labels must be 53 Nearby labels/,
     ],
     [
-      "an unknown Backyard label",
-      "backyard/us-zz/99001.json",
+      "an unknown Nearby label",
+      "nearby/us-zz/99001.json",
       (d) => {
         d.species[0].labels = `x${"n".repeat(52)}`;
       },
-      /species\[0\]\.labels must be 53 Backyard labels/,
+      /species\[0\]\.labels must be 53 Nearby labels/,
     ],
     [
       "region effort for 52 weeks",
@@ -857,7 +857,7 @@ describe("weekly lists in Backyard, region and place files", () => {
       (d) => {
         d.species[0].labels = "r".repeat(52);
       },
-      /species\[0\]\.labels must be 53 Backyard labels/,
+      /species\[0\]\.labels must be 53 Nearby labels/,
     ],
   ];
 
@@ -870,8 +870,8 @@ describe("weekly lists in Backyard, region and place files", () => {
       baseUrl: BASE,
       fetch: server.fetch,
     }).release();
-    const read = path.startsWith("backyard")
-      ? release.backyard("us-zz", "99001")
+    const read = path.startsWith("nearby")
+      ? release.nearby("us-zz", "99001")
       : path.startsWith("labels")
         ? release.placeLabels("parks-example-metro-parks")
         : path.startsWith("places")

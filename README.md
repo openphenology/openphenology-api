@@ -71,7 +71,7 @@ Every read takes codes, not names:
   busy species from a busy week.
 - **`season`** is the species' early, middle and late weeks. It is empty when
   there isn't a clear season, and `season_withheld` says why.
-- **Backyard labels** give each species one letter per week in a county:
+- **Nearby labels** give each species one letter per week in a county:
   `c` commonly reported, `s` seasonally reported, `r` reported in your area,
   `m` within its mapped range, `n` not enough evidence.
 - **Places** use codes: `us-oh` for a state, a 5-digit Census code such as
@@ -80,7 +80,7 @@ Every read takes codes, not names:
   into a state not covered yet has results from its covered part only, and
   sensitive species never have place results.
 - **Place labels** give each species with a result in a place one letter per
-  week, from the place's own result: `c`, `s` or `r`, as in Backyard.
+  week, from the place's own result: `c`, `s` or `r`, as in Nearby.
 - **No result** comes back as `null`. Results with too little evidence, or for
   sensitive species, are never published.
 
@@ -88,18 +88,18 @@ Every read takes codes, not names:
 
 These continue from the quick start, with `release` already open.
 
-### This week's Backyard labels for a ZIP code
+### This week's Nearby labels for a ZIP code
 
 ```ts
-import { BACKYARD_LABELS, backyardLabel, weekOf } from "@openphenology/api";
+import { NEARBY_LABELS, nearbyLabel, weekOf } from "@openphenology/api";
 
 const week = weekOf(new Date()); // weeks as the data rules count them
 const [county] = await release.zipCounties("43215"); // largest share first
 if (county?.state) {
-  const backyard = await release.backyard(county.state, county.area);
-  for (const species of backyard?.data.species ?? []) {
-    const label = backyardLabel(species.labels, week);
-    console.log(species.species_key, BACKYARD_LABELS[label]);
+  const nearby = await release.nearby(county.state, county.area);
+  for (const species of nearby?.data.species ?? []) {
+    const label = nearbyLabel(species.labels, week);
+    console.log(species.species_key, NEARBY_LABELS[label]);
   }
 }
 ```
@@ -134,13 +134,13 @@ for (const area of region?.data.areas ?? []) {
 
 From a release (`await client.release()`):
 
-| Topic         | Methods                                                                                                                                  |
-| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| Species       | `catalogue()`, `species(key)`, `speciesBySlug(slug)`, `groups()`, `searchNames()`                                                        |
-| Places        | `region(state)`, `boundaries(state)`, `cities(state)`, `zipCounties(zip)`, `places(kind)`, `placeBoundaries(kind)`                       |
-| Results       | `stateResult(state, species)`, `countyResult(state, county, species)`, `backyard(state, county)`, `attribution(state, species, county?)` |
-| Place results | `placeResult(area, species)`, `placeLabels(area)`, `placeAttribution(area, species)`                                                     |
-| The release   | `manifest()`, `notes()`, `methods()`, `sources()`                                                                                        |
+| Topic         | Methods                                                                                                                                |
+| ------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| Species       | `catalogue()`, `species(key)`, `speciesBySlug(slug)`, `groups()`, `searchNames()`                                                      |
+| Places        | `region(state)`, `boundaries(state)`, `cities(state)`, `zipCounties(zip)`, `places(kind)`, `placeBoundaries(kind)`                     |
+| Results       | `stateResult(state, species)`, `countyResult(state, county, species)`, `nearby(state, county)`, `attribution(state, species, county?)` |
+| Place results | `placeResult(area, species)`, `placeLabels(area)`, `placeAttribution(area, species)`                                                   |
+| The release   | `manifest()`, `notes()`, `methods()`, `sources()`                                                                                      |
 
 From the client: `releases()` lists every release, and `terms()` gives the
 licence and how to cite the data.
