@@ -6,6 +6,17 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- **Breaking.** `find_species` is now `search` (ODR-2026-070). It calls
+  `release.search()` from `@openphenology/api`, the same search as the
+  site, with any of `text`, `place`, `from`, `to`, `group` and `sort`: text
+  finds species and places by name, ranked as the site ranks them; a place
+  or dates list the species in season there. It answers with up to 25
+  species and 25 places of each kind, never repeats the text, and matches
+  nothing for a ZIP code. Its `name` input is now `text`. It needs the
+  client release that adds `release.search()`.
+
 ### Added
 
 - An MCP server for OpenPhenology's published data, with five read-only

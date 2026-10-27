@@ -593,11 +593,18 @@ export interface FakeServer {
   readonly failNext: (path: string, ...statuses: number[]) => void;
 }
 
-/** Serves the made-up release at https://example.test/. */
-export async function fakeServer(): Promise<FakeServer> {
+/**
+ * Serves the made-up release at https://example.test/.
+ *
+ * @param release Its files by path inside the release; the made-up release's
+ *   by default.
+ */
+export async function fakeServer(
+  release: Record<string, unknown> = releaseFiles,
+): Promise<FakeServer> {
   const bodies = new Map<string, string>();
   const entries = [];
-  for (const [path, file] of Object.entries(releaseFiles)) {
+  for (const [path, file] of Object.entries(release)) {
     const body = JSON.stringify(file);
     bodies.set(`releases/${RELEASE}/${path}`, body);
     entries.push({

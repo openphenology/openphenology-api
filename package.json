@@ -26,6 +26,10 @@
       "types": "./dist/format.d.ts",
       "default": "./dist/format.js"
     },
+    "./search": {
+      "types": "./dist/search.d.ts",
+      "default": "./dist/search.js"
+    },
     "./schemas/*": "./schemas/*"
   },
   "files": [

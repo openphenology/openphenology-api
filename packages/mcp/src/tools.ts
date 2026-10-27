@@ -10,6 +10,7 @@ import {
   type Client,
   type NearbyLabel,
   type Release,
+  type SearchInput,
   type SeasonWeeks,
   type TermsFile,
   type Withheld,
@@ -34,8 +35,12 @@ const NO_RESULT =
 /** How long a server keeps a release before checking for a newer one. */
 const REFRESH_MS = 60 * 60 * 1000;
 
-/** The most species `find_species` returns. */
-const MATCHES = 10;
+/** The most species, and places of each kind, `search` returns. */
+const MATCHES = 25;
+
+/** Said instead of a ZIP code's matches (ODR-2026-029, ODR-2026-070). */
+const NO_ZIP =
+  "Search never looks up a ZIP code, and matches nothing for one. To find a ZIP code's counties, use `find_county`.";
 
 /** The most record links `get_records` returns. */
 const LINKS = 20;
@@ -184,34 +189,65 @@ export class Reader {
   }
 
   /**
-   * The species whose names contain the text, exact matches first.
+   * Searches the published files with `release.search()` (ODR-2026-070):
+   * species and places by name, a place's species in season between two
+   * dates, or both. The text is never repeated back.
    *
-   * @param text Part of a scientific, common or other name.
-   * @returns Up to 10 species, each with its key, names and the name matched.
-   * @throws {ApiError} Rejects when the search index cannot be read.
+   * @param input What to search for: text, a place, dates, a group and a
+   *   sort, all optional.
+   * @returns Up to 25 species and 25 places of each kind, with how many
+   *   species there are in all.
+   * @throws {RangeError} Rejects when an input is malformed.
+   * @throws {ApiError} Rejects when a file cannot be read.
    */
-  async findSpecies(text: string) {
+  async search(input: {
+    readonly [K in Exclude<keyof SearchInput, "week" | "limit">]?:
+      SearchInput[K] | undefined;
+  }) {
     const release = await this.release();
-    const names = await release.searchNames();
-    const wanted = text.trim().toLowerCase();
-    const found = new Map<string, { name: string; kind: string }>();
-    const ranked = names
-      .filter(([name]) => name.toLowerCase().includes(wanted))
-      .sort(
-        ([a], [b]) =>
-          Number(b.toLowerCase() === wanted) -
-          Number(a.toLowerCase() === wanted),
-      );
-    for (const [name, kind, key] of ranked) {
-      if (found.size === MATCHES) break;
-      if (!found.has(key)) found.set(key, { name, kind });
-    }
-    const species = [...found].map(([key, matched]) => ({
-      species_key: key,
-      ...namesOf(names, key),
-      matched,
+    const given = Object.fromEntries(
+      Object.entries(input).filter(([, value]) => value !== undefined),
+    ) as SearchInput;
+    const found = await release.search({
+      ...given,
+      week: weekOf(this.#now()),
+      limit: MATCHES,
+    });
+    if (found.zip)
+      return this.answer(release, { species: [], places: [], note: NO_ZIP });
+    const species = found.species.map((s) => ({
+      species_key: s.key,
+      scientific_name: s.entry.scientific_name,
+      common_name: s.entry.common_name,
+      group: s.groupName,
+      ...(s.matched
+        ? { matched: { name: s.matched[0], kind: s.matched[1] } }
+        : {
+            area: s.area,
+            records: s.records,
+            ...describeSeason(s.season ?? [], null),
+          }),
     }));
-    return this.answer(release, { query: text, species });
+    const places = found.places.map((p) => ({
+      kind: p.kind,
+      code: p.area,
+      name: p.name,
+      state: p.state,
+      species_with_result: p.species,
+      ...(p.kind === "city" ? { counties: p.counties } : {}),
+    }));
+    const { advanced } = found;
+    if (!advanced) return this.answer(release, { species, places });
+    return this.answer(release, {
+      place: advanced.place,
+      published: advanced.published,
+      sort: advanced.sort,
+      species_in_season: advanced.inSeason,
+      species_without_season: advanced.noSeason,
+      species_shown: advanced.shown,
+      species,
+      ...(advanced.published ? {} : { note: NO_RESULT }),
+    });
   }
 
   /**

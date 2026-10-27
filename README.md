@@ -53,7 +53,7 @@ Every read takes codes, not names:
 | You have                       | Get the code with                                                                                                                                      |
 | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | A species' page slug           | `release.speciesBySlug("northern-cardinal")`                                                                                                           |
-| A name someone typed           | `release.searchNames()`: every common, scientific and former name                                                                                      |
+| A name someone typed           | `release.search({ text })`: species and places whose names match, as the site finds them                                                               |
 | Nothing yet                    | `release.catalogue()`: every species with a result                                                                                                     |
 | A state                        | `us-` and its postal abbreviation, such as `us-oh`                                                                                                     |
 | A county                       | `release.region("us-oh")` lists each county's 5-digit Census code                                                                                      |
@@ -104,6 +104,34 @@ if (county?.state) {
 }
 ```
 
+### Search, as the site does
+
+`release.search()` is the site's search (ODR-2026-070). Every input is
+optional, and they combine:
+
+```ts
+// By name: species by any of their names, best match first, and places.
+const byName = await release.search({ text: "aster" });
+for (const s of byName.species) console.log(s.key, s.note); // "Formerly …"
+for (const p of byName.places) console.log(p.kind, p.area, p.name, p.species);
+
+// A place and dates: species whose season there overlaps them.
+const fall = await release.search({
+  place: "39049", // `anywhere`, a state, a county, or a park's code
+  from: "09-01", // MM-DD, no year; give both or neither
+  to: "10-15",
+  group: "plants",
+  sort: "season", // or "name", "records", "group"
+});
+console.log(fall.advanced?.inSeason, fall.species[0]?.season);
+```
+
+Text with a place or dates keeps the species whose names contain it. Text
+that is a ZIP code matches nothing: the result is `{ zip: true }`, and ZIP
+code lookup stays with `zipCounties()`. Search reads only the published
+files, through the release's reader, and never sends the text anywhere. It
+loads from `@openphenology/api/search` when first called.
+
 ### A county map
 
 ```ts
@@ -137,6 +165,7 @@ From a release (`await client.release()`):
 | Topic         | Methods                                                                                                                                |
 | ------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
 | Species       | `catalogue()`, `species(key)`, `speciesBySlug(slug)`, `groups()`, `searchNames()`                                                      |
+| Search        | `search(input)`: species and places by name, and a place's species between two dates                                                   |
 | Places        | `region(state)`, `boundaries(state)`, `cities(state)`, `zipCounties(zip)`, `places(kind)`, `placeBoundaries(kind)`                     |
 | Results       | `stateResult(state, species)`, `countyResult(state, county, species)`, `nearby(state, county)`, `attribution(state, species, county?)` |
 | Place results | `placeResult(area, species)`, `placeLabels(area)`, `placeAttribution(area, species)`                                                   |

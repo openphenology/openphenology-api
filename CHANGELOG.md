@@ -8,6 +8,11 @@ All notable changes to this package are recorded here. The format follows
 
 ### Changed
 
+- **Breaking** for `@openphenology/mcp`, which is not released yet: its
+  `find_species` tool is now `search`, with `text` in place of `name`, and
+  calls `release.search()` (ODR-2026-070). Before 1.0.0, a breaking change
+  bumps the minor version.
+
 - **Breaking.** Data rules 1.95 (`formats.md` 1.43, ODR-2026-069): the
   county file of Nearby labels is `nearby/<state>/<county>.json`, format
   `nearby/1.0`, with the fields of `backyard/1.3`, all of them required.
@@ -19,6 +24,24 @@ All notable changes to this package are recorded here. The format follows
   them, as no production release has been published with them.
 
 ### Added
+
+- `release.search(input)` (ODR-2026-070): one search, the site's. Every
+  input is optional, and they combine: `text`, `place` (`anywhere` or a
+  state, county, park or metro park system code), `from` and `to` (`MM-DD`,
+  both or neither, over the year end too), `group`, `sort` (`name`,
+  `season`, `records` or `group`), `week` and `limit`. Text alone finds
+  species by any of their names, ranked exact, starts with, a word starts
+  with, contains, then by name, with the matched name's note, and places by
+  name with their species counts; a place, dates or a group list the
+  species whose season there overlaps the dates, as the site's Advanced
+  search does; text with them keeps those whose names contain it. It reads
+  only published files through the release's reader, never sends text
+  anywhere, and answers `{ zip: true }` with no matches for a ZIP code.
+  Types `SearchInput`, `SearchResult`, `SearchSpecies`, `SearchPlace`,
+  `SearchPlaceKind`, `SearchAdvanced` and `SearchSort`.
+- `@openphenology/api/search`: the search on its own entry point, which
+  `release.search()` loads when first called, so the core stays within its
+  size budget. The entry has its own budget in `pnpm size`.
 
 - Data rules 1.63 (`formats.md`, ODR-2026-047, ODR-2026-048): `region/1.9`.
   The state's area gives `record_land_cover`, the land cover of all its

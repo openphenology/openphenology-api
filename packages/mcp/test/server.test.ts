@@ -9,6 +9,7 @@ import {
   releaseFiles,
   wrap,
 } from "../../../test/fixture.ts";
+import { searchFiles } from "../../../test/search-fixture.ts";
 
 const BASE = "https://example.test/";
 const LIMITS =
@@ -24,8 +25,9 @@ const TERMS = {
 async function connect(
   now = new Date("2026-04-08T12:00:00Z"),
   zip: "full" | "prefix" = "full",
+  files: Record<string, unknown> = releaseFiles,
 ) {
-  const data = await fakeServer();
+  const data = await fakeServer(files);
   const server = createServer({
     client: createClient({ baseUrl: BASE, fetch: data.fetch }),
     now: () => now,
@@ -68,10 +70,10 @@ test("lists the six tools, each read-only", async () => {
   const { tools } = await client.listTools();
   expect(tools.map((tool) => tool.name).sort()).toEqual([
     "find_county",
-    "find_species",
     "get_records",
     "get_season",
     "get_terms",
+    "search",
     "this_week",
   ]);
   for (const tool of tools) expect(tool.annotations?.readOnlyHint).toBe(true);
@@ -79,7 +81,7 @@ test("lists the six tools, each read-only", async () => {
 
 describe("every answer", () => {
   test.each([
-    ["find_species", { name: "example" }],
+    ["search", { text: "example" }],
     ["find_county", { zip: "99901" }],
     ["get_season", { species_key: "EX1", state: "us-zz" }],
     ["get_records", { species_key: "EX1", state: "us-zz" }],
@@ -94,25 +96,26 @@ describe("every answer", () => {
   });
 });
 
-describe("find_species", () => {
+describe("search", () => {
   test("finds a species by part of any name, with its names", async () => {
     const { call } = await connect();
-    const answer = (await call("find_species", { name: "Songbird" })).answer();
+    const answer = (await call("search", { text: "Songbird" })).answer();
     expect(answer.species).toEqual([
       {
         species_key: "EX1",
         scientific_name: "Exemplum primum",
-        common_name: "Example bird",
+        common_name: null,
+        group: "Birds",
         matched: { name: "Sample songbird", kind: "other-name" },
       },
     ]);
+    expect(answer).not.toHaveProperty("query");
+    expect(JSON.stringify(answer)).not.toContain("Songbird");
   });
 
   test("lists a species once, by its best match", async () => {
     const { call } = await connect();
-    const answer = (
-      await call("find_species", { name: "example bird" })
-    ).answer();
+    const answer = (await call("search", { text: "example bird" })).answer();
     expect(answer.species).toMatchObject([
       { species_key: "EX1", matched: { name: "Example bird", kind: "common" } },
     ]);
@@ -120,8 +123,116 @@ describe("find_species", () => {
 
   test("answers an unknown name with no species", async () => {
     const { call } = await connect();
-    const answer = (await call("find_species", { name: "unicorn" })).answer();
+    const answer = (await call("search", { text: "unicorn" })).answer();
     expect(answer.species).toEqual([]);
+    expect(answer.places).toEqual([]);
+  });
+
+  test("finds places by name, with their codes", async () => {
+    const { call } = await connect(undefined, "full", searchFiles);
+    const answer = (await call("search", { text: "oakwood" })).answer();
+    expect(answer.places).toEqual([
+      {
+        kind: "city",
+        code: "39001",
+        name: "Oakwood",
+        state: "us-oh",
+        species_with_result: null,
+        counties: [
+          { area: "39001", name: "Oakwood County" },
+          { area: "39003", name: "Robinson Parish" },
+        ],
+      },
+      {
+        kind: "county",
+        code: "39001",
+        name: "Oakwood County",
+        state: "us-oh",
+        species_with_result: 3,
+      },
+    ]);
+  });
+
+  test("lists a place's species in season between two dates", async () => {
+    const { call } = await connect(undefined, "full", searchFiles);
+    const answer = (
+      await call("search", {
+        place: "us-oh",
+        from: "04-01",
+        to: "04-14",
+        sort: "name",
+      })
+    ).answer();
+    expect(answer).toMatchObject({
+      place: "us-oh",
+      published: true,
+      sort: "name",
+      species_in_season: 3,
+      species_without_season: 1,
+      species_shown: 3,
+    });
+    expect(answer.species).toMatchObject([
+      {
+        species_key: "AAAAA",
+        common_name: "Mourning Cloak",
+        group: "Butterflies and moths",
+        area: "us-oh",
+        records: null,
+        season: { middle: { week: 14, starts: "2 April" } },
+      },
+      { species_key: "FFFFF" },
+      { species_key: "JJJJJ", group: "Other" },
+    ]);
+  });
+
+  test("sorts season timing from this week", async () => {
+    const { call } = await connect(
+      new Date("2026-05-14T12:00:00Z"),
+      "full",
+      searchFiles,
+    );
+    const answer = (await call("search", { place: "39001" })).answer();
+    expect(answer.species).toMatchObject([
+      { species_key: "BBBBB", records: 90 },
+      { species_key: "CCCCC" },
+      { species_key: "AAAAA" },
+    ]);
+  });
+
+  test("says when a place's list is not published", async () => {
+    const { call } = await connect(undefined, "full", searchFiles);
+    const answer = (await call("search", { place: "39005" })).answer();
+    expect(answer).toMatchObject({ published: false, species: [] });
+    expect(answer.note).toContain("not published");
+  });
+
+  test("matches nothing for a ZIP code and never repeats it", async () => {
+    const { call, requests } = await connect(undefined, "full", searchFiles);
+    const answer = (await call("search", { text: "43215" })).answer();
+    expect(answer).toMatchObject({ species: [], places: [] });
+    expect(answer.note).toContain("find_county");
+    expect(JSON.stringify(answer)).not.toContain("43215");
+    expect(requests.some((path) => path.startsWith("postal"))).toBe(false);
+  });
+
+  test("rejects one date alone", async () => {
+    const { call } = await connect(undefined, "full", searchFiles);
+    const result = await call("search", { place: "us-oh", from: "04-01" });
+    expect(result.isError).toBe(true);
+  });
+
+  test("takes only search's inputs", async () => {
+    const { client } = await connect();
+    const { tools } = await client.listTools();
+    const tool = tools.find((t) => t.name === "search");
+    expect(Object.keys(tool?.inputSchema.properties ?? {}).sort()).toEqual([
+      "from",
+      "group",
+      "place",
+      "sort",
+      "text",
+      "to",
+    ]);
   });
 });
 
@@ -524,22 +635,20 @@ test("reads current.json at most hourly, and terms once per release", async () =
   const count = (path: string) =>
     data.requests.filter((request) => request === path).length;
   await client.callTool({ name: "get_terms", arguments: {} });
-  await client.callTool({ name: "find_species", arguments: { name: "ex" } });
+  await client.callTool({ name: "search", arguments: { text: "ex" } });
   expect(count("current.json")).toBe(1);
   // get_terms reads the full terms; every other answer reuses them.
   expect(count("terms.json")).toBe(2);
   now = new Date("2026-04-08T13:00:00Z");
-  await client.callTool({ name: "find_species", arguments: { name: "ex" } });
+  await client.callTool({ name: "search", arguments: { text: "ex" } });
   expect(count("current.json")).toBe(2);
 });
 
 test("reads terms.json again after a failed read", async () => {
   const { call, failNext } = await connect();
   failNext("terms.json", 404);
-  expect((await call("find_species", { name: "ex" })).isError).toBe(true);
-  expect((await call("find_species", { name: "ex" })).answer().terms).toEqual(
-    TERMS,
-  );
+  expect((await call("search", { text: "ex" })).isError).toBe(true);
+  expect((await call("search", { text: "ex" })).answer().terms).toEqual(TERMS);
 });
 
 test("describeWeek counts weeks from 1 January", () => {

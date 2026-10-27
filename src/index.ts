@@ -21,6 +21,15 @@ export {
   type FormatErrorCode,
 } from "./errors.ts";
 export * from "./types.ts";
+export type {
+  SearchAdvanced,
+  SearchInput,
+  SearchPlace,
+  SearchPlaceKind,
+  SearchResult,
+  SearchSort,
+  SearchSpecies,
+} from "./search.ts";
 export { idLinks, recordLinks, recordsCsv } from "./records.ts";
 export {
   NEARBY_LABELS,

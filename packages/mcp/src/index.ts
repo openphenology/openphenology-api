@@ -75,17 +75,52 @@ export function createServer(options: ServerOptions = {}): McpServer {
   const server = new McpServer(SERVER_INFO, { instructions: INSTRUCTIONS });
 
   server.registerTool(
-    "find_species",
+    "search",
     {
-      title: "Find a species",
+      title: "Search species and places",
       description:
-        "Finds species by part of a scientific, common or other name, exact matches first. Returns up to 10, each with its species key for the other tools.",
+        "One search, as on openphenology.com, answered from the published files. Every input is optional, and they combine. `text` alone finds species by any of their names, best match first, and places by name with their codes. A `place`, dates or a `group` list the species with a season there, or whose season overlaps the dates, in the chosen `sort`; with `text` too, only those whose names contain it. Returns up to 25 species, and up to 25 places of each kind, with counts. The text is never repeated back, and a ZIP code matches nothing: use `find_county` for ZIP codes.",
       inputSchema: z.object({
-        name: z.string().min(2).describe("Part of a name, such as `cardinal`."),
+        text: z
+          .string()
+          .optional()
+          .describe(
+            "Part of a species' common, scientific or other name, or a place's name, such as `aster` or `Franklin`.",
+          ),
+        place: z
+          .string()
+          .optional()
+          .describe(
+            "Where to list species: `anywhere`, a state code such as `us-oh`, a county's 5-digit Census code such as `39049`, or a park's `park-` or metro park system's `parks-` code. Codes come from published lists: search the place's name with `text` and use its `code`, or use `find_county` for a ZIP code's counties. Watersheds and ecoregions are not offered.",
+          ),
+        from: z
+          .string()
+          .regex(/^\d{2}-\d{2}$/)
+          .optional()
+          .describe(
+            "The first day, `MM-DD`, with no year, such as `09-01`. Give both dates or neither.",
+          ),
+        to: z
+          .string()
+          .regex(/^\d{2}-\d{2}$/)
+          .optional()
+          .describe(
+            "The last day, `MM-DD`; it may come before `from`, running over the year end.",
+          ),
+        group: z
+          .string()
+          .optional()
+          .describe("Only species in this browse group, such as `birds`."),
+        sort: z
+          .enum(["name", "season", "records", "group"])
+          .optional()
+          .describe(
+            "How to order a place's species: `season` (the default), the soonest middle week from this week; `name`; `records`, the most records first, which shows where people looked, never how common a species is, and is not offered for `anywhere`; or `group`.",
+          ),
       }),
       annotations,
     },
-    async ({ name }) => reply(await reader.findSpecies(name)),
+    async (input) => reply(await reader.search(input)),
   );
 
   if (options.zip === "prefix")
@@ -128,9 +163,7 @@ export function createServer(options: ServerOptions = {}): McpServer {
       description:
         "When people recorded a species in a state or county: its early, middle and late weeks (5th, 50th and 95th percentiles of the records), or why they are withheld. Give a county for a county's season; its state is found from it when left out.",
       inputSchema: z.object({
-        species_key: z
-          .string()
-          .describe("The species key, from `find_species`."),
+        species_key: z.string().describe("The species key, from `search`."),
         state: state.optional(),
         county: county.optional(),
       }),
@@ -147,9 +180,7 @@ export function createServer(options: ServerOptions = {}): McpServer {
       description:
         "The records behind a species' result in a state or county: how many, the datasets they came from, and links to the first of them, each to its own observation or GBIF page. A sensitive species has no record links. Give a county for a county's result.",
       inputSchema: z.object({
-        species_key: z
-          .string()
-          .describe("The species key, from `find_species`."),
+        species_key: z.string().describe("The species key, from `search`."),
         state: state.optional(),
         county: county.optional(),
       }),
