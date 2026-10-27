@@ -16,6 +16,10 @@ interface Made {
   readonly season: number[];
   readonly slug?: string | null;
   readonly sensitive?: string[] | undefined;
+  /** Its stage seasons in the state, by published stage. */
+  readonly stages?: Record<string, number[]>;
+  /** Its US-RIIS status in the state. */
+  readonly status?: "introduced" | "invasive";
 }
 
 // The site's own search test's index (apps test/search.test.ts), and a few more.
@@ -26,6 +30,7 @@ const SPECIES: readonly Made[] = [
     common: "Mourning Cloak",
     group: "butterflies",
     season: [10, 14, 20],
+    stages: { adult: [10, 14, 20], larva: [22, 25, 28] },
   },
   {
     key: "BBBBB",
@@ -33,6 +38,7 @@ const SPECIES: readonly Made[] = [
     common: "Northern red oak",
     group: "plants",
     season: [16, 20, 26],
+    stages: { flowering: [16, 18, 20], fruiting: [] },
   },
   {
     key: "CCCCC",
@@ -62,6 +68,8 @@ const SPECIES: readonly Made[] = [
     common: "Robin's plantain",
     group: "plants",
     season: [14, 17, 22],
+    stages: { flowering: [14, 16, 19], fruiting: [20, 22, 24] },
+    status: "introduced",
   },
   {
     key: "GGGGG",
@@ -69,6 +77,8 @@ const SPECIES: readonly Made[] = [
     common: null,
     group: "plants",
     season: [18, 22, 28],
+    stages: { flowering: [18, 20, 23] },
+    status: "invasive",
   },
   // No page, so never in a place's list; still found by name.
   {
@@ -122,6 +132,9 @@ const entry = (s: Made) => ({
       ? {}
       : { sensitive_in: s.sensitive }
     : { sensitive_in: [] }),
+  ...(s.stages === undefined ? {} : { stage_seasons: { [STATE]: s.stages } }),
+  introduced_in: s.status === undefined ? [] : [STATE],
+  invasive_in: s.status === "invasive" ? [STATE] : [],
 });
 
 const names = [
@@ -157,6 +170,7 @@ const nearbyRow = (
   key: string,
   records: number | null,
   season: number[] = [],
+  stages: Record<string, number[]> = {},
 ) => ({
   species_key: key,
   group: SPECIES.find((s) => s.key === key)?.group ?? null,
@@ -168,7 +182,7 @@ const nearbyRow = (
   season_withheld: null,
   windows: null,
   conditions: null,
-  stages: {},
+  stages,
 });
 
 const labelRow = (key: string, records: number, season: number[]) => ({
@@ -256,7 +270,7 @@ const files: [string, string, unknown][] = [
       effort: weeks(10),
       species: [
         nearbyRow("AAAAA", 40, [10, 13, 20]),
-        nearbyRow("BBBBB", 90, [17, 20, 25]),
+        nearbyRow("BBBBB", 90, [17, 20, 25], { flowering: [17, 19, 21] }),
         nearbyRow("CCCCC", 90, [22, 25, 31]),
         // A mapped range only: no county result, so not listed.
         nearbyRow("EEEEE", null),

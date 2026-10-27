@@ -12,7 +12,7 @@ the full usage guide on data.openphenology.com are coming; see
 
 | Tool          | What it answers                                                                      |
 | ------------- | ------------------------------------------------------------------------------------ |
-| `search`      | Species and places by name, and a place's species in season between two dates        |
+| `search`      | Species and places by name, and a place's species in season, by group, stage, status |
 | `find_county` | The counties a ZIP code falls in, largest share of its land first                    |
 | `get_season`  | When people recorded a species in a state or county: early, middle and late weeks    |
 | `get_records` | The records behind a result: how many, their datasets, and links to the first 20     |
@@ -39,10 +39,14 @@ A server checks for a new release at most once an hour.
 
 **Search.** `search` calls `release.search()` from `@openphenology/api`
 (ODR-2026-070), the same search as the site, with any of its inputs: `text`,
-`place`, `from` and `to` (`MM-DD`, both or neither), `group` and `sort`
+`place`, `from` and `to` (`MM-DD`, both or neither), `group`, `stage`
+(`in-flower`, `in-fruit`, `adults` or `larvae`), `status` (`introduced` or
+`invasive`, from US-RIIS; not being listed never means native) and `sort`
 (`name`, `season`, `records` or `group`). Text alone finds species by any of
 their names and places by name, each with its code; a place or dates list the
-species with a season there, or whose season overlaps the dates. A place is a
+species with a season there, or whose season overlaps the dates, with how many
+species each group, stage and status option would leave. Under `anywhere`, a
+species in several states is listed once, with its season in each. A place is a
 code from the published lists: `anywhere`, a state such as `us-oh`, a
 county's 5-digit Census code, or a park's `park-` or metro park system's
 `parks-` code. Search a place's name to get its code, or use `find_county`

@@ -16,6 +16,11 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   species and 25 places of each kind, never repeats the text, and matches
   nothing for a ZIP code. Its `name` input is now `text`. It needs the
   client release that adds `release.search()`.
+- `search` also takes `stage` and `status` (ODR-2026-071). Each species
+  gives its `status`, and with a stage the stage's wording and season; a
+  place's or Anywhere's answer gives `options`, how many species each
+  group, stage and status option would leave. Under `anywhere`, a species in
+  several states is listed once, with `states`, its season in each.
 
 ### Added
 

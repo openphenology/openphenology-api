@@ -193,8 +193,8 @@ export class Reader {
    * species and places by name, a place's species in season between two
    * dates, or both. The text is never repeated back.
    *
-   * @param input What to search for: text, a place, dates, a group and a
-   *   sort, all optional.
+   * @param input What to search for: text, a place, dates, a group, a
+   *   stage, a status and a sort, all optional.
    * @returns Up to 25 species and 25 places of each kind, with how many
    *   species there are in all.
    * @throws {RangeError} Rejects when an input is malformed.
@@ -226,6 +226,31 @@ export class Reader {
             area: s.area,
             records: s.records,
             ...describeSeason(s.season ?? [], null),
+            status: s.status,
+            ...(s.stageLabel === null
+              ? {}
+              : {
+                  stage: s.stageLabel,
+                  stage_season: describeSeason(s.stageSeason ?? [], null)
+                    .season,
+                }),
+            ...(s.seasons === null
+              ? {}
+              : {
+                  states: s.seasons.map((x) => ({
+                    state: x.state,
+                    season: describeSeason(x.season ?? [], null).season,
+                    ...(s.stageLabel === null
+                      ? {}
+                      : {
+                          stage_season: describeSeason(
+                            x.stageSeason ?? [],
+                            null,
+                          ).season,
+                        }),
+                    status: x.status,
+                  })),
+                }),
           }),
     }));
     const places = found.places.map((p) => ({
@@ -245,6 +270,7 @@ export class Reader {
       species_in_season: advanced.inSeason,
       species_without_season: advanced.noSeason,
       species_shown: advanced.shown,
+      options: advanced.options,
       species,
       ...(advanced.published ? {} : { note: NO_RESULT }),
     });

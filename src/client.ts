@@ -565,10 +565,12 @@ export class Release {
   }
 
   /**
-   * Searches the published files (ODR-2026-070), as the site does. Every
-   * input is optional, and they combine: text alone finds species and places
-   * by name; a place, dates or a group search as the site's Advanced search
-   * does; text with them keeps the species whose names contain it. Only the
+   * Searches the published files (ODR-2026-070 as amended by ODR-2026-071),
+   * as the site does. Every input is optional, and they combine: text alone
+   * finds species and places by name; a place, dates, a group, a stage or a
+   * status search as the site's Advanced search does, with how many species
+   * each group, stage and status option would leave; text with them keeps
+   * the species whose names contain it. Only the
    * files that search needs are read; typed text is never sent anywhere,
    * and a ZIP code matches nothing. Loads `@openphenology/api/search` when
    * first called.
@@ -586,6 +588,7 @@ export class Release {
    *   place: "39049",
    *   from: "09-01",
    *   to: "10-15",
+   *   stage: "in-flower",
    * });
    */
   async search(input?: SearchInput): Promise<SearchResult> {

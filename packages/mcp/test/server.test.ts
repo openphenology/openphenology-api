@@ -230,9 +230,64 @@ describe("search", () => {
       "group",
       "place",
       "sort",
+      "stage",
+      "status",
       "text",
       "to",
     ]);
+  });
+
+  test("lists species at a stage, worded as the site words it", async () => {
+    const { call } = await connect(undefined, "full", searchFiles);
+    const answer = (
+      await call("search", { group: "butterflies", stage: "larvae" })
+    ).answer();
+    expect(answer.species).toMatchObject([
+      {
+        species_key: "AAAAA",
+        stage: "Reported as a caterpillar",
+        stage_season: { middle: { week: 25 } },
+        status: null,
+        states: [{ state: "us-oh", stage_season: { middle: { week: 25 } } }],
+      },
+    ]);
+    expect(answer).toMatchObject({
+      options: {
+        stages: expect.arrayContaining([
+          { stage: "larvae", label: "Reported as a caterpillar", count: 1 },
+        ]) as unknown,
+      },
+    });
+  });
+
+  test("lists introduced species, and counts each option", async () => {
+    const { call } = await connect(undefined, "full", searchFiles);
+    const answer = (
+      await call("search", {
+        place: "us-oh",
+        status: "introduced",
+        sort: "name",
+      })
+    ).answer();
+    expect(answer.species).toMatchObject([
+      { species_key: "GGGGG", status: "invasive" },
+      { species_key: "FFFFF", status: "introduced" },
+    ]);
+    expect(JSON.stringify(answer.species)).not.toContain('"states"');
+    expect(answer).toMatchObject({
+      options: {
+        statuses: [
+          { status: "introduced", label: "Introduced", count: 2 },
+          { status: "invasive", label: "Invasive", count: 1 },
+        ],
+      },
+    });
+  });
+
+  test("rejects a stage it does not offer", async () => {
+    const { call } = await connect(undefined, "full", searchFiles);
+    const result = await call("search", { place: "us-oh", stage: "pupae" });
+    expect(result.isError).toBe(true);
   });
 });
 

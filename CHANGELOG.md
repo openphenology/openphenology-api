@@ -39,6 +39,22 @@ All notable changes to this package are recorded here. The format follows
   anywhere, and answers `{ zip: true }` with no matches for a ZIP code.
   Types `SearchInput`, `SearchResult`, `SearchSpecies`, `SearchPlace`,
   `SearchPlaceKind`, `SearchAdvanced` and `SearchSort`.
+- `release.search()` also takes `stage` (`in-flower`, `in-fruit`, `adults`
+  or `larvae`) and `status` (`introduced` or `invasive`, from US-RIIS),
+  the shared filter's options (ODR-2026-071, ODR-2026-037). Each species
+  found gives its `status` (`null` when not listed, which never means
+  native), and with a stage its `stageSeason` and `stageLabel`, worded as
+  ODR-2026-032 sets out, "Reported as a caterpillar" for a butterfly or
+  moth. With a place or Anywhere, `advanced.options` gives how many species
+  each group, stage and status option would leave. A test compares the
+  results with the site's own code on made-up releases drawn at random.
+  Types `SearchStage`, `SearchStatus`, `SearchOptions` and
+  `SearchStateSeason`.
+- Under Anywhere, a species covered in more than one state is listed once
+  (owner, 2026-10-27), with `seasons`, its result in each covered state.
+  Dates, a stage or a status keep it when any state's result passes; its
+  other fields are the state's that comes first in the sort. The site's
+  display of such a row awaits an approved design.
 - `@openphenology/api/search`: the search on its own entry point, which
   `release.search()` loads when first called, so the core stays within its
   size budget. The entry has its own budget in `pnpm size`.

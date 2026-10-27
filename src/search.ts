@@ -1,13 +1,14 @@
 /**
- * One search (ODR-2026-070): the function behind {@link Release.search}, in
- * its own entry point so the reader stays small. `release.search()` loads it
- * when first called; import `@openphenology/api/search` only to load it
- * ahead of time.
+ * One search (ODR-2026-070 as amended by ODR-2026-071): the function behind
+ * {@link Release.search}, in its own entry point so the reader stays small.
+ * `release.search()` loads it when first called; import
+ * `@openphenology/api/search` only to load it ahead of time.
  *
  * It ports the site's search exactly: ranking by name (apps#54), the
  * Advanced search of ODR-2026-049 as amended by ODR-2026-062, and the shared
- * sort (ODR-2026-037). It only reads published files, through the release's
- * reader, and never sends typed text anywhere.
+ * filter and sort (ODR-2026-037): group, stage and status, each option with
+ * the species it would leave. It only reads published files, through the
+ * release's reader, and never sends typed text anywhere.
  *
  * @module
  */
@@ -21,6 +22,7 @@ import type {
   PlaceLevel,
   SearchName,
   SeasonWeeks,
+  StageSeasons,
 } from "./types.ts";
 import { weekOf } from "./weeks.ts";
 
@@ -31,6 +33,21 @@ import { weekOf } from "./weeks.ts";
  * is; `group`, A–Z by group name, then by name.
  */
 export type SearchSort = "name" | "season" | "records" | "group";
+
+/**
+ * A stage (ODR-2026-032, ODR-2026-037): `in-flower` and `in-fruit` for a
+ * plant, `adults` and `larvae` for an insect. A species is kept only with a
+ * season at that stage there, and with dates only when that season overlaps
+ * them.
+ */
+export type SearchStage = "in-flower" | "in-fruit" | "adults" | "larvae";
+
+/**
+ * A status from US-RIIS (`data/status.md`): `introduced` keeps every listed
+ * species, as invasive ones are introduced too; `invasive` keeps only those
+ * listed as invasive. Not being listed never means native.
+ */
+export type SearchStatus = "introduced" | "invasive";
 
 /** What to search for, from {@link Release.search}. Every input is optional, and they combine. */
 export interface SearchInput {
@@ -52,6 +69,10 @@ export interface SearchInput {
   readonly to?: string;
   /** Only species in this browse group, by its key from `groups.json`, such as `birds`. */
   readonly group?: string;
+  /** Only species reported at this stage there. */
+  readonly stage?: SearchStage;
+  /** Only species with this status where they are listed. */
+  readonly status?: SearchStatus;
   /**
    * The order of Advanced results; `season` by default. Anywhere has no
    * record counts, so `records` there falls back to `season`.
@@ -92,6 +113,77 @@ export interface SearchSpecies {
   readonly records: number | null;
   /** Advanced: its records there each week, weeks 1 to 53, or `null`, as for a state. */
   readonly weekly: readonly number[] | null;
+  /**
+   * Advanced: `introduced` or `invasive` where it is listed there; `null`
+   * when it is not listed, which never means native, and by name.
+   */
+  readonly status: SearchStatus | null;
+  /** Advanced with a stage: its season at that stage there; otherwise `null`. */
+  readonly stageSeason: readonly [number, number, number] | null;
+  /**
+   * Advanced with a stage: how the stage is worded, as ODR-2026-032 sets
+   * out, such as `Reported in flower`, or `Reported as a caterpillar` for a
+   * butterfly or moth; otherwise `null`.
+   */
+  readonly stageLabel: string | null;
+  /**
+   * Anywhere: each covered state's result, in state order, as a species
+   * covered in several states is listed once. Its other fields are the
+   * state's that comes first in the sort. Otherwise `null`.
+   */
+  readonly seasons: readonly SearchStateSeason[] | null;
+}
+
+/** A species' result in one state, for Anywhere. */
+export interface SearchStateSeason {
+  /** The state code. */
+  readonly state: string;
+  /** Its early, middle and late weeks there, or `null`. */
+  readonly season: readonly [number, number, number] | null;
+  /** With a stage: its season at that stage there; otherwise `null`. */
+  readonly stageSeason: readonly [number, number, number] | null;
+  /** Its status there, or `null`, which never means native. */
+  readonly status: SearchStatus | null;
+  /** Its records there, or `null`, which the catalogue gives none for a state. */
+  readonly records: number | null;
+  /** Its weekly records there, or `null`, as for a state. */
+  readonly weekly: readonly number[] | null;
+}
+
+/**
+ * The group, stage and status options of the shared filter (ODR-2026-037),
+ * each with how many species it would leave. A kind is empty when it would
+ * not split the list. The site shows the filter only on a list of more than
+ * 20 species.
+ */
+export interface SearchOptions {
+  /** By name. */
+  readonly groups: readonly {
+    /** The group's key, for `group`; `null` for Other, which no input chooses. */
+    readonly group: string | null;
+    /** Its name, such as `Birds`, or `Other`. */
+    readonly name: string;
+    /** The species it would leave. */
+    readonly count: number;
+  }[];
+  /** In flower, in fruit, as an adult, as a larva, in that order. */
+  readonly stages: readonly {
+    /** The stage, for `stage`. */
+    readonly stage: SearchStage;
+    /** Its words, such as `Reported in flower`. */
+    readonly label: string;
+    /** The species it would leave, its season at that stage fitting the dates. */
+    readonly count: number;
+  }[];
+  /** Introduced, then invasive. */
+  readonly statuses: readonly {
+    /** The status, for `status`. */
+    readonly status: SearchStatus;
+    /** Its words: `Introduced` or `Invasive`. */
+    readonly label: string;
+    /** The species it would leave. */
+    readonly count: number;
+  }[];
 }
 
 /** What kind of place {@link Release.search} found. */
@@ -138,8 +230,10 @@ export interface SearchAdvanced {
   readonly inSeason: number;
   /** Species with a result there but no season. */
   readonly noSeason: number;
-  /** Species left after the group and text, before `limit`. */
+  /** Species left after the group, stage, status and text, before `limit`. */
   readonly shown: number;
+  /** What each group, stage and status option would leave. */
+  readonly options: SearchOptions;
 }
 
 /** What {@link Release.search} found. Typed text is never repeated in it. */
@@ -161,6 +255,31 @@ export interface SearchResult {
 type Season = readonly [number, number, number];
 
 const SORTS: readonly SearchSort[] = ["name", "season", "records", "group"];
+
+/** Each stage's published name and words (ODR-2026-032), in order. */
+const STAGES: Readonly<
+  Record<SearchStage, readonly [keyof StageSeasons, string]>
+> = {
+  "in-flower": ["flowering", "in flower"],
+  "in-fruit": ["fruiting", "in fruit"],
+  adults: ["adult", "as an adult"],
+  larvae: ["larva", "as a larva"],
+};
+
+const STATUSES: readonly SearchStatus[] = ["introduced", "invasive"];
+
+/**
+ * How a stage is worded: "Reported as a caterpillar" for a larva of a
+ * butterfly or moth (ODR-2026-032), as the site says it.
+ *
+ * @param stage The stage.
+ * @param group The group's name, or `null`.
+ * @returns The words.
+ */
+const stageLabel = (stage: SearchStage, group: string | null): string =>
+  stage === "larvae" && /butterfl|moth/i.test(group ?? "")
+    ? "Reported as a caterpillar"
+    : `Reported ${STAGES[stage][1]}`;
 
 /** Days in each month of a common year; 29 February is read as 28. */
 const MONTH_DAYS = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
@@ -301,6 +420,44 @@ interface Row {
   readonly season: Season | null;
   readonly records: number | null;
   readonly weekly: readonly number[] | null;
+  /** Its stage seasons there; a park's labels carry none. */
+  readonly stages: StageSeasons | undefined;
+  readonly status: SearchStatus | null;
+}
+
+/**
+ * A species' status in any of some states (`data/status.md`), as the site
+ * reads it from the catalogue.
+ *
+ * @param entry The species.
+ * @param states The states.
+ * @returns `invasive`, `introduced` or `null`.
+ */
+const statusIn = (
+  entry: CatalogueEntry,
+  states: readonly string[],
+): SearchStatus | null =>
+  states.some((s) => entry.invasive_in?.includes(s))
+    ? "invasive"
+    : states.some((s) => entry.introduced_in?.includes(s))
+      ? "introduced"
+      : null;
+
+/**
+ * A row's season at a stage: `null` without one, or withheld.
+ *
+ * @param row The row.
+ * @param stage The stage.
+ * @returns The season, or `null`.
+ */
+const stageOf = (row: Row, stage: SearchStage): Season | null =>
+  asSeason(row.stages?.[STAGES[stage][0]]);
+
+/** The shared filter in force, with a group by its name. */
+interface Filter {
+  readonly group: string | null;
+  readonly stage: SearchStage | null;
+  readonly status: SearchStatus | null;
 }
 
 /**
@@ -320,6 +477,7 @@ async function basics(release: Release) {
   );
   return {
     catalogue,
+    names,
     byKey: new Map(catalogue.map((c) => [c.species_key, c])),
     states: [...new Set(catalogue.flatMap((c) => c.states))].sort(),
     groupName: (entry: CatalogueEntry) =>
@@ -348,6 +506,8 @@ const stateRows = (basics: Basics, state: string): Row[] =>
             season: asSeason(entry.seasons?.[state]),
             records: null,
             weekly: null,
+            stages: entry.stage_seasons?.[state],
+            status: statusIn(entry, [state]),
           },
         ],
   );
@@ -392,6 +552,8 @@ async function placeRows(
                   season: asSeason(item.season),
                   records: item.records,
                   weekly: item.weekly,
+                  stages: item.stages,
+                  status: statusIn(entry, [state]),
                 },
               ];
         });
@@ -424,6 +586,9 @@ async function placeRows(
             season: asSeason(item.season),
             records: item.records,
             weekly: item.weekly,
+            // Park labels carry no stages.
+            stages: undefined,
+            status: statusIn(entry, park.states),
           },
         ];
   });
@@ -447,7 +612,16 @@ export async function search(
 ): Promise<SearchResult> {
   const text = (input.text ?? "").trim().slice(0, 100);
   if (/^\d{5}$/.test(text)) return { ...NOTHING, zip: true };
-  const { place: chosen, from, to, group, sort = "season", limit } = input;
+  const {
+    place: chosen,
+    from,
+    to,
+    group,
+    stage = null,
+    status = null,
+    sort = "season",
+    limit,
+  } = input;
   if ((from === undefined) !== (to === undefined))
     throw new RangeError("Give both dates, from and to, or neither");
   const range =
@@ -456,6 +630,10 @@ export async function search(
       : rangeWeeks(weekOfDay("from", from), weekOfDay("to", to));
   if (!SORTS.includes(sort))
     throw new RangeError(`Invalid sort: ${JSON.stringify(sort)}`);
+  if (stage !== null && !Object.hasOwn(STAGES, stage))
+    throw new RangeError(`Invalid stage: ${JSON.stringify(stage)}`);
+  if (status !== null && !STATUSES.includes(status))
+    throw new RangeError(`Invalid status: ${JSON.stringify(status)}`);
   const week = input.week ?? weekOf(new Date());
   if (!Number.isInteger(week) || week < 1 || week > 53)
     throw new RangeError(`Invalid week: ${String(week)}`);
@@ -465,7 +643,11 @@ export async function search(
   if (chosen !== undefined && /^(huc8|eco)-/.test(chosen))
     throw new RangeError(`Not a place search offers: ${chosen}`);
   const advanced =
-    chosen !== undefined || range !== null || group !== undefined;
+    chosen !== undefined ||
+    range !== null ||
+    group !== undefined ||
+    stage !== null ||
+    status !== null;
   if (!advanced && text === "") return NOTHING;
 
   const [base, names] = await Promise.all([
@@ -476,30 +658,54 @@ export async function search(
 
   const place = chosen ?? "anywhere";
   const rows = await placeRows(release, base, place);
+  const all = rows ?? [];
   const sorts =
     place === "anywhere" ? SORTS.filter((s) => s !== "records") : SORTS;
   // Anywhere offers no Most records: the default order instead.
   const used = sorts.includes(sort) ? sort : "season";
   // With no dates, every species with a season; with dates, those whose
-  // season overlaps them.
+  // season (the stage's, with a stage chosen) overlaps them.
   const fits = (season: Season | null) =>
     season !== null &&
     (range === null || range.some((w) => inSeason(w, season)));
-  const inRange = (rows ?? []).filter((r) => fits(r.season));
+  const inRange = all.filter((r) => fits(r.season));
+  // Under Anywhere a species has a row in each covered state; it is counted
+  // and listed once, kept when any state's row is.
+  const key = (r: Row) => r.entry.species_key;
+  const count = (list: readonly Row[]) => new Set(list.map(key)).size;
   const wanted = folded(text);
   const commonName = (r: Row) => r.entry.common_name ?? r.entry.scientific_name;
+  // The shared filter (ODR-2026-037), as the site's Advanced search applies
+  // it: a group by its name, a stage, a status and the name box.
+  const passes = (r: Row, f: Filter) =>
+    (f.group === null || base.groupName(r.entry) === f.group) &&
+    (f.stage === null || stageOf(r, f.stage) !== null) &&
+    // Invasive species are introduced too.
+    (f.status === null ||
+      (f.status === "invasive"
+        ? r.status === "invasive"
+        : r.status !== null)) &&
+    (wanted === "" ||
+      folded(commonName(r)).includes(wanted) ||
+      folded(r.entry.scientific_name).includes(wanted));
+  // A stage keeps only species whose weeks at that stage fit the dates.
+  const kept = (f: Filter) =>
+    inRange.filter(
+      (r) => passes(r, f) && (f.stage === null || fits(stageOf(r, f.stage))),
+    );
+  const filter: Filter = {
+    group: group === undefined ? null : (base.names.get(group) ?? ""),
+    stage,
+    status,
+  };
   const byCommon = (a: Row, b: Row) =>
     commonName(a).localeCompare(commonName(b));
-  const toMiddle = (r: Row) =>
-    r.season === null ? Infinity : (r.season[1] - week + 53) % 53;
-  const shown = inRange
-    .filter(
-      (r) =>
-        (group === undefined || r.entry.group === group) &&
-        (wanted === "" ||
-          folded(commonName(r)).includes(wanted) ||
-          folded(r.entry.scientific_name).includes(wanted)),
-    )
+  const toMiddle = (r: Row) => {
+    const season = stage === null ? r.season : stageOf(r, stage);
+    return season === null ? Infinity : (season[1] - week + 53) % 53;
+  };
+  const seen = new Set<string>();
+  const shown = kept(filter)
     .sort(
       used === "name"
         ? byCommon
@@ -511,24 +717,85 @@ export async function search(
                   .groupName(a.entry)
                   .localeCompare(base.groupName(b.entry)) || byCommon(a, b)
             : (a, b) => toMiddle(a) - toMiddle(b) || byCommon(a, b),
-    );
+    )
+    .filter((r) => !seen.has(key(r)) && seen.add(key(r)));
+
+  // Each option counted against the other filters in force, and a kind left
+  // out when it would not split the list, as the shared filter shows them.
+  const total = count(inRange);
+  const splits = (has: (r: Row) => boolean) => {
+    const n = count(inRange.filter(has));
+    return n > 0 && n < total;
+  };
+  const leaves = (f: Partial<Filter>) =>
+    count(inRange.filter((r) => passes(r, { ...filter, ...f })));
+  const groupNames = [
+    ...new Set(inRange.map((r) => base.groupName(r.entry))),
+  ].sort((a, b) => a.localeCompare(b));
+  const keys = new Map([...base.names].map(([k, n]) => [n, k]));
+  const options: SearchOptions = {
+    groups:
+      groupNames.length > 1
+        ? groupNames.map((name) => ({
+            group: keys.get(name) ?? null,
+            name,
+            count: leaves({ group: name }),
+          }))
+        : [],
+    stages: (Object.keys(STAGES) as SearchStage[])
+      .filter((st) => splits((r) => stageOf(r, st) !== null))
+      .map((st) => ({
+        stage: st,
+        label: stageLabel(st, filter.group),
+        count: count(kept({ ...filter, stage: st })),
+      })),
+    statuses: STATUSES.filter((st) =>
+      splits((r) => (st === "invasive" ? r.status === st : r.status !== null)),
+    ).map((st) => ({
+      status: st,
+      label: st === "invasive" ? "Invasive" : "Introduced",
+      count: leaves({ status: st }),
+    })),
+  };
+  const perState = (r: Row): SearchStateSeason => ({
+    state: r.area,
+    season: r.season,
+    stageSeason: stage && stageOf(r, stage),
+    status: r.status,
+    records: r.records,
+    weekly: r.weekly,
+  });
+  const seasoned = new Set(all.filter((r) => r.season !== null).map(key));
+  const states = new Map<string, Row[]>();
+  for (const r of place === "anywhere" ? all : [])
+    states.set(key(r), [...(states.get(key(r)) ?? []), r]);
   return {
     ...NOTHING,
     species: shown.slice(0, limit).map((r) => ({
-      ...r,
-      key: r.entry.species_key,
+      key: key(r),
+      entry: r.entry,
       groupName: base.groupName(r.entry),
       matched: null,
       note: null,
+      area: r.area,
+      season: r.season,
+      records: r.records,
+      weekly: r.weekly,
+      status: r.status,
+      stageSeason: stage && stageOf(r, stage),
+      stageLabel: stage && stageLabel(stage, base.groupName(r.entry)),
+      seasons: states.get(key(r))?.map(perState) ?? null,
     })),
     advanced: {
       place,
       published: rows !== null,
       sort: used,
       sorts,
-      inSeason: inRange.length,
-      noSeason: (rows ?? []).filter((r) => r.season === null).length,
+      inSeason: total,
+      // Species with a result there but no season in any covered state.
+      noSeason: count(all.filter((r) => !seasoned.has(key(r)))),
       shown: shown.length,
+      options,
     },
   };
 }
@@ -583,6 +850,10 @@ async function byName(
             season: null,
             records: null,
             weekly: null,
+            status: null,
+            stageSeason: null,
+            stageLabel: null,
+            seasons: null,
           },
         ];
   });

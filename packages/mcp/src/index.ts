@@ -79,7 +79,7 @@ export function createServer(options: ServerOptions = {}): McpServer {
     {
       title: "Search species and places",
       description:
-        "One search, as on openphenology.com, answered from the published files. Every input is optional, and they combine. `text` alone finds species by any of their names, best match first, and places by name with their codes. A `place`, dates or a `group` list the species with a season there, or whose season overlaps the dates, in the chosen `sort`; with `text` too, only those whose names contain it. Returns up to 25 species, and up to 25 places of each kind, with counts. The text is never repeated back, and a ZIP code matches nothing: use `find_county` for ZIP codes.",
+        "One search, as on openphenology.com, answered from the published files. Every input is optional, and they combine. `text` alone finds species by any of their names, best match first, and places by name with their codes. A `place`, dates, a `group`, a `stage` or a `status` list the species with a season there, or whose season overlaps the dates, in the chosen `sort`; with `text` too, only those whose names contain it. A `stage` keeps species reported at that stage, by that stage's season; a `status` keeps species listed as introduced or invasive by US-RIIS, and not being listed never means native. Those searches also give how many species each group, stage and status option would leave. With `anywhere`, a species covered in several states is listed once, with its season in each. Returns up to 25 species, and up to 25 places of each kind, with counts. The text is never repeated back, and a ZIP code matches nothing: use `find_county` for ZIP codes.",
       inputSchema: z.object({
         text: z
           .string()
@@ -111,6 +111,18 @@ export function createServer(options: ServerOptions = {}): McpServer {
           .string()
           .optional()
           .describe("Only species in this browse group, such as `birds`."),
+        stage: z
+          .enum(["in-flower", "in-fruit", "adults", "larvae"])
+          .optional()
+          .describe(
+            'Only species reported at this stage there: `in-flower` or `in-fruit` for a plant, `adults` or `larvae` for an insect. Say "reported in flower", "reported in fruit", "reported as an adult" or "reported as a larva" ("as a caterpillar" for butterflies and moths), never the stage alone: not every photo is marked with a stage.',
+          ),
+        status: z
+          .enum(["introduced", "invasive"])
+          .optional()
+          .describe(
+            "Only species listed by US-RIIS where they were recorded: `introduced` (invasive ones included) or `invasive`. A species not listed is never native on that evidence.",
+          ),
         sort: z
           .enum(["name", "season", "records", "group"])
           .optional()
@@ -208,6 +220,18 @@ export function createServer(options: ServerOptions = {}): McpServer {
           .string()
           .optional()
           .describe("Only species in this browse group, such as `birds`."),
+        stage: z
+          .enum(["in-flower", "in-fruit", "adults", "larvae"])
+          .optional()
+          .describe(
+            'Only species reported at this stage there: `in-flower` or `in-fruit` for a plant, `adults` or `larvae` for an insect. Say "reported in flower", "reported in fruit", "reported as an adult" or "reported as a larva" ("as a caterpillar" for butterflies and moths), never the stage alone: not every photo is marked with a stage.',
+          ),
+        status: z
+          .enum(["introduced", "invasive"])
+          .optional()
+          .describe(
+            "Only species listed by US-RIIS where they were recorded: `introduced` (invasive ones included) or `invasive`. A species not listed is never native on that evidence.",
+          ),
       }),
       annotations,
     },

@@ -1,7 +1,7 @@
 import { describe, expect, test } from "vitest";
 import { createClient, type SearchInput } from "../src/index.ts";
 import { search as searchEntry } from "../src/search.ts";
-import { fakeServer } from "./fixture.ts";
+import { fakeServer, wrap } from "./fixture.ts";
 import { searchFiles } from "./search-fixture.ts";
 
 const BASE = "https://example.test/";
@@ -213,15 +213,40 @@ describe("Advanced", () => {
       inSeason: 8,
       noSeason: 1,
       shown: 8,
+      options: {
+        groups: [
+          { group: "birds", name: "Birds", count: 1 },
+          { group: "butterflies", name: "Butterflies and moths", count: 1 },
+          { group: "plants", name: "Flowering plants", count: 5 },
+          { group: null, name: "Other", count: 1 },
+        ],
+        stages: [
+          { stage: "in-flower", label: "Reported in flower", count: 3 },
+          { stage: "in-fruit", label: "Reported in fruit", count: 1 },
+          { stage: "adults", label: "Reported as an adult", count: 1 },
+          { stage: "larvae", label: "Reported as a larva", count: 1 },
+        ],
+        statuses: [
+          { status: "introduced", label: "Introduced", count: 2 },
+          { status: "invasive", label: "Invasive", count: 1 },
+        ],
+      },
     });
-    expect(result.species[0]).toMatchObject({
+    const { entry, ...first } = result.species[0] ?? { entry: null };
+    expect(entry?.species_key).toBe("EEEEE");
+    expect(first).toEqual({
       key: "EEEEE",
+      groupName: "Birds",
       area: "us-oh",
       season: [48, 2, 8],
       records: null,
       weekly: null,
       matched: null,
       note: null,
+      status: null,
+      stageSeason: null,
+      stageLabel: null,
+      seasons: null,
     });
   });
 
@@ -343,6 +368,225 @@ describe("Advanced", () => {
   });
 });
 
+// Stage and status (ODR-2026-071), the shared filter's options
+// (ODR-2026-037). test/search-site.test.ts compares them with the site's
+// code on made-up releases drawn at random.
+describe("stage and status", () => {
+  test("keeps species reported at a stage, sorted by that stage's season", async () => {
+    const result = await search({
+      place: "us-oh",
+      stage: "in-flower",
+      week: 1,
+    });
+    expect(
+      result.species.map((s) => [s.key, s.stageSeason, s.stageLabel]),
+    ).toEqual([
+      ["FFFFF", [14, 16, 19], "Reported in flower"],
+      ["BBBBB", [16, 18, 20], "Reported in flower"],
+      ["GGGGG", [18, 20, 23], "Reported in flower"],
+    ]);
+    expect(result.advanced).toMatchObject({ inSeason: 8, shown: 3 });
+  });
+
+  test("never counts a withheld stage season", async () => {
+    expect(
+      (await search({ place: "us-oh", stage: "in-fruit" })).species.map(
+        (s) => s.key,
+      ),
+    ).toEqual(["FFFFF"]);
+  });
+
+  test("with dates, keeps the species whose stage season overlaps them", async () => {
+    // Weeks 21 and 22: Robin's plantain is in fruit, nothing in flower.
+    const dates = { place: "us-oh", from: "05-21", to: "06-03" } as const;
+    expect(
+      (await search({ ...dates, stage: "in-fruit" })).species.map((s) => s.key),
+    ).toEqual(["FFFFF"]);
+    const flower = await search({ ...dates, stage: "in-flower" });
+    expect(flower.species.map((s) => s.key)).toEqual(["GGGGG"]);
+    expect(flower.advanced?.options.stages).toEqual([
+      { stage: "in-flower", label: "Reported in flower", count: 1 },
+      { stage: "in-fruit", label: "Reported in fruit", count: 1 },
+    ]);
+  });
+
+  test("says caterpillar for a butterfly's or moth's larva", async () => {
+    const result = await search({
+      place: "us-oh",
+      group: "butterflies",
+      stage: "larvae",
+    });
+    expect(result.species.map((s) => [s.key, s.stageLabel])).toEqual([
+      ["AAAAA", "Reported as a caterpillar"],
+    ]);
+    // One group leaves nothing to split, but the stage options still count.
+    expect(result.advanced?.options.groups).toHaveLength(4);
+    expect(result.advanced?.options.stages).toContainEqual({
+      stage: "larvae",
+      label: "Reported as a caterpillar",
+      count: 1,
+    });
+  });
+
+  test("reads a county's own stage seasons", async () => {
+    const result = await search({ place: "39001", stage: "in-flower" });
+    expect(result.species.map((s) => [s.key, s.stageSeason])).toEqual([
+      ["BBBBB", [17, 19, 21]],
+    ]);
+  });
+
+  test("keeps introduced species, invasive ones among them, and never says native", async () => {
+    expect(
+      (
+        await search({ place: "us-oh", status: "introduced", sort: "name" })
+      ).species.map((s) => [s.key, s.status]),
+    ).toEqual([
+      ["GGGGG", "invasive"],
+      ["FFFFF", "introduced"],
+    ]);
+    expect(
+      (await search({ place: "us-oh", status: "invasive" })).species.map(
+        (s) => s.key,
+      ),
+    ).toEqual(["GGGGG"]);
+    const statuses = (await search({ place: "us-oh" })).species.map(
+      (s) => s.status,
+    );
+    expect(new Set(statuses)).toEqual(
+      new Set([null, "introduced", "invasive"]),
+    );
+  });
+
+  test("gives a park's species their status but no stages", async () => {
+    const result = await search({ place: "park-oak-hollow-state-park" });
+    expect(result.advanced?.options.stages).toEqual([]);
+    expect(
+      (await search({ place: "park-oak-hollow-state-park", stage: "adults" }))
+        .species,
+    ).toEqual([]);
+  });
+
+  test("searches anywhere with a stage or status alone", async () => {
+    const result = await search({ status: "invasive" });
+    expect(result.advanced?.place).toBe("anywhere");
+    expect(result.species.map((s) => s.key)).toEqual(["GGGGG"]);
+  });
+
+  test("counts each option against the other filters in force", async () => {
+    const result = await search({ place: "us-oh", group: "plants", text: "r" });
+    expect(result.species.map((s) => s.key)).toEqual(
+      expect.arrayContaining(["BBBBB", "FFFFF", "GGGGG"]),
+    );
+    expect(result.advanced?.options.statuses).toEqual([
+      { status: "introduced", label: "Introduced", count: 2 },
+      { status: "invasive", label: "Invasive", count: 1 },
+    ]);
+  });
+});
+
+// Under Anywhere, a species covered in several states is listed once, with
+// its season in each (owner, 2026-10-27).
+describe("Anywhere with two states", () => {
+  const MONARCH = {
+    species_key: "MMMMM",
+    scientific_name: "Danaus plexippus",
+    common_name: "Monarch",
+    rank: "species",
+    kingdom: null,
+    phylum: null,
+    class: null,
+    order: null,
+    family: null,
+    genus: null,
+    group: "butterflies",
+    slug: "danaus-plexippus",
+    states: ["us-mi", "us-oh"],
+    seasons: { "us-oh": [20, 26, 32], "us-mi": [30, 33, 36] },
+    sensitive_in: [],
+    introduced_in: [],
+    invasive_in: [],
+    stage_seasons: { "us-mi": { larva: [31, 33, 35] } },
+  };
+  const ROBIN = {
+    ...MONARCH,
+    species_key: "RRRRR",
+    scientific_name: "Turdus migratorius",
+    common_name: "American robin",
+    group: "birds",
+    slug: "turdus-migratorius",
+    states: ["us-oh"],
+    seasons: { "us-oh": [10, 14, 18] },
+    stage_seasons: {},
+  };
+  const two = async (input: SearchInput) => {
+    const server = await fakeServer({
+      "catalogue.json": wrap("catalogue.json", "catalogue", {
+        species: [MONARCH, ROBIN],
+      }),
+      "groups.json": searchFiles["groups.json"],
+    });
+    const client = createClient({ baseUrl: BASE, fetch: server.fetch });
+    return (await client.release()).search(input);
+  };
+
+  test("lists Monarch once, with both states' seasons", async () => {
+    const result = await two({ place: "anywhere", week: 1 });
+    expect(result.species.map((s) => s.key)).toEqual(["RRRRR", "MMMMM"]);
+    const monarch = result.species[1];
+    // Its top-level result is the state that comes first in the sort.
+    expect(monarch).toMatchObject({ area: "us-oh", season: [20, 26, 32] });
+    expect(monarch?.seasons).toEqual([
+      {
+        state: "us-mi",
+        season: [30, 33, 36],
+        stageSeason: null,
+        status: null,
+        records: null,
+        weekly: null,
+      },
+      {
+        state: "us-oh",
+        season: [20, 26, 32],
+        stageSeason: null,
+        status: null,
+        records: null,
+        weekly: null,
+      },
+    ]);
+    expect(result.advanced).toMatchObject({ inSeason: 2, shown: 2 });
+    expect(result.advanced?.options.groups).toEqual([
+      { group: "birds", name: "Birds", count: 1 },
+      { group: "butterflies", name: "Butterflies and moths", count: 1 },
+    ]);
+  });
+
+  test("keeps Monarch when only one state's season overlaps the dates", async () => {
+    // Weeks 34 and 35: Michigan's season only.
+    const result = await two({ from: "08-20", to: "08-31" });
+    expect(result.species.map((s) => s.key)).toEqual(["MMMMM"]);
+    expect(result.species[0]).toMatchObject({
+      area: "us-mi",
+      season: [30, 33, 36],
+    });
+    expect(result.species[0]?.seasons?.map((s) => s.state)).toEqual([
+      "us-mi",
+      "us-oh",
+    ]);
+    expect(result.advanced).toMatchObject({ inSeason: 1, shown: 1 });
+  });
+
+  test("keeps Monarch at a stage reported in one state", async () => {
+    const result = await two({ stage: "larvae" });
+    expect(result.species.map((s) => [s.key, s.area, s.stageLabel])).toEqual([
+      ["MMMMM", "us-mi", "Reported as a caterpillar"],
+    ]);
+    expect(result.species[0]?.seasons?.map((s) => s.stageSeason)).toEqual([
+      [31, 33, 35],
+      null,
+    ]);
+  });
+});
+
 describe("inputs", () => {
   test("finds nothing without any", async () => {
     const { server, release } = await open();
@@ -365,6 +609,8 @@ describe("inputs", () => {
     ["a malformed day", { from: "4-1", to: "05-01" }],
     ["a month that is not one", { from: "13-01", to: "05-01" }],
     ["a sort", { place: "us-oh", sort: "random" as "name" }],
+    ["a stage", { place: "us-oh", stage: "pupae" as "adults" }],
+    ["a status", { place: "us-oh", status: "native" as "invasive" }],
     ["a week", { place: "us-oh", week: 54 }],
     ["a limit", { text: "oak", limit: 0 }],
     ["a watershed", { place: "huc8-00000001" }],

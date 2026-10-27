@@ -14,10 +14,11 @@ const BUDGETS = [
     budget: 5.5 * 1024,
     files: (name) => name !== SEARCH,
   },
-  // 3.75 KB: its measured 3,735 bytes on 2026-10-27, and about 100 bytes.
+  // 4.8 KB: its measured 4,804 bytes on 2026-10-27 with stage, status and
+  // option counts (ODR-2026-071), and about 100 bytes. It was 3.75 KB.
   {
     name: `dist/${SEARCH}`,
-    budget: 3.75 * 1024,
+    budget: 4.8 * 1024,
     files: (name) => name === SEARCH,
   },
 ];
