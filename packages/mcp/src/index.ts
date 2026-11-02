@@ -91,7 +91,7 @@ export function createServer(options: ServerOptions = {}): McpServer {
           .string()
           .optional()
           .describe(
-            "Where to list species: `anywhere`, a state code such as `us-oh`, a county's 5-digit Census code such as `39049`, or a park's `park-` or metro park system's `parks-` code. Codes come from published lists: search the place's name with `text` and use its `code`, or use `find_county` for a ZIP code's counties. Watersheds and ecoregions are not offered.",
+            "Where to list species: `anywhere`, a state code such as `us-oh`, a county's 5-digit Census code such as `39049`, or a park's `park-` or metro park system's `parks-` code. Codes come from published lists: search the place's name with `text` and use its `code`, or use `find_county` for a ZIP code's counties. Watersheds, ecoregions and cities (`ua-` codes) are not offered.",
           ),
         from: z
           .string()

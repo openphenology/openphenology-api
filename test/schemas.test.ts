@@ -609,6 +609,36 @@ describe("schemas", () => {
     expect(errors(file)).toEqual([]);
   });
 
+  test("region/1.11 cities an area touches (ODR-2026-073)", async () => {
+    const file = structuredClone(
+      (await published()).get("releases/2026-01-05/regions/us-zz.json"),
+    );
+    if (!file) throw new Error("missing fixture");
+    const areas = file.data.areas as Record<string, unknown>[];
+    for (const each of areas) {
+      each.watersheds = [];
+      each.parks = [];
+      each.record_land_cover = null;
+      each.record_hours = null;
+    }
+    const area = first(areas);
+    file.format = "region/1.11";
+    // Required from 1.11.
+    expect(errors(file)).not.toEqual([]);
+    for (const each of areas) each.urban_areas = [];
+    expect(errors(file)).toEqual([]);
+    area.urban_areas = ["ua-99001"];
+    expect(errors(file)).toEqual([]);
+    for (const codes of [["huc8-99990001"], ["ua-9900"], ["99001"]]) {
+      area.urban_areas = codes;
+      expect(errors(file), codes[0]).not.toEqual([]);
+    }
+    // Absent from earlier files.
+    for (const each of areas) delete each.urban_areas;
+    file.format = "region/1.10";
+    expect(errors(file)).toEqual([]);
+  });
+
   test("species/1.16 place areas", async () => {
     const file = structuredClone(
       (await published()).get("releases/2026-01-05/species/EX1.json"),
@@ -625,6 +655,8 @@ describe("schemas", () => {
       ["ecoregion", "eco-342"],
       ["park", "park-example-state-park"],
       ["park-system", "parks-example-metro-parks"],
+      // species/1.17 (ODR-2026-073).
+      ["urban-area", "ua-99001"],
     ] as const) {
       file.data.areas = [state, { ...state, level, area: code }];
       expect(errors(file), level).toEqual([]);
@@ -634,6 +666,10 @@ describe("schemas", () => {
       ["watershed", "eco-342"],
       ["county", "huc8-99990001"],
       ["city", "99001"],
+      ["city", "ua-99001"],
+      ["urban-area", "99001"],
+      ["urban-area", "ua-9900"],
+      ["park", "ua-99001"],
     ] as const) {
       file.data.areas = [state, { ...state, level, area: code }];
       expect(errors(file), `${level} ${code}`).not.toEqual([]);
@@ -793,6 +829,103 @@ describe("schemas", () => {
     // Only a place of level park takes them, and no other new type.
     park.park.type = "state-forest";
     expect(errors(parks)).not.toEqual([]);
+  });
+
+  test("places/1.3 cities (ODR-2026-073)", async () => {
+    const files = await published();
+    const watersheds = structuredClone(
+      files.get("releases/2026-01-05/places/watersheds.json"),
+    );
+    if (!watersheds) throw new Error("missing fixture");
+    const watershed = first(watersheds.data.places);
+    watershed.continues_into_countries = [];
+    const city = {
+      ...watershed,
+      area: "ua-99001",
+      level: "urban-area",
+      name: "Example",
+      slug: "example-zz",
+      code: "99001",
+      continues_into: [],
+      species_keys: ["EX1", "EX2", "EX3", "EX4", "EX5"],
+      urban_area: {
+        full_name: "Example, ZZ",
+        population: 60000,
+        population_whole: 75000,
+        acres: 41000.5,
+        has_page: true,
+      },
+    };
+    const cities: Published = {
+      ...watersheds,
+      id: "releases/2026-01-05/places/urban-areas.json",
+      format: "places/1.3",
+      data: { kind: "urban-areas", places: [city] },
+    };
+    expect(errors(cities)).toEqual([]);
+    // Below the minimum: no page and no species listed.
+    city.urban_area.has_page = false;
+    expect(errors(cities)).not.toEqual([]);
+    city.species_keys = [];
+    expect(errors(cities)).toEqual([]);
+    city.urban_area.has_page = true;
+    expect(errors(cities)).not.toEqual([]);
+    city.urban_area.has_page = false;
+    // A city has its details, no park, no best weeks and no other country.
+    for (const [field, value] of [
+      ["urban_area", null],
+      [
+        "park",
+        {
+          ...(first(
+            files.get("releases/2026-01-05/places/parks.json")?.data.places,
+          ).park as object),
+        },
+      ],
+      ["best_weeks", { all: [16, 22], groups: {} }],
+      ["continues_into_countries", ["ca"]],
+      ["code", 99001],
+      ["area", "huc8-99990001"],
+    ] as const) {
+      const before = (city as Record<string, unknown>)[field];
+      (city as Record<string, unknown>)[field] = value;
+      expect(errors(cities), field).not.toEqual([]);
+      (city as Record<string, unknown>)[field] = before;
+    }
+    expect(errors(cities)).toEqual([]);
+    // Only cities in the cities file, and only in it.
+    cities.data = { kind: "watersheds", places: [city] };
+    expect(errors(cities)).not.toEqual([]);
+    cities.data = { kind: "urban-areas", places: [watershed] };
+    expect(errors(cities)).not.toEqual([]);
+
+    // From 1.3 every place has `urban_area`, `null` but for a city.
+    watersheds.format = "places/1.3";
+    expect(errors(watersheds)).not.toEqual([]);
+    watershed.urban_area = null;
+    expect(errors(watersheds)).toEqual([]);
+    watershed.urban_area = city.urban_area;
+    expect(errors(watersheds)).not.toEqual([]);
+    // Absent from earlier files.
+    delete watershed.urban_area;
+    watersheds.format = "places/1.2";
+    expect(errors(watersheds)).toEqual([]);
+  });
+
+  test("place-boundaries/1.0 city outlines (ODR-2026-073)", async () => {
+    const outlines = structuredClone(
+      (await published()).get(
+        "releases/2026-01-05/places/watersheds/boundaries.json",
+      ),
+    );
+    if (!outlines) throw new Error("missing fixture");
+    const outline = first(outlines.data.features);
+    const properties = outline.properties as Record<string, unknown>;
+    outlines.id = "releases/2026-01-05/places/urban-areas/boundaries.json";
+    properties.area = "ua-99001";
+    expect(errors(outlines)).toEqual([]);
+    outline.geometry = { type: "Point", coordinates: [0, 0] };
+    expect(errors(outlines)).not.toEqual([]);
   });
 
   test("place-boundaries/1.0: outlines for watersheds, points for parks", async () => {

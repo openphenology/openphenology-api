@@ -190,8 +190,12 @@ export interface SearchOptions {
   }[];
 }
 
-/** What kind of place {@link Release.search} found. */
-export type SearchPlaceKind = "city" | "state" | "county" | PlaceLevel;
+/**
+ * What kind of place {@link Release.search} found. Cities as places
+ * (`urban-area`, ODR-2026-073) are not searched yet.
+ */
+export type SearchPlaceKind =
+  "city" | "state" | "county" | Exclude<PlaceLevel, "urban-area">;
 
 /** A place whose name matched, from {@link Release.search}. */
 export interface SearchPlace {
@@ -643,8 +647,9 @@ export async function search(
     throw new RangeError(`Invalid week: ${String(week)}`);
   if (limit !== undefined && (!Number.isInteger(limit) || limit < 1))
     throw new RangeError(`Invalid limit: ${String(limit)}`);
-  // Watersheds and ecoregions are not offered (ODR-2026-049, Places).
-  if (chosen !== undefined && /^(huc8|eco)-/.test(chosen))
+  // Watersheds and ecoregions are not offered (ODR-2026-049, Places), nor
+  // cities as places (ODR-2026-073) until search takes them up.
+  if (chosen !== undefined && /^(huc8|eco|ua)-/.test(chosen))
     throw new RangeError(`Not a place search offers: ${chosen}`);
   const advanced =
     chosen !== undefined ||
@@ -952,20 +957,25 @@ async function byName(
     ),
   ].slice(0, 6);
 
+  // Cities as places are not searched yet (ODR-2026-073).
   const fromPlaces = (p: Place) =>
-    place(p.level, p.area, p.name, {
-      slug: p.slug,
-      species: p.species_keys.length,
-      type: p.park?.type ?? null,
-      code: p.code,
-    });
+    p.level === "urban-area"
+      ? []
+      : [
+          place(p.level, p.area, p.name, {
+            slug: p.slug,
+            species: p.species_keys.length,
+            type: p.park?.type ?? null,
+            code: p.code,
+          }),
+        ];
   // Parks and systems with a page (ODR-2026-043).
   const parkMatches = ranked(
     (parks?.data.places ?? []).filter((p) => p.park?.has_page === true),
     text,
     (p) => p.name,
     (p) => p.area,
-  ).map(fromPlaces);
+  ).flatMap(fromPlaces);
   // Watersheds and ecoregions together (ODR-2026-044).
   const areaMatches = ranked(
     [
@@ -975,7 +985,7 @@ async function byName(
     text,
     (p) => p.name,
     (p) => p.area,
-  ).map(fromPlaces);
+  ).flatMap(fromPlaces);
 
   // At most `limit` of each kind; states and counties keep their joint order.
   // Parks with systems, and watersheds with ecoregions, count as one kind.

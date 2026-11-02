@@ -626,6 +626,7 @@ describe("inputs", () => {
     ["a week", { place: "us-oh", week: 54 }],
     ["a limit", { text: "oak", limit: 0 }],
     ["a watershed", { place: "huc8-00000001" }],
+    ["a city", { place: "ua-00001" }],
     ["a malformed county", { place: "123456" }],
     ["a county of no state", { place: "99001" }],
     ["a malformed place", { place: "Oakwood" }],

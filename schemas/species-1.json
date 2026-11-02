@@ -347,19 +347,20 @@
                   },
                   {
                     "type": "string",
-                    "pattern": "^(huc8-\\d{8}|eco-\\d+|parks?-[a-z0-9]+(-[a-z0-9]+)*)$"
+                    "pattern": "^(huc8-\\d{8}|eco-\\d+|parks?-[a-z0-9]+(-[a-z0-9]+)*|ua-\\d{5})$"
                   }
                 ]
               },
               "level": {
-                "description": "Whether it is a state or a county, or from `species/1.16` a\nwatershed, ecoregion, park or metro park system. A sensitive species\nhas no place result.",
+                "description": "Whether it is a state or a county, or from `species/1.16` a\nwatershed, ecoregion, park or metro park system, or from\n`species/1.17` a city (`urban-area`). A sensitive species has no\nplace result.",
                 "enum": [
                   "state",
                   "county",
                   "watershed",
                   "ecoregion",
                   "park",
-                  "park-system"
+                  "park-system",
+                  "urban-area"
                 ]
               },
               "records": {
@@ -2381,6 +2382,18 @@
                         "pattern": "^parks-[a-z0-9]+(-[a-z0-9]+)*$"
                       }
                     }
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "level": {
+                        "const": "urban-area"
+                      },
+                      "area": {
+                        "type": "string",
+                        "pattern": "^ua-\\d{5}$"
+                      }
+                    }
                   }
                 ]
               },
@@ -2465,7 +2478,7 @@
                   },
                   {
                     "type": "string",
-                    "pattern": "^(huc8-\\d{8}|eco-\\d+|parks?-[a-z0-9]+(-[a-z0-9]+)*)$"
+                    "pattern": "^(huc8-\\d{8}|eco-\\d+|parks?-[a-z0-9]+(-[a-z0-9]+)*|ua-\\d{5})$"
                   }
                 ]
               },
@@ -2573,6 +2586,18 @@
                       "area": {
                         "type": "string",
                         "pattern": "^parks-[a-z0-9]+(-[a-z0-9]+)*$"
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "level": {
+                        "const": "urban-area"
+                      },
+                      "area": {
+                        "type": "string",
+                        "pattern": "^ua-\\d{5}$"
                       }
                     }
                   }

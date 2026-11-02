@@ -2545,19 +2545,20 @@
                     },
                     {
                       "type": "string",
-                      "pattern": "^(huc8-\\d{8}|eco-\\d+|parks?-[a-z0-9]+(-[a-z0-9]+)*)$"
+                      "pattern": "^(huc8-\\d{8}|eco-\\d+|parks?-[a-z0-9]+(-[a-z0-9]+)*|ua-\\d{5})$"
                     }
                   ]
                 },
                 "level": {
-                  "description": "Whether it is a state or a county, or from `species/1.16` a\nwatershed, ecoregion, park or metro park system. A sensitive species\nhas no place result.",
+                  "description": "Whether it is a state or a county, or from `species/1.16` a\nwatershed, ecoregion, park or metro park system, or from\n`species/1.17` a city (`urban-area`). A sensitive species has no\nplace result.",
                   "enum": [
                     "state",
                     "county",
                     "watershed",
                     "ecoregion",
                     "park",
-                    "park-system"
+                    "park-system",
+                    "urban-area"
                   ]
                 },
                 "records": {
@@ -4579,6 +4580,18 @@
                           "pattern": "^parks-[a-z0-9]+(-[a-z0-9]+)*$"
                         }
                       }
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "level": {
+                          "const": "urban-area"
+                        },
+                        "area": {
+                          "type": "string",
+                          "pattern": "^ua-\\d{5}$"
+                        }
+                      }
                     }
                   ]
                 },
@@ -4663,7 +4676,7 @@
                     },
                     {
                       "type": "string",
-                      "pattern": "^(huc8-\\d{8}|eco-\\d+|parks?-[a-z0-9]+(-[a-z0-9]+)*)$"
+                      "pattern": "^(huc8-\\d{8}|eco-\\d+|parks?-[a-z0-9]+(-[a-z0-9]+)*|ua-\\d{5})$"
                     }
                   ]
                 },
@@ -4771,6 +4784,18 @@
                         "area": {
                           "type": "string",
                           "pattern": "^parks-[a-z0-9]+(-[a-z0-9]+)*$"
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "level": {
+                          "const": "urban-area"
+                        },
+                        "area": {
+                          "type": "string",
+                          "pattern": "^ua-\\d{5}$"
                         }
                       }
                     }
@@ -6251,7 +6276,7 @@
                     },
                     {
                       "type": "string",
-                      "pattern": "^(huc8-\\d{8}|eco-\\d+|parks?-[a-z0-9]+(-[a-z0-9]+)*)$"
+                      "pattern": "^(huc8-\\d{8}|eco-\\d+|parks?-[a-z0-9]+(-[a-z0-9]+)*|ua-\\d{5})$"
                     }
                   ]
                 },
@@ -6698,6 +6723,14 @@
                     ]
                   }
                 },
+                "urban_areas": {
+                  "description": "The area codes of the cities with a page that it touches, possibly none\n(ODR-2026-073). Added in `region/1.11`, so absent from earlier files.",
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "pattern": "^ua-\\d{5}$"
+                  }
+                },
                 "record_land_cover": {
                   "description": "State only: the land cover of all the state's counted records within\n100 m that are not obscured, leaving out species sensitive in the state,\nin the same form as a species' `land_cover`; `null` for a county or\nbelow the method's minimum. It says where people record, never what the\nstate's land is (ODR-2026-047). Added in `region/1.9`, so absent from\nearlier files.",
                   "anyOf": [
@@ -6843,6 +6876,18 @@
                           "pattern": "^parks-[a-z0-9]+(-[a-z0-9]+)*$"
                         }
                       }
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "level": {
+                          "const": "urban-area"
+                        },
+                        "area": {
+                          "type": "string",
+                          "pattern": "^ua-\\d{5}$"
+                        }
+                      }
                     }
                   ]
                 },
@@ -6956,6 +7001,50 @@
                     "required": [
                       "record_land_cover",
                       "record_hours"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      {
+        "if": {
+          "type": "object",
+          "properties": {
+            "format": {
+              "enum": [
+                "region/1.0",
+                "region/1.1",
+                "region/1.2",
+                "region/1.3",
+                "region/1.4",
+                "region/1.5",
+                "region/1.6",
+                "region/1.7",
+                "region/1.8",
+                "region/1.9",
+                "region/1.10"
+              ]
+            }
+          }
+        },
+        "else": {
+          "type": "object",
+          "properties": {
+            "data": {
+              "type": "object",
+              "properties": {
+                "areas": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "urban_areas": true
+                    },
+                    "required": [
+                      "urban_areas"
                     ]
                   }
                 }
@@ -7624,7 +7713,7 @@
       "id": {
         "description": "The file's path from the API root.",
         "type": "string",
-        "pattern": "^releases/\\d{4}-\\d{2}-\\d{2}/attribution/([a-z]{2}-[a-z0-9]{1,3}(/\\d{5})?|places/(huc8-\\d{8}|eco-\\d+|parks?-[a-z0-9]+(-[a-z0-9]+)*))/[A-Za-z0-9._-]+(/\\d+)?\\.json$"
+        "pattern": "^releases/\\d{4}-\\d{2}-\\d{2}/attribution/([a-z]{2}-[a-z0-9]{1,3}(/\\d{5})?|places/(huc8-\\d{8}|eco-\\d+|parks?-[a-z0-9]+(-[a-z0-9]+)*|ua-\\d{5}))/[A-Za-z0-9._-]+(/\\d+)?\\.json$"
       },
       "kind": {
         "description": "The format's name, such as `county-weekly`.",
@@ -7787,7 +7876,7 @@
               },
               {
                 "type": "string",
-                "pattern": "^(huc8-\\d{8}|eco-\\d+|parks?-[a-z0-9]+(-[a-z0-9]+)*)$"
+                "pattern": "^(huc8-\\d{8}|eco-\\d+|parks?-[a-z0-9]+(-[a-z0-9]+)*|ua-\\d{5})$"
               }
             ]
           },
@@ -9446,7 +9535,7 @@
   "places": {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "title": "OpenPhenology places/1",
-    "description": "Every watershed, every ecoregion, or every national and state park and metro park system with results, with its species with a result (ODR-2026-043, ODR-2026-044). No place file holds a sensitive species. May be split into shards.",
+    "description": "Every watershed, every ecoregion, every national and state park and metro park system with results, or every city, with its species with a result (ODR-2026-043, ODR-2026-044, ODR-2026-073). No place file holds a sensitive species. May be split into shards.",
     "type": "object",
     "required": [
       "id",
@@ -9459,7 +9548,7 @@
       "id": {
         "description": "The file's path from the API root.",
         "type": "string",
-        "pattern": "^releases/\\d{4}-\\d{2}-\\d{2}/places/(watersheds|ecoregions|parks)(/\\d+)?\\.json$"
+        "pattern": "^releases/\\d{4}-\\d{2}-\\d{2}/places/(watersheds|ecoregions|parks|urban-areas)(/\\d+)?\\.json$"
       },
       "kind": {
         "description": "The format's name, such as `county-weekly`.",
@@ -9607,11 +9696,12 @@
         ],
         "properties": {
           "kind": {
-            "description": "`watersheds`, `ecoregions` or `parks`.",
+            "description": "`watersheds`, `ecoregions`, `parks` or, from `places/1.3`, `urban-areas`.",
             "enum": [
               "watersheds",
               "ecoregions",
-              "parks"
+              "parks",
+              "urban-areas"
             ]
           },
           "places": {
@@ -9637,7 +9727,7 @@
                 "area": {
                   "description": "The place's area code, such as `huc8-04100011`.",
                   "type": "string",
-                  "pattern": "^(huc8-\\d{8}|eco-\\d+|parks?-[a-z0-9]+(-[a-z0-9]+)*)$"
+                  "pattern": "^(huc8-\\d{8}|eco-\\d+|parks?-[a-z0-9]+(-[a-z0-9]+)*|ua-\\d{5})$"
                 },
                 "level": {
                   "description": "What kind of place it is.",
@@ -9645,7 +9735,8 @@
                     "watershed",
                     "ecoregion",
                     "park",
-                    "park-system"
+                    "park-system",
+                    "urban-area"
                   ]
                 },
                 "name": {
@@ -9659,11 +9750,15 @@
                   "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
                 },
                 "code": {
-                  "description": "A watershed's HUC8 code, as a string such as `04100011`, or an\necoregion's RESOLVE `ECO_ID`, as a number; `null` for a park or metro\npark system.",
+                  "description": "A watershed's HUC8 code, as a string such as `04100011`, an\necoregion's RESOLVE `ECO_ID`, as a number, or a city's 2020 Census urban\narea code, as a string such as `19234`; `null` for a park or metro park\nsystem.",
                   "anyOf": [
                     {
                       "type": "string",
                       "pattern": "^\\d{8}$"
+                    },
+                    {
+                      "type": "string",
+                      "pattern": "^\\d{5}$"
                     },
                     {
                       "type": "integer",
@@ -9699,7 +9794,7 @@
                   }
                 },
                 "species_keys": {
-                  "description": "Species with a result there. Empty for a park or metro park system below\nthe minimum of 5 species, which has no other place file.",
+                  "description": "Species with a result there. Empty for a park, metro park system or\ncity below the minimum of 5 species, which has no other place file.",
                   "type": "array",
                   "items": {
                     "type": "string",
@@ -9717,7 +9812,7 @@
                   "maxItems": 53
                 },
                 "best_weeks": {
-                  "description": "For a park or metro park system with results, the weeks in which the\nmost species are recorded there (data rules `seasonal.md`, Best weeks to\nvisit a park); `null` otherwise, and always for a watershed or ecoregion.",
+                  "description": "For a park or metro park system with results, the weeks in which the\nmost species are recorded there (data rules `seasonal.md`, Best weeks to\nvisit a park); `null` otherwise, and always for a watershed, ecoregion\nor city.",
                   "anyOf": [
                     {
                       "type": "object",
@@ -9777,7 +9872,7 @@
                   ]
                 },
                 "park": {
-                  "description": "A park's or metro park system's details; `null` for a watershed or ecoregion.",
+                  "description": "A park's or metro park system's details; `null` for a watershed, ecoregion or city.",
                   "anyOf": [
                     {
                       "type": "object",
@@ -9849,12 +9944,56 @@
                   ]
                 },
                 "continues_into_countries": {
-                  "description": "The countries other than the United States it continues into, as\ntwo-letter codes in lowercase, such as `ca`, possibly none; always empty\nfor a park or metro park system. Named from Natural Earth when at least\n5% of the area lies there (ODR-2026-067). Added in `places/1.1`, so\nabsent from earlier files.",
+                  "description": "The countries other than the United States it continues into, as\ntwo-letter codes in lowercase, such as `ca`, possibly none; always empty\nfor a park, metro park system or city. Named from Natural Earth when at least\n5% of the area lies there (ODR-2026-067). Added in `places/1.1`, so\nabsent from earlier files.",
                   "type": "array",
                   "items": {
                     "type": "string",
                     "pattern": "^(?!us$)[a-z]{2}$"
                   }
+                },
+                "urban_area": {
+                  "description": "A city's details; `null` for any other place. Added in `places/1.3`\n(ODR-2026-073), so absent from earlier files.",
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "required": [
+                        "full_name",
+                        "population",
+                        "population_whole",
+                        "acres",
+                        "has_page"
+                      ],
+                      "properties": {
+                        "full_name": {
+                          "description": "Its Census name, such as `Columbus, OH`.",
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "population": {
+                          "description": "The 2020 Census population of its covered part.",
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "population_whole": {
+                          "description": "The 2020 Census population of the whole urban area.",
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "acres": {
+                          "description": "The area of its covered part, in acres.",
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "has_page": {
+                          "description": "True when at least 5 species have a result there, so it has a page.",
+                          "type": "boolean"
+                        }
+                      }
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
                 }
               },
               "allOf": [
@@ -9931,6 +10070,18 @@
                           "pattern": "^parks-[a-z0-9]+(-[a-z0-9]+)*$"
                         }
                       }
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "level": {
+                          "const": "urban-area"
+                        },
+                        "area": {
+                          "type": "string",
+                          "pattern": "^ua-\\d{5}$"
+                        }
+                      }
                     }
                   ]
                 },
@@ -9951,6 +10102,9 @@
                         },
                         "park": {
                           "type": "null"
+                        },
+                        "urban_area": {
+                          "type": "null"
                         }
                       }
                     },
@@ -9968,6 +10122,9 @@
                           "type": "null"
                         },
                         "park": {
+                          "type": "null"
+                        },
+                        "urban_area": {
                           "type": "null"
                         }
                       }
@@ -10004,6 +10161,9 @@
                               "maxItems": 0
                             }
                           }
+                        },
+                        "urban_area": {
+                          "type": "null"
                         }
                       }
                     },
@@ -10030,6 +10190,37 @@
                               "type": "null"
                             }
                           }
+                        },
+                        "urban_area": {
+                          "type": "null"
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "urban_area"
+                      ],
+                      "properties": {
+                        "level": {
+                          "const": "urban-area"
+                        },
+                        "code": {
+                          "type": "string",
+                          "pattern": "^\\d{5}$"
+                        },
+                        "continues_into_countries": {
+                          "type": "array",
+                          "maxItems": 0
+                        },
+                        "best_weeks": {
+                          "type": "null"
+                        },
+                        "park": {
+                          "type": "null"
+                        },
+                        "urban_area": {
+                          "type": "object"
                         }
                       }
                     }
@@ -10073,6 +10264,66 @@
                     ],
                     "properties": {
                       "park": {
+                        "type": "object",
+                        "required": [
+                          "has_page"
+                        ],
+                        "properties": {
+                          "has_page": {
+                            "const": false
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "then": {
+                    "type": "object",
+                    "properties": {
+                      "species_keys": {
+                        "type": "array",
+                        "maxItems": 0
+                      }
+                    }
+                  }
+                },
+                {
+                  "if": {
+                    "type": "object",
+                    "required": [
+                      "urban_area"
+                    ],
+                    "properties": {
+                      "urban_area": {
+                        "type": "object",
+                        "required": [
+                          "has_page"
+                        ],
+                        "properties": {
+                          "has_page": {
+                            "const": true
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "then": {
+                    "type": "object",
+                    "properties": {
+                      "species_keys": {
+                        "type": "array",
+                        "minItems": 5
+                      }
+                    }
+                  }
+                },
+                {
+                  "if": {
+                    "type": "object",
+                    "required": [
+                      "urban_area"
+                    ],
+                    "properties": {
+                      "urban_area": {
                         "type": "object",
                         "required": [
                           "has_page"
@@ -10170,6 +10421,27 @@
                     }
                   }
                 }
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "const": "urban-areas"
+                  },
+                  "places": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "level": {
+                          "enum": [
+                            "urban-area"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
               }
             ]
           }
@@ -10208,13 +10480,49 @@
             }
           }
         }
+      },
+      {
+        "if": {
+          "type": "object",
+          "properties": {
+            "format": {
+              "enum": [
+                "places/1.0",
+                "places/1.1",
+                "places/1.2"
+              ]
+            }
+          }
+        },
+        "else": {
+          "type": "object",
+          "properties": {
+            "data": {
+              "type": "object",
+              "properties": {
+                "places": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "urban_area": true
+                    },
+                    "required": [
+                      "urban_area"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     ]
   },
   "place-boundaries": {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "title": "OpenPhenology place-boundaries/1",
-    "description": "Watershed and ecoregion outlines, and park middles as points, for maps, as a GeoJSON FeatureCollection. For display only.",
+    "description": "Watershed, ecoregion and city outlines, and park middles as points, for maps, as a GeoJSON FeatureCollection. For display only.",
     "type": "object",
     "required": [
       "id",
@@ -10227,7 +10535,7 @@
       "id": {
         "description": "The file's path from the API root.",
         "type": "string",
-        "pattern": "^releases/\\d{4}-\\d{2}-\\d{2}/places/(watersheds|ecoregions|parks)/boundaries(/\\d+)?\\.json$"
+        "pattern": "^releases/\\d{4}-\\d{2}-\\d{2}/places/(watersheds|ecoregions|parks|urban-areas)/boundaries(/\\d+)?\\.json$"
       },
       "kind": {
         "description": "The format's name, such as `county-weekly`.",
@@ -10406,7 +10714,7 @@
                     "area": {
                       "description": "The place's area code.",
                       "type": "string",
-                      "pattern": "^(huc8-\\d{8}|eco-\\d+|parks?-[a-z0-9]+(-[a-z0-9]+)*)$"
+                      "pattern": "^(huc8-\\d{8}|eco-\\d+|parks?-[a-z0-9]+(-[a-z0-9]+)*|ua-\\d{5})$"
                     },
                     "name": {
                       "description": "Its name.",
@@ -10443,7 +10751,7 @@
                       ],
                       "properties": {
                         "type": {
-                          "description": "`MultiPolygon` for a watershed's or ecoregion's outline, `Point` for a park's middle.",
+                          "description": "`MultiPolygon` for a watershed's, ecoregion's or city's outline, `Point` for a park's middle.",
                           "const": "MultiPolygon"
                         },
                         "coordinates": {
@@ -10486,7 +10794,7 @@
                       ],
                       "properties": {
                         "type": {
-                          "description": "`MultiPolygon` for a watershed's or ecoregion's outline, `Point` for a park's middle.",
+                          "description": "`MultiPolygon` for a watershed's, ecoregion's or city's outline, `Point` for a park's middle.",
                           "const": "Point"
                         },
                         "coordinates": {
@@ -10530,6 +10838,10 @@
                                 {
                                   "type": "string",
                                   "pattern": "^eco-\\d+$"
+                                },
+                                {
+                                  "type": "string",
+                                  "pattern": "^ua-\\d{5}$"
                                 }
                               ]
                             },
@@ -10590,7 +10902,7 @@
   "place-weekly": {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "title": "OpenPhenology place-weekly/1",
-    "description": "A species' weekly result for a watershed, ecoregion, park or metro park system.",
+    "description": "A species' weekly result for a watershed, ecoregion, park, metro park system or city.",
     "type": "object",
     "required": [
       "id",
@@ -10603,7 +10915,7 @@
       "id": {
         "description": "The file's path from the API root.",
         "type": "string",
-        "pattern": "^releases/\\d{4}-\\d{2}-\\d{2}/results/places/(huc8-\\d{8}|eco-\\d+|parks?-[a-z0-9]+(-[a-z0-9]+)*)/[A-Za-z0-9._-]+(/\\d+)?\\.json$"
+        "pattern": "^releases/\\d{4}-\\d{2}-\\d{2}/results/places/(huc8-\\d{8}|eco-\\d+|parks?-[a-z0-9]+(-[a-z0-9]+)*|ua-\\d{5})/[A-Za-z0-9._-]+(/\\d+)?\\.json$"
       },
       "kind": {
         "description": "The format's name, such as `county-weekly`.",
@@ -10761,7 +11073,7 @@
           "area": {
             "description": "The area code.",
             "type": "string",
-            "pattern": "^(huc8-\\d{8}|eco-\\d+|parks?-[a-z0-9]+(-[a-z0-9]+)*)$"
+            "pattern": "^(huc8-\\d{8}|eco-\\d+|parks?-[a-z0-9]+(-[a-z0-9]+)*|ua-\\d{5})$"
           },
           "species_key": {
             "description": "The species key.",
@@ -10924,7 +11236,7 @@
       "id": {
         "description": "The file's path from the API root.",
         "type": "string",
-        "pattern": "^releases/\\d{4}-\\d{2}-\\d{2}/labels/(huc8-\\d{8}|eco-\\d+|parks?-[a-z0-9]+(-[a-z0-9]+)*)(/\\d+)?\\.json$"
+        "pattern": "^releases/\\d{4}-\\d{2}-\\d{2}/labels/(huc8-\\d{8}|eco-\\d+|parks?-[a-z0-9]+(-[a-z0-9]+)*|ua-\\d{5})(/\\d+)?\\.json$"
       },
       "kind": {
         "description": "The format's name, such as `county-weekly`.",
@@ -11077,7 +11389,7 @@
           "area": {
             "description": "The place's area code.",
             "type": "string",
-            "pattern": "^(huc8-\\d{8}|eco-\\d+|parks?-[a-z0-9]+(-[a-z0-9]+)*)$"
+            "pattern": "^(huc8-\\d{8}|eco-\\d+|parks?-[a-z0-9]+(-[a-z0-9]+)*|ua-\\d{5})$"
           },
           "method": {
             "description": "The method version.",

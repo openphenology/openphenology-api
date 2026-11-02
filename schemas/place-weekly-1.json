@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "OpenPhenology place-weekly/1",
-  "description": "A species' weekly result for a watershed, ecoregion, park or metro park system.",
+  "description": "A species' weekly result for a watershed, ecoregion, park, metro park system or city.",
   "type": "object",
   "required": [
     "id",
@@ -14,7 +14,7 @@
     "id": {
       "description": "The file's path from the API root.",
       "type": "string",
-      "pattern": "^releases/\\d{4}-\\d{2}-\\d{2}/results/places/(huc8-\\d{8}|eco-\\d+|parks?-[a-z0-9]+(-[a-z0-9]+)*)/[A-Za-z0-9._-]+(/\\d+)?\\.json$"
+      "pattern": "^releases/\\d{4}-\\d{2}-\\d{2}/results/places/(huc8-\\d{8}|eco-\\d+|parks?-[a-z0-9]+(-[a-z0-9]+)*|ua-\\d{5})/[A-Za-z0-9._-]+(/\\d+)?\\.json$"
     },
     "kind": {
       "description": "The format's name, such as `county-weekly`.",
@@ -172,7 +172,7 @@
         "area": {
           "description": "The area code.",
           "type": "string",
-          "pattern": "^(huc8-\\d{8}|eco-\\d+|parks?-[a-z0-9]+(-[a-z0-9]+)*)$"
+          "pattern": "^(huc8-\\d{8}|eco-\\d+|parks?-[a-z0-9]+(-[a-z0-9]+)*|ua-\\d{5})$"
         },
         "species_key": {
           "description": "The species key.",

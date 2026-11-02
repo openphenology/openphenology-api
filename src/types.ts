@@ -50,8 +50,9 @@ export interface PublishedFile<Kind extends string, Data> {
  * GEOID), or a place's code (`species/1.16`): `huc8-` and the HUC8 code for
  * a watershed (`huc8-04100011`), `eco-` and RESOLVE's `ECO_ID` for an
  * ecoregion (`eco-342`), `park-` and its address slug for a park
- * (`park-hocking-hills-state-park`), and `parks-` and its address slug for a
- * metro park system (`parks-cleveland-metroparks`).
+ * (`park-hocking-hills-state-park`), `parks-` and its address slug for a
+ * metro park system (`parks-cleveland-metroparks`), and, from `species/1.17`,
+ * `ua-` and its 2020 Census urban area code for a city (`ua-19234`).
  */
 export type Area = string;
 /** Whether an area is a state or a county. */
@@ -59,11 +60,14 @@ export type Level = "state" | "county";
 /**
  * The kind of a place (ODR-2026-043, ODR-2026-044): a watershed (a USGS
  * HUC8 subbasin), an ecoregion (RESOLVE Ecoregions 2017), a national or
- * state park, or a metro park system, whose parks are pooled.
+ * state park, a metro park system, whose parks are pooled, or, from
+ * `species/1.17` and `places/1.3`, a city and its suburbs, as the Census
+ * Bureau draws its built-up area (a 2020 urban area, ODR-2026-073).
  */
-export type PlaceLevel = "watershed" | "ecoregion" | "park" | "park-system";
-/** A kind of place file: `places/<kind>.json`. */
-export type PlaceKind = "watersheds" | "ecoregions" | "parks";
+export type PlaceLevel =
+  "watershed" | "ecoregion" | "park" | "park-system" | "urban-area";
+/** A kind of place file: `places/<kind>.json`; `urban-areas` from `places/1.3`. */
+export type PlaceKind = "watersheds" | "ecoregions" | "parks" | "urban-areas";
 
 /**
  * Why season weeks are withheld:
@@ -394,8 +398,9 @@ export type SpeciesFile = PublishedFile<
       readonly area: Area;
       /**
        * Whether it is a state or a county, or from `species/1.16` a
-       * watershed, ecoregion, park or metro park system. A sensitive species
-       * has no place result.
+       * watershed, ecoregion, park or metro park system, or from
+       * `species/1.17` a city (`urban-area`). A sensitive species has no
+       * place result.
        */
       readonly level: Level | PlaceLevel;
       /** Records counted there. */
@@ -931,6 +936,11 @@ export interface RegionArea {
    */
   readonly parks?: readonly Area[];
   /**
+   * The area codes of the cities with a page that it touches, possibly none
+   * (ODR-2026-073). Added in `region/1.11`, so absent from earlier files.
+   */
+  readonly urban_areas?: readonly Area[];
+  /**
    * State only: the land cover of all the state's counted records within
    * 100 m that are not obscured, leaving out species sensitive in the state,
    * in the same form as a species' `land_cover`; `null` for a county or
@@ -1397,7 +1407,24 @@ export interface Park {
   readonly parks: readonly string[];
 }
 
-/** One watershed, ecoregion, park or metro park system in a places file. */
+/**
+ * A city's details in `places/urban-areas.json` (`places/1.3`,
+ * ODR-2026-073): a 2020 Census urban area, the city and its suburbs.
+ */
+export interface UrbanArea {
+  /** Its Census name, such as `Columbus, OH`. */
+  readonly full_name: string;
+  /** The 2020 Census population of its covered part. */
+  readonly population: number;
+  /** The 2020 Census population of the whole urban area. */
+  readonly population_whole: number;
+  /** The area of its covered part, in acres. */
+  readonly acres: number;
+  /** True when at least 5 species have a result there, so it has a page. */
+  readonly has_page: boolean;
+}
+
+/** One watershed, ecoregion, park, metro park system or city in a places file. */
 export interface Place {
   /** The place's area code, such as `huc8-04100011`. */
   readonly area: Area;
@@ -1408,9 +1435,10 @@ export interface Place {
   /** Its address slug. */
   readonly slug: string;
   /**
-   * A watershed's HUC8 code, as a string such as `04100011`, or an
-   * ecoregion's RESOLVE `ECO_ID`, as a number; `null` for a park or metro
-   * park system.
+   * A watershed's HUC8 code, as a string such as `04100011`, an
+   * ecoregion's RESOLVE `ECO_ID`, as a number, or a city's 2020 Census urban
+   * area code, as a string such as `19234`; `null` for a park or metro park
+   * system.
    */
   readonly code: string | number | null;
   /** The covered states it lies in. */
@@ -1423,7 +1451,7 @@ export interface Place {
   /**
    * The countries other than the United States it continues into, as
    * two-letter codes in lowercase, such as `ca`, possibly none; always empty
-   * for a park or metro park system. Named from Natural Earth when at least
+   * for a park, metro park system or city. Named from Natural Earth when at least
    * 5% of the area lies there (ODR-2026-067). Added in `places/1.1`, so
    * absent from earlier files.
    */
@@ -1431,8 +1459,8 @@ export interface Place {
   /** The county codes it touches. */
   readonly counties: readonly Area[];
   /**
-   * Species with a result there. Empty for a park or metro park system below
-   * the minimum of 5 species, which has no other place file.
+   * Species with a result there. Empty for a park, metro park system or
+   * city below the minimum of 5 species, which has no other place file.
    */
   readonly species_keys: readonly string[];
   /** Records of all species counted in the place, weeks 1 to 53. */
@@ -1440,11 +1468,17 @@ export interface Place {
   /**
    * For a park or metro park system with results, the weeks in which the
    * most species are recorded there (data rules `seasonal.md`, Best weeks to
-   * visit a park); `null` otherwise, and always for a watershed or ecoregion.
+   * visit a park); `null` otherwise, and always for a watershed, ecoregion
+   * or city.
    */
   readonly best_weeks: BestWeeks | null;
-  /** A park's or metro park system's details; `null` for a watershed or ecoregion. */
+  /** A park's or metro park system's details; `null` for a watershed, ecoregion or city. */
   readonly park: Park | null;
+  /**
+   * A city's details; `null` for any other place. Added in `places/1.3`
+   * (ODR-2026-073), so absent from earlier files.
+   */
+  readonly urban_area?: UrbanArea | null;
 }
 
 /** A first and last week, 1 to 53. */
@@ -1459,15 +1493,16 @@ export interface BestWeeks {
 }
 
 /**
- * `places/<kind>.json`: every watershed, ecoregion, or park and metro park
- * system with results, with its species with results (ODR-2026-043,
- * ODR-2026-044). Every national and state park is listed, with or without a
- * page. No place file holds a sensitive species.
+ * `places/<kind>.json`: every watershed, ecoregion, park and metro park
+ * system with results, or city, with its species with results
+ * (ODR-2026-043, ODR-2026-044, ODR-2026-073). Every national and state park,
+ * and every city, is listed, with or without a page. No place file holds a
+ * sensitive species.
  */
 export type PlacesFile = PublishedFile<
   "places",
   {
-    /** `watersheds`, `ecoregions` or `parks`. */
+    /** `watersheds`, `ecoregions`, `parks` or, from `places/1.3`, `urban-areas`. */
     readonly kind: PlaceKind;
     /** Every place of that kind. */
     readonly places: readonly Place[];
@@ -1476,8 +1511,8 @@ export type PlacesFile = PublishedFile<
 
 /**
  * `places/<kind>/boundaries.json`: a GeoJSON FeatureCollection for maps.
- * Watersheds and ecoregions are each covered part's outline, simplified for
- * display; parks are each national or state park's middle, and each park of
+ * Watersheds, ecoregions and cities are each covered part's outline,
+ * simplified for display; parks are each national or state park's middle, and each park of
  * a metro park system with results, as a point. Display only.
  */
 export type PlaceBoundariesFile = PublishedFile<
@@ -1502,7 +1537,7 @@ export type PlaceBoundariesFile = PublishedFile<
       };
       /** Its outline or middle, WGS 84 longitude and latitude. */
       readonly geometry: {
-        /** `MultiPolygon` for a watershed's or ecoregion's outline, `Point` for a park's middle. */
+        /** `MultiPolygon` for a watershed's, ecoregion's or city's outline, `Point` for a park's middle. */
         readonly type: "MultiPolygon" | "Point";
         /**
          * For a `MultiPolygon`, polygons of rings of `[longitude, latitude]`

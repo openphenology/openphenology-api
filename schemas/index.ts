@@ -105,8 +105,12 @@ const COUNTY = "\\d{5}";
 const KEY = "[A-Za-z0-9._-]+";
 /** The address slug in a park's or metro park system's code. */
 const SLUG = "[a-z0-9]+(-[a-z0-9]+)*";
-/** A place's area code (formats.md 1.29): a watershed, ecoregion, park or metro park system. */
-const PLACE = `(huc8-\\d{8}|eco-\\d+|parks?-${SLUG})`;
+/**
+ * A place's area code (formats.md 1.29): a watershed, ecoregion, park or
+ * metro park system, or from formats.md 1.45 a city, `ua-` and its 2020
+ * Census urban area code.
+ */
+const PLACE = `(huc8-\\d{8}|eco-\\d+|parks?-${SLUG}|ua-\\d{5})`;
 const state = pattern(`^${STATE}$`);
 /** A country other than the United States, lowercase ISO 3166-1 alpha-2 (places/1.1). */
 const country = pattern("^(?!us$)[a-z]{2}$");
@@ -115,10 +119,17 @@ const watershed = pattern("^huc8-\\d{8}$");
 const ecoregion = pattern("^eco-\\d+$");
 const park = pattern(`^park-${SLUG}$`);
 const parkSystem = pattern(`^parks-${SLUG}$`);
+const urbanArea = pattern("^ua-\\d{5}$");
 const place = pattern(`^${PLACE}$`);
 const area: Schema = { anyOf: [state, county, place] };
-/** The kinds of place (species/1.16). */
-const PLACE_LEVELS = ["watershed", "ecoregion", "park", "park-system"] as const;
+/** The kinds of place (species/1.16; `urban-area` from species/1.17). */
+const PLACE_LEVELS = [
+  "watershed",
+  "ecoregion",
+  "park",
+  "park-system",
+  "urban-area",
+] as const;
 const speciesKey = pattern(`^${KEY}$`);
 const slug = pattern("^[a-z0-9]+(-[a-z0-9]+)*$");
 const group = pattern("^[a-z]+(-[a-z]+)*$");
@@ -168,8 +179,8 @@ const belowSpecies = list(
 /**
  * `area` is a state code when `level` is `state`, a county's 5-digit Census
  * code when it is `county`, and the matching place code for a place:
- * `huc8-` for a watershed, `eco-` for an ecoregion, `park-` for a park and
- * `parks-` for a metro park system.
+ * `huc8-` for a watershed, `eco-` for an ecoregion, `park-` for a park,
+ * `parks-` for a metro park system and `ua-` for a city.
  */
 const areaMatchesLevel: Schema = {
   anyOf: (
@@ -180,6 +191,7 @@ const areaMatchesLevel: Schema = {
       ["ecoregion", ecoregion],
       ["park", park],
       ["park-system", parkSystem],
+      ["urban-area", urbanArea],
     ] as const
   ).map(([level, code]) => ({
     type: "object",
@@ -550,6 +562,7 @@ const placeMatchesLevel: Schema = {
         code: pattern("^\\d{8}$"),
         best_weeks: { type: "null" },
         park: { type: "null" },
+        urban_area: { type: "null" },
       },
     },
     {
@@ -559,6 +572,7 @@ const placeMatchesLevel: Schema = {
         code: { type: "integer", minimum: 1 },
         best_weeks: { type: "null" },
         park: { type: "null" },
+        urban_area: { type: "null" },
       },
     },
     {
@@ -577,6 +591,7 @@ const placeMatchesLevel: Schema = {
             parks: { type: "array", maxItems: 0 },
           },
         },
+        urban_area: { type: "null" },
       },
     },
     {
@@ -592,17 +607,38 @@ const placeMatchesLevel: Schema = {
             acres: { type: "null" },
           },
         },
+        urban_area: { type: "null" },
+      },
+    },
+    {
+      // A city (formats.md 1.45, ODR-2026-073).
+      type: "object",
+      required: ["urban_area"],
+      properties: {
+        level: { const: "urban-area" },
+        code: pattern("^\\d{5}$"),
+        continues_into_countries: { type: "array", maxItems: 0 },
+        best_weeks: { type: "null" },
+        park: { type: "null" },
+        urban_area: { type: "object" },
       },
     },
   ],
 };
-/** A park with a page has at least 5 species with a result (data rules 1.74); one without has none listed. */
-const pageMatchesSpecies = (hasPage: boolean, keys: Schema): Schema => ({
+/**
+ * A park or city with a page has at least 5 species with a result (data
+ * rules 1.74, ODR-2026-073); one without has none listed.
+ */
+const pageMatchesSpecies = (
+  details: "park" | "urban_area",
+  hasPage: boolean,
+  keys: Schema,
+): Schema => ({
   if: {
     type: "object",
-    required: ["park"],
+    required: [details],
     properties: {
-      park: {
+      [details]: {
         type: "object",
         required: ["has_page"],
         properties: { has_page: { const: hasPage } },
@@ -618,6 +654,7 @@ const placesMatchKind: Schema = {
       ["watersheds", ["watershed"]],
       ["ecoregions", ["ecoregion"]],
       ["parks", ["park", "park-system"]],
+      ["urban-areas", ["urban-area"]],
     ] as const
   ).map(([kind, levels]) => ({
     type: "object",
@@ -633,7 +670,7 @@ const placesMatchKind: Schema = {
     },
   })),
 };
-/** Outlines for watersheds and ecoregions, points for parks, and `system` only for parks. */
+/** Outlines for watersheds, ecoregions and cities, points for parks, and `system` only for parks. */
 const geometryMatchesArea: Schema = {
   anyOf: [
     {
@@ -642,7 +679,7 @@ const geometryMatchesArea: Schema = {
         properties: {
           type: "object",
           properties: {
-            area: { anyOf: [watershed, ecoregion] },
+            area: { anyOf: [watershed, ecoregion, urbanArea] },
             system: { type: "null" },
           },
         },
@@ -687,8 +724,8 @@ const paths: Record<Kind, string> = {
   sources: `${RELEASE}sources`,
   boundaries: `${RELEASE}places/${STATE}/boundaries`,
   cities: `${RELEASE}places/${STATE}/cities`,
-  places: `${RELEASE}places/(watersheds|ecoregions|parks)`,
-  "place-boundaries": `${RELEASE}places/(watersheds|ecoregions|parks)/boundaries`,
+  places: `${RELEASE}places/(watersheds|ecoregions|parks|urban-areas)`,
+  "place-boundaries": `${RELEASE}places/(watersheds|ecoregions|parks|urban-areas)/boundaries`,
   "place-weekly": `${RELEASE}results/places/${PLACE}/${KEY}`,
   "place-labels": `${RELEASE}labels/${PLACE}`,
   postal: `${RELEASE}postal/us/\\d{3}`,
@@ -1150,9 +1187,9 @@ export const schemas = {
           // `land_cover` and `elevation` in region/1.4, `warmth` and `frost`
           // in region/1.5, `green_up` in region/1.6 and `full_name` in
           // region/1.7, `watersheds` and `parks` in region/1.8, and
-          // `record_land_cover` and `record_hours` in region/1.9, so absent
-          // from earlier files. `warmth.past_typical_year` added in
-          // region/1.10.
+          // `record_land_cover` and `record_hours` in region/1.9, and
+          // `urban_areas` in region/1.11, so absent from earlier files.
+          // `warmth.past_typical_year` added in region/1.10.
           properties: {
             area,
             level: { enum: ["state", "county"] },
@@ -1263,6 +1300,7 @@ export const schemas = {
             ),
             watersheds: list(watershed),
             parks: list({ anyOf: [park, parkSystem] }),
+            urban_areas: list(urbanArea),
             record_land_cover: recordLandCover,
             record_hours: nullable(hours24),
           },
@@ -1271,6 +1309,7 @@ export const schemas = {
     ),
     sinceMinor("region", 8, { areas: ["watersheds", "parks"] }),
     sinceMinor("region", 9, { areas: ["record_land_cover", "record_hours"] }),
+    sinceMinor("region", 11, { areas: ["urban_areas"] }),
   ),
 
   "state-weekly": file(
@@ -1429,9 +1468,9 @@ export const schemas = {
   places: withRules(
     file(
       "places",
-      "Every watershed, every ecoregion, or every national and state park and metro park system with results, with its species with a result (ODR-2026-043, ODR-2026-044). No place file holds a sensitive species. May be split into shards.",
+      "Every watershed, every ecoregion, every national and state park and metro park system with results, or every city, with its species with a result (ODR-2026-043, ODR-2026-044, ODR-2026-073). No place file holds a sensitive species. May be split into shards.",
       object({
-        kind: { enum: ["watersheds", "ecoregions", "parks"] },
+        kind: { enum: ["watersheds", "ecoregions", "parks", "urban-areas"] },
         places: list(
           withOptional(
             object(
@@ -1443,6 +1482,7 @@ export const schemas = {
                 code: {
                   anyOf: [
                     pattern("^\\d{8}$"),
+                    pattern("^\\d{5}$"),
                     { type: "integer", minimum: 1 },
                     { type: "null" },
                   ],
@@ -1484,22 +1524,43 @@ export const schemas = {
               },
               areaMatchesLevel,
               placeMatchesLevel,
-              pageMatchesSpecies(true, { type: "array", minItems: 5 }),
-              pageMatchesSpecies(false, { type: "array", maxItems: 0 }),
+              pageMatchesSpecies("park", true, { type: "array", minItems: 5 }),
+              pageMatchesSpecies("park", false, { type: "array", maxItems: 0 }),
+              pageMatchesSpecies("urban_area", true, {
+                type: "array",
+                minItems: 5,
+              }),
+              pageMatchesSpecies("urban_area", false, {
+                type: "array",
+                maxItems: 0,
+              }),
             ),
-            // Added in places/1.1 (ODR-2026-067), so absent from 1.0 files.
-            { continues_into_countries: list(country) },
+            // Added in places/1.1 (ODR-2026-067) and places/1.3
+            // (ODR-2026-073), so absent from earlier files.
+            {
+              continues_into_countries: list(country),
+              urban_area: nullable(
+                object({
+                  full_name: text,
+                  population: count,
+                  population_whole: count,
+                  acres: { type: "number", minimum: 0 },
+                  has_page: { type: "boolean" },
+                }),
+              ),
+            },
           ),
         ),
       }),
     ),
     { type: "object", properties: { data: placesMatchKind } },
     sinceMinor("places", 1, { places: ["continues_into_countries"] }),
+    sinceMinor("places", 3, { places: ["urban_area"] }),
   ),
 
   "place-boundaries": file(
     "place-boundaries",
-    "Watershed and ecoregion outlines, and park middles as points, for maps, as a GeoJSON FeatureCollection. For display only.",
+    "Watershed, ecoregion and city outlines, and park middles as points, for maps, as a GeoJSON FeatureCollection. For display only.",
     object({
       type: { const: "FeatureCollection" },
       features: list(
@@ -1527,7 +1588,7 @@ export const schemas = {
 
   "place-weekly": file(
     "place-weekly",
-    "A species' weekly result for a watershed, ecoregion, park or metro park system.",
+    "A species' weekly result for a watershed, ecoregion, park, metro park system or city.",
     weeklyResult(place),
   ),
 

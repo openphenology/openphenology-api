@@ -8,6 +8,20 @@ All notable changes to this package are recorded here. The format follows
 
 ### Added
 
+- Data rules 1.102 (`formats.md` 1.45, ODR-2026-073): cities and their
+  suburbs, the 2020 Census urban areas, as places. A city's area code is
+  `ua-` and its Census urban area code (`ua-19234`). `places/1.3` adds the
+  kind `urban-areas` and `urban_area` on every place: a city's
+  `full_name`, `population`, `population_whole`, `acres` and `has_page`,
+  `null` for other places. `species/1.17` adds the level `urban-area`, and
+  `region/1.11` adds `urban_areas`, the cities with a page that an area
+  touches. `places/<kind>/boundaries.json` carries city outlines, with no
+  version change. `release.places()` and `release.placeBoundaries()` take
+  `urban-areas`, place codes take `ua-`, and the schemas and types
+  (`PlaceLevel`, `PlaceKind`, `Place["urban_area"]`, `UrbanArea`,
+  `RegionArea["urban_areas"]`) accept them. `release.search()` does not
+  list cities yet, and rejects a `ua-` code as its `place`, as it does a
+  watershed's.
 - Data rules 1.100 (`formats.md` 1.44, ODR-2026-072): `places/1.2`. A park's
   `type` may be `national-forest` or `wildlife-refuge`, for the national
   forest and national wildlife refuges, which are places of level `park`.

@@ -1,7 +1,7 @@
 # @openphenology/api (beta)
 
 Find out when each species is recorded, week by week, in US counties and
-states, and in watersheds, ecoregions and parks, from OpenPhenology's
+states, and in watersheds, ecoregions, parks and cities, from OpenPhenology's
 published data.
 
 > **Beta.** OpenPhenology and this package are in beta: the interface may
@@ -50,15 +50,15 @@ method takes, returns and throws.
 
 Every read takes codes, not names:
 
-| You have                       | Get the code with                                                                                                                                      |
-| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| A species' page slug           | `release.speciesBySlug("northern-cardinal")`                                                                                                           |
-| A name someone typed           | `release.search({ text })`: species and places whose names match, as the site finds them                                                               |
-| Nothing yet                    | `release.catalogue()`: every species with a result                                                                                                     |
-| A state                        | `us-` and its postal abbreviation, such as `us-oh`                                                                                                     |
-| A county                       | `release.region("us-oh")` lists each county's 5-digit Census code                                                                                      |
-| A ZIP code                     | `release.zipCounties("43215")` gives its counties and their states                                                                                     |
-| A watershed, ecoregion or park | `release.places("parks")` lists each place's code, such as `huc8-04100011`, `eco-342`, `park-hocking-hills-state-park` or `parks-cleveland-metroparks` |
+| You have                             | Get the code with                                                                                                                                                  |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| A species' page slug                 | `release.speciesBySlug("northern-cardinal")`                                                                                                                       |
+| A name someone typed                 | `release.search({ text })`: species and places whose names match, as the site finds them                                                                           |
+| Nothing yet                          | `release.catalogue()`: every species with a result                                                                                                                 |
+| A state                              | `us-` and its postal abbreviation, such as `us-oh`                                                                                                                 |
+| A county                             | `release.region("us-oh")` lists each county's 5-digit Census code                                                                                                  |
+| A ZIP code                           | `release.zipCounties("43215")` gives its counties and their states                                                                                                 |
+| A watershed, ecoregion, park or city | `release.places("parks")` lists each place's code, such as `huc8-04100011`, `eco-342`, `park-hocking-hills-state-park`, `parks-cleveland-metroparks` or `ua-19234` |
 
 ## Reading the results
 
@@ -75,8 +75,10 @@ Every read takes codes, not names:
   `c` commonly reported, `s` seasonally reported, `r` reported in your area,
   `m` within its mapped range, `n` not enough evidence.
 - **Places** use codes: `us-oh` for a state, a 5-digit Census code such as
-  `39049` for a county, and `huc8-`, `eco-`, `park-` or `parks-` codes for
-  watersheds, ecoregions, parks and metro park systems. A place that runs
+  `39049` for a county, and `huc8-`, `eco-`, `park-`, `parks-` or `ua-`
+  codes for watersheds, ecoregions, parks, metro park systems and cities
+  (a city and its suburbs, as the Census Bureau draws its built-up area).
+  A place that runs
   into a state not covered yet has results from its covered part only, and
   sensitive species never have place results.
 - **Place labels** give each species with a result in a place one letter per

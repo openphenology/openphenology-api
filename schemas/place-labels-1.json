@@ -14,7 +14,7 @@
     "id": {
       "description": "The file's path from the API root.",
       "type": "string",
-      "pattern": "^releases/\\d{4}-\\d{2}-\\d{2}/labels/(huc8-\\d{8}|eco-\\d+|parks?-[a-z0-9]+(-[a-z0-9]+)*)(/\\d+)?\\.json$"
+      "pattern": "^releases/\\d{4}-\\d{2}-\\d{2}/labels/(huc8-\\d{8}|eco-\\d+|parks?-[a-z0-9]+(-[a-z0-9]+)*|ua-\\d{5})(/\\d+)?\\.json$"
     },
     "kind": {
       "description": "The format's name, such as `county-weekly`.",
@@ -167,7 +167,7 @@
         "area": {
           "description": "The place's area code.",
           "type": "string",
-          "pattern": "^(huc8-\\d{8}|eco-\\d+|parks?-[a-z0-9]+(-[a-z0-9]+)*)$"
+          "pattern": "^(huc8-\\d{8}|eco-\\d+|parks?-[a-z0-9]+(-[a-z0-9]+)*|ua-\\d{5})$"
         },
         "method": {
           "description": "The method version.",

@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "OpenPhenology place-boundaries/1",
-  "description": "Watershed and ecoregion outlines, and park middles as points, for maps, as a GeoJSON FeatureCollection. For display only.",
+  "description": "Watershed, ecoregion and city outlines, and park middles as points, for maps, as a GeoJSON FeatureCollection. For display only.",
   "type": "object",
   "required": [
     "id",
@@ -14,7 +14,7 @@
     "id": {
       "description": "The file's path from the API root.",
       "type": "string",
-      "pattern": "^releases/\\d{4}-\\d{2}-\\d{2}/places/(watersheds|ecoregions|parks)/boundaries(/\\d+)?\\.json$"
+      "pattern": "^releases/\\d{4}-\\d{2}-\\d{2}/places/(watersheds|ecoregions|parks|urban-areas)/boundaries(/\\d+)?\\.json$"
     },
     "kind": {
       "description": "The format's name, such as `county-weekly`.",
@@ -193,7 +193,7 @@
                   "area": {
                     "description": "The place's area code.",
                     "type": "string",
-                    "pattern": "^(huc8-\\d{8}|eco-\\d+|parks?-[a-z0-9]+(-[a-z0-9]+)*)$"
+                    "pattern": "^(huc8-\\d{8}|eco-\\d+|parks?-[a-z0-9]+(-[a-z0-9]+)*|ua-\\d{5})$"
                   },
                   "name": {
                     "description": "Its name.",
@@ -230,7 +230,7 @@
                     ],
                     "properties": {
                       "type": {
-                        "description": "`MultiPolygon` for a watershed's or ecoregion's outline, `Point` for a park's middle.",
+                        "description": "`MultiPolygon` for a watershed's, ecoregion's or city's outline, `Point` for a park's middle.",
                         "const": "MultiPolygon"
                       },
                       "coordinates": {
@@ -273,7 +273,7 @@
                     ],
                     "properties": {
                       "type": {
-                        "description": "`MultiPolygon` for a watershed's or ecoregion's outline, `Point` for a park's middle.",
+                        "description": "`MultiPolygon` for a watershed's, ecoregion's or city's outline, `Point` for a park's middle.",
                         "const": "Point"
                       },
                       "coordinates": {
@@ -317,6 +317,10 @@
                               {
                                 "type": "string",
                                 "pattern": "^eco-\\d+$"
+                              },
+                              {
+                                "type": "string",
+                                "pattern": "^ua-\\d{5}$"
                               }
                             ]
                           },
