@@ -5,8 +5,8 @@ const STATE = /^[a-z]{2}-[a-z0-9]{1,3}$/;
 const COUNTY = /^\d{5}$/;
 const SPECIES = /^[A-Za-z0-9._-]+$/;
 const ZIP = /^\d{5}$/;
-const PLACE = /^(huc8-\d{8}|eco-\d+|parks?-[a-z0-9]+(-[a-z0-9]+)*)$/;
-const PLACE_KIND = /^(watersheds|ecoregions|parks)$/;
+const PLACE = /^(huc8-\d{8}|eco-\d+|parks?-[a-z0-9]+(-[a-z0-9]+)*|ua-\d{5})$/;
+const PLACE_KIND = /^(watersheds|ecoregions|parks|urban-areas)$/;
 
 /**
  * Checks a code before it is used in a path, so it cannot change the path.
@@ -78,7 +78,8 @@ export const zipCode = (value: string): string => check("ZIP code", value, ZIP);
 export const placeCode = (value: string): string =>
   check("place", value, PLACE);
 /**
- * Checks a kind of place file: `watersheds`, `ecoregions` or `parks`.
+ * Checks a kind of place file: `watersheds`, `ecoregions`, `parks` or
+ * `urban-areas`.
  *
  * @param value The kind.
  * @returns The kind, unchanged.

@@ -79,7 +79,7 @@ export function createServer(options: ServerOptions = {}): McpServer {
     {
       title: "Search species and places",
       description:
-        "One search, as on openphenology.com, answered from the published files. Every input is optional, and they combine. `text` alone finds species by any of their names, best match first, and places by name with their codes. A `place`, dates, a `group`, a `stage` or a `status` list the species with a season there, or whose season overlaps the dates, in the chosen `sort`; with `text` too, only those whose names contain it. A `stage` keeps species reported at that stage, by that stage's season; a `status` keeps species listed as introduced or invasive by US-RIIS, and not being listed never means native. Those searches also give how many species each group, stage and status option would leave. With `anywhere`, a species covered in several states is listed once, with its season in each. Returns up to 25 species, and up to 25 places of each kind, with counts. The text is never repeated back, and a ZIP code matches nothing: use `find_county` for ZIP codes.",
+        "One search, as on openphenology.com, answered from the published files. Every input is optional, and they combine. `text` alone finds species by any of their names, best match first, and places by name with their codes and kinds: a `city` is a Census town, an `urban-area` a city and its suburbs, as the Census Bureau draws its built-up area. A `place`, dates, a `group`, a `stage` or a `status` list the species with a season there, or whose season overlaps the dates, in the chosen `sort`; with `text` too, only those whose names contain it. A `stage` keeps species reported at that stage, by that stage's season; a `status` keeps species listed as introduced or invasive by US-RIIS, and not being listed never means native. Those searches also give how many species each group, stage and status option would leave. With `anywhere`, a species covered in several states is listed once, with its season in each. Returns up to 25 species, and up to 25 places of each kind, with counts. The text is never repeated back, and a ZIP code matches nothing: use `find_county` for ZIP codes.",
       inputSchema: z.object({
         text: z
           .string()
@@ -91,7 +91,7 @@ export function createServer(options: ServerOptions = {}): McpServer {
           .string()
           .optional()
           .describe(
-            "Where to list species: `anywhere`, a state code such as `us-oh`, a county's 5-digit Census code such as `39049`, or a park's `park-` or metro park system's `parks-` code. Codes come from published lists: search the place's name with `text` and use its `code`, or use `find_county` for a ZIP code's counties. Watersheds and ecoregions are not offered.",
+            "Where to list species: `anywhere`, a state code such as `us-oh`, a county's 5-digit Census code such as `39049`, or a park's `park-` or metro park system's `parks-` code. Codes come from published lists: search the place's name with `text` and use its `code`, or use `find_county` for a ZIP code's counties. Watersheds, ecoregions and cities and suburbs (`ua-` codes) are not offered.",
           ),
         from: z
           .string()

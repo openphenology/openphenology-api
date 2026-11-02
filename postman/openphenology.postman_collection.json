@@ -2161,7 +2161,7 @@
                 "{{placeKind}}.json"
               ]
             },
-            "description": "Every watershed, every ecoregion, or every national and state park and metro park system with results, with its species with a result (ODR-2026-043, ODR-2026-044). No place file holds a sensitive species. May be split into shards.\n\nPath: `releases/{{release}}/places/{{placeKind}}.json`. Format: `places/1`, schema `schemas/places-1.json`.\n- `{{placeKind}}`: `watersheds`, `ecoregions` or `parks`"
+            "description": "Every watershed, every ecoregion, every national and state park and metro park system with results, or every city, with its species with a result (ODR-2026-043, ODR-2026-044, ODR-2026-073). No place file holds a sensitive species. May be split into shards.\n\nPath: `releases/{{release}}/places/{{placeKind}}.json`. Format: `places/1`, schema `schemas/places-1.json`.\n- `{{placeKind}}`: `watersheds`, `ecoregions` or `parks`"
           },
           "response": [
             {
@@ -2299,7 +2299,7 @@
                 "boundaries.json"
               ]
             },
-            "description": "Watershed and ecoregion outlines, and park middles as points, for maps, as a GeoJSON FeatureCollection. For display only.\n\nPath: `releases/{{release}}/places/{{placeKind}}/boundaries.json`. Format: `place-boundaries/1`, schema `schemas/place-boundaries-1.json`.\n- `{{placeKind}}`: `watersheds`, `ecoregions` or `parks`"
+            "description": "Watershed, ecoregion and city outlines, and park middles as points, for maps, as a GeoJSON FeatureCollection. For display only.\n\nPath: `releases/{{release}}/places/{{placeKind}}/boundaries.json`. Format: `place-boundaries/1`, schema `schemas/place-boundaries-1.json`.\n- `{{placeKind}}`: `watersheds`, `ecoregions` or `parks`"
           },
           "response": [
             {
@@ -3289,7 +3289,7 @@
                 "{{placeSpecies}}.json"
               ]
             },
-            "description": "A species' weekly result for a watershed, ecoregion, park or metro park system.\n\nPath: `releases/{{release}}/results/places/{{place}}/{{placeSpecies}}.json`. Format: `place-weekly/1`, schema `schemas/place-weekly-1.json`.\n- `{{place}}`: a place's area code: `huc8-` and a HUC8 code, `eco-` and an `ECO_ID`, or `park-` or `parks-` and an address slug\n- `{{placeSpecies}}`: a species key with a result in `{{place}}`, saved by Place labels"
+            "description": "A species' weekly result for a watershed, ecoregion, park, metro park system or city.\n\nPath: `releases/{{release}}/results/places/{{place}}/{{placeSpecies}}.json`. Format: `place-weekly/1`, schema `schemas/place-weekly-1.json`.\n- `{{place}}`: a place's area code: `huc8-` and a HUC8 code, `eco-` and an `ECO_ID`, or `park-` or `parks-` and an address slug\n- `{{placeSpecies}}`: a species key with a result in `{{place}}`, saved by Place labels"
           },
           "response": [
             {

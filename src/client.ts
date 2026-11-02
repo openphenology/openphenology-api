@@ -392,8 +392,9 @@ function decode(path: string, bytes: ArrayBuffer): unknown {
  * is fetched at most once.
  *
  * Places are named by code: `us-oh` for a state, a 5-digit Census code such
- * as `39049` for a county, and `huc8-`, `eco-`, `park-` or `parks-` codes for
- * watersheds, ecoregions, parks and metro park systems. Species are named by
+ * as `39049` for a county, and `huc8-`, `eco-`, `park-`, `parks-` or `ua-`
+ * codes for watersheds, ecoregions, parks, metro park systems and cities.
+ * Species are named by
  * their key, from {@link Release.catalogue}, {@link Release.speciesBySlug} or
  * {@link Release.searchNames}.
  *
@@ -649,12 +650,13 @@ export class Release {
   }
 
   /**
-   * A species' weekly result for a watershed, ecoregion, park or metro park
-   * system. A place that runs into a state not covered yet has results from
-   * its covered part only.
+   * A species' weekly result for a watershed, ecoregion, park, metro park
+   * system or city. A place that runs into a state not covered yet has
+   * results from its covered part only.
    *
    * @param area The place's area code, such as `huc8-04100011`, `eco-342`,
-   *   `park-hocking-hills-state-park` or `parks-cleveland-metroparks`.
+   *   `park-hocking-hills-state-park`, `parks-cleveland-metroparks` or
+   *   `ua-19234`.
    * @param species The species key.
    * @returns The result, or `null` when none is published. A sensitive
    *   species never has a place result.
@@ -791,11 +793,12 @@ export class Release {
   }
 
   /**
-   * Every watershed, every ecoregion, or every national and state park and
-   * metro park system with results, each with its species with a result
-   * (ODR-2026-043, ODR-2026-044).
+   * Every watershed, every ecoregion, every national and state park and
+   * metro park system with results, or every city (`urban-areas`, from
+   * `places/1.3`), each with its species with a result (ODR-2026-043,
+   * ODR-2026-044, ODR-2026-073).
    *
-   * @param kind `watersheds`, `ecoregions` or `parks`.
+   * @param kind `watersheds`, `ecoregions`, `parks` or `urban-areas`.
    * @returns The places, or `null` when not published.
    * @throws {RangeError} When the kind is not one of them.
    */
@@ -809,10 +812,10 @@ export class Release {
   }
 
   /**
-   * Watershed or ecoregion outlines, or park middles as points, for maps, as
-   * GeoJSON. Simplified for display only.
+   * Watershed, ecoregion or city outlines, or park middles as points, for
+   * maps, as GeoJSON. Simplified for display only.
    *
-   * @param kind `watersheds`, `ecoregions` or `parks`.
+   * @param kind `watersheds`, `ecoregions`, `parks` or `urban-areas`.
    * @returns The features, or `null` when not published.
    * @throws {RangeError} When the kind is not one of them.
    */

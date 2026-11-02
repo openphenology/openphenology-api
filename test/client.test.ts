@@ -262,6 +262,9 @@ describe("files", () => {
       (await release.places("watersheds"))?.data.places[0]?.continues_into,
     ).toEqual(["us-yy"]);
     expect(await release.places("ecoregions")).toBeNull();
+    expect(await release.places("urban-areas")).toBeNull();
+    expect(await release.placeBoundaries("urban-areas")).toBeNull();
+    expect(await release.placeResult("ua-99001", "EX1")).toBeNull();
     const points = await release.placeBoundaries("parks");
     expect(points?.data.features.map((f) => f.properties.system)).toEqual([
       null,
@@ -302,7 +305,15 @@ describe("files", () => {
     expect(() => release.placeBoundaries("../parks" as "parks")).toThrow(
       RangeError,
     );
-    for (const code of ["us-zz", "39049", "huc8-0410", "park-../x", "eco-"]) {
+    for (const code of [
+      "us-zz",
+      "39049",
+      "huc8-0410",
+      "park-../x",
+      "eco-",
+      "ua-9900",
+      "ua-columbus",
+    ]) {
       expect(() => release.placeResult(code, "EX1"), code).toThrow(RangeError);
     }
     expect(() => release.placeLabels("parks-Example")).toThrow(RangeError);

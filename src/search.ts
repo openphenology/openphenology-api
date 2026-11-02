@@ -190,7 +190,11 @@ export interface SearchOptions {
   }[];
 }
 
-/** What kind of place {@link Release.search} found. */
+/**
+ * What kind of place {@link Release.search} found: `city` is a Census town,
+ * from the city lookup; `urban-area` a city and its suburbs with a page
+ * (ODR-2026-073).
+ */
 export type SearchPlaceKind = "city" | "state" | "county" | PlaceLevel;
 
 /** A place whose name matched, from {@link Release.search}. */
@@ -209,7 +213,10 @@ export interface SearchPlace {
   readonly species: number | null;
   /** A park's or system's type; otherwise `null`. */
   readonly type: Park["type"] | null;
-  /** A watershed's HUC8 or an ecoregion's `ECO_ID`; otherwise `null`. */
+  /**
+   * A watershed's HUC8, an ecoregion's `ECO_ID` or a city and suburbs'
+   * Census urban area code; otherwise `null`.
+   */
   readonly code: string | number | null;
   /** A city's counties, the one it leads with first; otherwise empty. */
   readonly counties: readonly {
@@ -248,8 +255,8 @@ export interface SearchResult {
   readonly species: SearchSpecies[];
   /**
    * By name only: the places whose names match, by kind: cities, then the
-   * states and counties, parks and metro park systems, and watersheds and
-   * ecoregions, each best match first.
+   * states and counties, parks and metro park systems, cities and suburbs
+   * with a page, and watersheds and ecoregions, each best match first.
    */
   readonly places: SearchPlace[];
   /** An Advanced search's details, or `null` for a search by name. */
@@ -643,8 +650,9 @@ export async function search(
     throw new RangeError(`Invalid week: ${String(week)}`);
   if (limit !== undefined && (!Number.isInteger(limit) || limit < 1))
     throw new RangeError(`Invalid limit: ${String(limit)}`);
-  // Watersheds and ecoregions are not offered (ODR-2026-049, Places).
-  if (chosen !== undefined && /^(huc8|eco)-/.test(chosen))
+  // Watersheds and ecoregions are not offered (ODR-2026-049, Places), and
+  // cities and suburbs follow them (ODR-2026-073).
+  if (chosen !== undefined && /^(huc8|eco|ua)-/.test(chosen))
     throw new RangeError(`Not a place search offers: ${chosen}`);
   const advanced =
     chosen !== undefined ||
@@ -865,13 +873,15 @@ async function byName(
         ];
   });
 
-  const [regions, cities, parks, watersheds, ecoregions] = await Promise.all([
-    Promise.all(base.states.map((s) => release.region(s))),
-    Promise.all(base.states.map((s) => release.cities(s))),
-    release.places("parks"),
-    release.places("watersheds"),
-    release.places("ecoregions"),
-  ]);
+  const [regions, cities, parks, urbanAreas, watersheds, ecoregions] =
+    await Promise.all([
+      Promise.all(base.states.map((s) => release.region(s))),
+      Promise.all(base.states.map((s) => release.cities(s))),
+      release.places("parks"),
+      release.places("urban-areas"),
+      release.places("watersheds"),
+      release.places("ecoregions"),
+    ]);
   const place = (
     kind: SearchPlaceKind,
     area: string,
@@ -966,6 +976,15 @@ async function byName(
     (p) => p.name,
     (p) => p.area,
   ).map(fromPlaces);
+  // Cities and suburbs with a page (ODR-2026-073).
+  const urbanAreaMatches = ranked(
+    (urbanAreas?.data.places ?? []).filter(
+      (p) => p.level === "urban-area" && p.urban_area?.has_page === true,
+    ),
+    text,
+    (p) => p.name,
+    (p) => p.area,
+  ).map(fromPlaces);
   // Watersheds and ecoregions together (ODR-2026-044).
   const areaMatches = ranked(
     [
@@ -999,6 +1018,7 @@ async function byName(
       ...most(cityMatches),
       ...most(states),
       ...most(parkMatches),
+      ...most(urbanAreaMatches),
       ...most(areaMatches),
     ],
   };
