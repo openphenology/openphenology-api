@@ -9791,10 +9791,12 @@
                       ],
                       "properties": {
                         "type": {
-                          "description": "`national` or `state` for a park, `park-system` for a metro park system.",
+                          "description": "`national` or `state` for a park, `national-forest` or `wildlife-refuge`\nfor a national forest or national wildlife refuge (added in `places/1.2`,\nODR-2026-072), `park-system` for a metro park system.",
                           "enum": [
                             "national",
                             "state",
+                            "national-forest",
+                            "wildlife-refuge",
                             "park-system"
                           ]
                         },
@@ -9989,7 +9991,9 @@
                             "type": {
                               "enum": [
                                 "national",
-                                "state"
+                                "state",
+                                "national-forest",
+                                "wildlife-refuge"
                               ]
                             },
                             "acres": {

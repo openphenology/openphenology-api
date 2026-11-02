@@ -570,7 +570,9 @@ const placeMatchesLevel: Schema = {
         park: {
           type: "object",
           properties: {
-            type: { enum: ["national", "state"] },
+            type: {
+              enum: ["national", "state", "national-forest", "wildlife-refuge"],
+            },
             acres: { type: "number" },
             parks: { type: "array", maxItems: 0 },
           },
@@ -1463,7 +1465,15 @@ export const schemas = {
                 ),
                 park: nullable(
                   object({
-                    type: { enum: ["national", "state", "park-system"] },
+                    type: {
+                      enum: [
+                        "national",
+                        "state",
+                        "national-forest",
+                        "wildlife-refuge",
+                        "park-system",
+                      ],
+                    },
                     agency: text,
                     acres: nullable({ type: "number", minimum: 0 }),
                     official_url: nullable(text),
