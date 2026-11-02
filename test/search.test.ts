@@ -80,7 +80,7 @@ describe("by name", () => {
     expect(few.species).toHaveLength(2);
   });
 
-  test("finds places by kind: cities, states and counties, parks, areas", async () => {
+  test("finds places by kind: cities, states and counties, parks, cities and suburbs, areas", async () => {
     const { places, advanced, zip } = await search({ text: "oak" });
     expect(zip).toBe(false);
     expect(advanced).toBeNull();
@@ -91,6 +91,8 @@ describe("by name", () => {
       ["city", "Oak Hill"],
       ["county", "Oakwood County"],
       ["park", "Oak Hollow State Park"],
+      // A city and suburbs with a page; Oakdale has none.
+      ["urban-area", "Oak City"],
       ["watershed", "Oak Creek"],
       ["ecoregion", "Oak Plains"],
     ]);
@@ -119,7 +121,18 @@ describe("by name", () => {
       type: "state",
       species: 2,
     });
-    expect(places[5]).toMatchObject({ code: "00000001", species: 1 });
+    expect(places[5]).toEqual({
+      kind: "urban-area",
+      area: "ua-00001",
+      name: "Oak City",
+      slug: "oak-city",
+      state: null,
+      species: 5,
+      type: null,
+      code: "00001",
+      counties: [],
+    });
+    expect(places[6]).toMatchObject({ code: "00000001", species: 1 });
   });
 
   test("counts a state's species with a state result", async () => {
@@ -149,6 +162,7 @@ describe("by name", () => {
       "county",
       "state",
       "park",
+      "urban-area",
       "watershed",
     ]);
   });

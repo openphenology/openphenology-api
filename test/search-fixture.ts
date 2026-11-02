@@ -339,6 +339,43 @@ const files: [string, string, unknown][] = [
     },
   ],
   [
+    "places/urban-areas.json",
+    "places",
+    {
+      kind: "urban-areas",
+      places: [
+        {
+          ...place(
+            "ua-00001",
+            "urban-area",
+            "Oak City",
+            ["AAAAA", "BBBBB", "CCCCC", "EEEEE", "IIIII"],
+            null,
+            "00001",
+          ),
+          urban_area: {
+            full_name: "Oak City, OH",
+            population: 60000,
+            population_whole: 60000,
+            acres: 30000,
+            has_page: true,
+          },
+        },
+        // Below the minimum: no page, so not found.
+        {
+          ...place("ua-00002", "urban-area", "Oakdale", [], null, "00002"),
+          urban_area: {
+            full_name: "Oakdale, OH",
+            population: 51000,
+            population_whole: 51000,
+            acres: 20000,
+            has_page: false,
+          },
+        },
+      ],
+    },
+  ],
+  [
     "places/ecoregions.json",
     "places",
     {

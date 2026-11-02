@@ -19,9 +19,10 @@ All notable changes to this package are recorded here. The format follows
   version change. `release.places()` and `release.placeBoundaries()` take
   `urban-areas`, place codes take `ua-`, and the schemas and types
   (`PlaceLevel`, `PlaceKind`, `Place["urban_area"]`, `UrbanArea`,
-  `RegionArea["urban_areas"]`) accept them. `release.search()` does not
-  list cities yet, and rejects a `ua-` code as its `place`, as it does a
-  watershed's.
+  `RegionArea["urban_areas"]`) accept them. `release.search()` lists
+  cities with a page among its places, after parks, as kind `urban-area`
+  (`city` stays the Census towns), ranked as watersheds are, and rejects a
+  `ua-` code as its `place`, as it does a watershed's.
 - Data rules 1.100 (`formats.md` 1.44, ODR-2026-072): `places/1.2`. A park's
   `type` may be `national-forest` or `wildlife-refuge`, for the national
   forest and national wildlife refuges, which are places of level `park`.
