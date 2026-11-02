@@ -6,6 +6,13 @@ All notable changes to this package are recorded here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- Data rules 1.100 (`formats.md` 1.44, ODR-2026-072): `places/1.2`. A park's
+  `type` may be `national-forest` or `wildlife-refuge`, for the national
+  forest and national wildlife refuges, which are places of level `park`.
+  `Park["type"]` and the places schema accept both.
+
 ### Changed
 
 - **Breaking** for `@openphenology/mcp`, which is not released yet: its

@@ -773,6 +773,28 @@ describe("schemas", () => {
     expect(errors(watersheds)).toEqual([]);
   });
 
+  test("places/1.2 national forest and wildlife refuge park types (ODR-2026-072)", async () => {
+    const files = await published();
+    const parks = structuredClone(
+      files.get("releases/2026-01-05/places/parks.json"),
+    );
+    if (!parks) throw new Error("missing fixture");
+    parks.format = "places/1.2";
+    for (const place of parks.data.places as Record<string, unknown>[])
+      place.continues_into_countries = [];
+    const park = (parks.data.places as Record<string, unknown>[]).find(
+      (p) => p.level === "park",
+    ) as { park: Record<string, unknown> } | undefined;
+    if (!park) throw new Error("no park in the fixture");
+    for (const type of ["national-forest", "wildlife-refuge"]) {
+      park.park.type = type;
+      expect(errors(parks)).toEqual([]);
+    }
+    // Only a place of level park takes them, and no other new type.
+    park.park.type = "state-forest";
+    expect(errors(parks)).not.toEqual([]);
+  });
+
   test("place-boundaries/1.0: outlines for watersheds, points for parks", async () => {
     const files = await published();
     const points = structuredClone(

@@ -1374,8 +1374,17 @@ export type PostalFile = PublishedFile<
  * (ODR-2026-043).
  */
 export interface Park {
-  /** `national` or `state` for a park, `park-system` for a metro park system. */
-  readonly type: "national" | "state" | "park-system";
+  /**
+   * `national` or `state` for a park, `national-forest` or `wildlife-refuge`
+   * for a national forest or national wildlife refuge (added in `places/1.2`,
+   * ODR-2026-072), `park-system` for a metro park system.
+   */
+  readonly type:
+    | "national"
+    | "state"
+    | "national-forest"
+    | "wildlife-refuge"
+    | "park-system";
   /** The managing agency. */
   readonly agency: string;
   /** Its area in acres; `null` for a metro park system. */
