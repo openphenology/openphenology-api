@@ -1,7 +1,7 @@
 import { playwright } from "@vitest/browser-playwright";
 import { defineConfig } from "vitest/config";
 
-const include = ["test/**/*.test.ts"];
+const include = ["test/*.test.ts"];
 const chromiumPath = process.env.CHROMIUM_PATH;
 
 export default defineConfig({
@@ -13,7 +13,10 @@ export default defineConfig({
       thresholds: { lines: 90, branches: 90, functions: 90, statements: 90 },
     },
     projects: [
-      { test: { name: "node", include } },
+      // The repository's own scripts run only in Node.js.
+      {
+        test: { name: "node", include: [...include, "test/scripts/*.test.ts"] },
+      },
       // The MCP server runs only in Node.js.
       { test: { name: "mcp", include: ["packages/mcp/test/**/*.test.ts"] } },
       {

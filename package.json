@@ -46,6 +46,7 @@
     "build": "tsc -p tsconfig.build.json --removeComments && tsc -p tsconfig.build.json --emitDeclarationOnly && tsc -p packages/mcp/tsconfig.build.json",
     "prepare": "tsc -p tsconfig.build.json --removeComments && tsc -p tsconfig.build.json --emitDeclarationOnly",
     "lint": "eslint .",
+    "private:check": "node scripts/private-addresses.ts",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "typecheck": "tsc --noEmit && tsc --noEmit -p src && tsc --noEmit -p packages/mcp",
@@ -58,7 +59,7 @@
     "postman": "node scripts/postman.ts",
     "postman:check": "node scripts/postman.ts --check && node scripts/newman.ts",
     "check": "pnpm check:node && vitest run --project 'browser*'",
-    "check:node": "pnpm format:check && pnpm schemas:check && pnpm postman:check && pnpm lint && pnpm typecheck && pnpm docs:check && pnpm test:node && pnpm build && pnpm size",
+    "check:node": "pnpm private:check && pnpm format:check && pnpm schemas:check && pnpm postman:check && pnpm lint && pnpm typecheck && pnpm docs:check && pnpm test:node && pnpm build && pnpm size",
     "size": "node scripts/size.mjs"
   },
   "devDependencies": {

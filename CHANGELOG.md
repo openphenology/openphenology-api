@@ -6,6 +6,12 @@ All notable changes to this package are recorded here. The format follows
 
 ## [Unreleased]
 
+### Removed
+
+- The exported address of OpenPhenology's non-public environment: only
+  `PRODUCTION_URL` remains. Nothing in this repository names that
+  environment, and `pnpm check` and CI fail if anything does.
+
 ### Added
 
 - Data rules 1.102 (`formats.md` 1.45, ODR-2026-073): cities and their
