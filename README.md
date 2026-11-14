@@ -285,9 +285,8 @@ limits and credit.
 [Use with AI assistants](https://data.openphenology.com/ai-assistants)
 explains how to add it.
 
-> **Not live yet.** The hosted server runs on staging,
-> `https://mcp-staging.openphenology.com`, behind access control, and opens
-> at `https://mcp.openphenology.com` at launch. The package isn't on npm yet.
+> The hosted server is at `https://mcp.openphenology.com`. The package isn't
+> on npm yet.
 
 ## Try it in Postman
 

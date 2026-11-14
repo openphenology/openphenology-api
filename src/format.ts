@@ -7,6 +7,6 @@
  * @module
  */
 export { countyState } from "./states.ts";
-export { PRODUCTION_URL, STAGING_URL } from "./urls.ts";
+export { PRODUCTION_URL } from "./urls.ts";
 export { WEEKS } from "./types.ts";
 export { NEARBY_LABELS, nearbyLabel, weekOf } from "./weeks.ts";

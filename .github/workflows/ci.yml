@@ -21,6 +21,9 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          # The whole history, so the check can read this pull request's
+          # commit messages.
+          fetch-depth: 0
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version-file: .node-version
@@ -31,6 +34,12 @@ jobs:
       - name: Install test browsers
         run: pnpm exec playwright install --with-deps chromium firefox webkit
       - name: Check
+        # The pull request's own text is checked too
+        # (scripts/private-addresses.ts), passed as data, never run.
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
         run: pnpm check
       - name: Pack
         run: pnpm pack --out package.tgz
